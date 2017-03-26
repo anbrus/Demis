@@ -1,0 +1,601 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:24:28
+Chess.asm						     Page 1 - 1
+
+
+				.286
+				NAME  Grate
+ 0000				Data  segment at 0ba00h
+ 0000 00			     activ   db ?         ;  активное знакоместо 
+ 0001 00			     flash   db ?         ;  флаг мигания
+ 0002 00			     kbdin   db ?
+ 0003 00			     sec22   db ?
+ 0004 00			     sec21   db ?
+ 0005 00			     min22   db ?
+ 0006 00			     min21   db ?
+ 0007 00			     hour1   db ? 
+ 0008 00			     sec12   db ?
+ 0009 00			     sec11   db ?
+ 000A 00			     min12   db ?
+ 000B 00			     min11   db ?
+ 000C 00			     hour2   db ?
+ 000D 00			     endgf   db ?
+ 000E  000A [			     Map db 0AH dup (?)
+        00
+       ]
+ 0018 00			     port db ?
+ 0019 00			     num db ?
+ 001A 00			     player1 db ?          ;  флаги нажатых кнопок
+ 001B 00			     player2 db ? 
+ 001C 00			     portout db ?          ;  буфер вывода флажков
+ 001D				Data    ends
+ 0000				Stac  segment at 0ba80h
+				     org 110h
+ 0110  000A [			     dw 10 dup (?)
+        0000
+       ]
+ 0124				     StkTop LABEL WORD
+ 0124				Stac ends
+
+ 0000				Code  segment
+				     assume cs:Code,ds:Data,ss:Stac
+				    
+				    ;Описание програмных модулей
+ 0000				FuncPrep proc near           ;инициализация данных
+ 0000  80 3E 000D R 00		     cmp endgf,0
+ 0005  74 5B			     jz m40
+ 0007  80 3E 0001 R 00		     cmp flash,0h
+ 000C  74 54			     jz m40
+ 000E  C6 06 0007 R 00		     mov hour1, 0 
+ 0013  C6 06 000C R 00		     mov hour2, 0
+ 0018  C6 06 000B R 00		     mov min11, 0
+ 001D  C6 06 000A R 00		     mov min12, 0
+ 0022  C6 06 0006 R 00		     mov min21, 0
+ 0027  C6 06 0005 R 00		     mov min22, 0
+ 002C  C6 06 0009 R 00		     mov sec11, 0
+ 0031  C6 06 0008 R 00		     mov sec12, 0
+ 0036  C6 06 0004 R 00		     mov sec21, 0
+ 003B  C6 06 0003 R 00		     mov sec22, 0 
+ 0040  C6 06 0001 R 00		     mov flash, 0   
+ 0045  C6 06 0000 R 00		     mov activ, 0 
+ 004A  C6 06 001A R 00		     mov player1,0
+ 004F  C6 06 001B R 00		     mov player2,0
+ 0054  C6 06 001C R 00		     mov portout,0    
+ 0059  C6 06 000D R 00		     mov endgf,0
+ 005E  B0 00			     mov al,0                ; очистка порта 
+ 0060  E6 0A			     out 0ah,al              ; флажков 
+ 0062  C3			m40 :ret     
+ 0063				FuncPrep  endp
+				;------------------------------------------
+ 0063				Delay proc near              ; процедура задержки мигания
+ 0063  53			       push bx
+ 0064				     Cycle:
+ 0064  BB 0064			       mov  bx,100
+ 0067  4B			Wait2: dec  bx
+ 0068  75 FD			       jnz  Wait2
+ 006A  E2 F8			       loop Cycle
+ 006C  5B			       pop  bx
+ 006D  C3			       ret
+ 006E				Delay endp
+				;------------------------------------------
+ 006E				input proc near
+ 006E  C6 06 0001 R FF		      mov flash,0ffh
+ 0073  E4 00			      in  al,0                 ;ввод из порта
+ 0075  A2 0002 R		      mov kbdin,al
+ 0078  C3			      ret
+ 0079				input endp
+				;----------------------------------------------
+ 0079				again proc near                ;ожидание перехода режимов
+ 0079  A0 001C R		c01: mov al,portout
+ 007C  24 04			     and al,4
+ 007E  74 1A			     jz m55      
+ 0080  A0 001C R		     mov al,portout
+ 0083  04 02			     add al,2
+ 0085  E6 0A			     out 0ah,al
+ 0087  B9 012C			     mov cx,300
+ 008A  E8 FFD6			     call delay
+ 008D  A0 001C R		     mov al,portout
+ 0090  E6 0A			     out 0ah,al
+ 0092  B9 012C			     mov cx,300
+ 0095  E8 FFCB			     call delay
+ 0098  EB 18			     jmp m56 
+ 009A  A0 001C R		m55: mov al,portout
+ 009D  04 40			     add al,64
+ 009F  E6 0A			     out 0ah,al
+ 00A1  B9 012C			     mov cx,300
+ 00A4  E8 FFBC			     call delay
+ 00A7  A0 001C R		     mov al,portout
+ 00AA  E6 0A			     out 0ah,al
+ 00AC  B9 012C			     mov cx,300
+ 00AF  E8 FFB1			     call delay    
+ 00B2  E4 00			m56: in al,0h
+ 00B4  24 01			     and al,1h
+ 00B6  75 C1			     jnz c01
+ 00B8  C3			     ret
+ 00B9				again endp
+				;----------------------------------------------
+ 00B9				pause proc near                ; Процедура секундной задержки
+ 00B9  80 3E 0001 R FF		     cmp flash,0ffh
+ 00BE  74 0B			     jz m12
+ 00C0  C6 06 000D R FF		     mov endgf,0ffh
+ 00C5  B9 9B70			     mov cx,9b70H
+ 00C8  90			   C1:nop
+ 00C9  E2 FD			     loop C1
+ 00CB  C3			  m12:ret 
+ 00CC				pause endp
+				;----------------------------------------------
+ 00CC				endgame proc near              ; Процедура проверки конца игры
+ 00CC  80 3E 0001 R FF		   cmp flash,0ffh
+ 00D1  74 5B			   jz  m23
+ 00D3  80 3E 0007 R 00		   cmp hour1,0
+ 00D8  75 29			   jnz m24
+ 00DA  80 3E 000B R 00		   cmp min11,0
+ 00DF  75 22			   jnz m24
+ 00E1  80 3E 000A R 00		   cmp min12,0
+ 00E6  75 1B			   jnz m24
+ 00E8  80 3E 0009 R 00		   cmp sec11,0
+ 00ED  75 14			   jnz m24
+ 00EF  80 3E 0008 R 00		   cmp sec12,0
+ 00F4  75 0D			   jnz m24
+ 00F6  80 06 001C R 04		   add portout,4
+ 00FB  E8 FF7B			   call again
+ 00FE  C6 06 000D R FF		   mov endgf,0ffh
+				    
+ 0103  80 3E 000C R 00		m24:cmp hour2,0
+ 0108  75 24			    jnz m23
+ 010A  80 3E 0006 R 00		    cmp min21,0
+ 010F  75 1D			   jnz m23
+ 0111  80 3E 0005 R 00		   cmp min22,0
+ 0116  75 16			   jnz m23
+ 0118  80 3E 0004 R 00		   cmp sec21,0
+ 011D  75 0F			   jnz m23
+ 011F  80 3E 0003 R 00		   cmp sec22,0
+ 0124  75 08			   jnz m23
+				 
+ 0126  E8 FF50			   call again
+ 0129  C6 06 000D R FF		   mov endgf,0ffh   
+ 012E  C3			m23:ret
+ 012F				endgame endp
+				;----------------------------------------------
+ 012F				Signal proc near    ; проверка игры на флажке
+ 012F  80 3E 0001 R FF		    cmp flash,0ffh  ; не выполнять 
+ 0134  74 5E			    jz m22          ; в режиме установки
+ 0136  80 3E 0007 R 00		    cmp hour1,0     ; Проверка флажка
+ 013B  75 28			    jnz m11         ; первого игрока
+ 013D  80 3E 000B R 00		    cmp min11,0
+ 0142  75 21			    jnz m11
+ 0144  80 3E 000A R 01		    cmp min12,1
+ 0149  75 02			    jnz m25
+ 014B  EB 07			    jmp m26
+ 014D  80 3E 000A R 00		m25:cmp min12,0
+ 0152  75 11			    jnz m11
+ 0154  A0 001C R		m26:mov al,portout
+ 0157  24 01			    and al,1
+ 0159  75 0A			    jnz m11   
+ 015B  80 06 001C R 01		    add portout,1
+ 0160  A0 001C R		    mov al,portout
+ 0163  E6 0A			    out 0ah,al
+
+ 0165  80 3E 000C R 00		m11:cmp hour2,0        ;проверка флажка
+ 016A  75 28			    jnz m22            ;второго игрока  
+ 016C  80 3E 0006 R 00		    cmp min21,0
+ 0171  75 21			    jnz m22
+ 0173  80 3E 0005 R 01		    cmp min22,1
+ 0178  75 02			    jnz m27
+ 017A  EB 07			    jmp m28
+ 017C  80 3E 0005 R 00		m27:cmp min22,0
+ 0181  75 11			    jnz m22 
+ 0183  A0 001C R		m28:mov al,portout
+ 0186  24 20			    and al,32
+ 0188  75 0A			    jnz m22   
+ 018A  80 06 001C R 20		    add portout,32
+ 018F  A0 001C R		    mov al,portout
+ 0192  E6 0A			    out 0ah,al    
+
+ 0194  80 3E 0001 R 00		m22:cmp flash,0       ;проверка флажков 
+ 0199  74 22			    jz m29            ;исправленного времени
+ 019B  A0 001C R		    mov al,portout   
+ 019E  24 01			    and al,1
+ 01A0  74 0A			    jz m30
+ 01A2  80 26 001C R FE		    and portout,0feh 
+ 01A7  A0 001C R		    mov al,portout
+ 01AA  E6 0A			    out 0ah,al
+ 01AC  A0 001C R		m30:mov al,portout
+ 01AF  24 32			    and al,32h
+ 01B1  74 0A			    jz m29
+ 01B3  80 26 001C R DF		    and portout,0dfh 
+ 01B8  A0 001C R		    mov al,portout
+ 01BB  E6 0A			    out 0ah,al
+ 01BD  C3			m29:ret
+ 01BE				Signal endp
+				;----------------------------------------------
+ 01BE				clock1 proc near          ;часы первого игрока
+ 01BE  80 3E 0001 R 00		    cmp flash,0
+ 01C3  75 78			    jnz m10
+ 01C5  80 3E 001A R FF		    cmp player1,0ffh
+ 01CA  75 71			    jnz m10
+ 01CC  80 3E 0008 R 00		    cmp sec12,0
+ 01D1  74 06			    jz m13
+ 01D3  FE 0E 0008 R		    dec sec12
+ 01D7  EB 64			    jmp m10
+ 01D9  80 3E 0009 R 00		m13:cmp sec11,0
+ 01DE  74 0B			    jz m14
+ 01E0  FE 0E 0009 R		    dec sec11
+ 01E4  C6 06 0008 R 09		    mov sec12,9
+ 01E9  EB 52			    jmp m10
+ 01EB  80 3E 000A R 00		m14:cmp min12,0
+ 01F0  74 10			    jz m15
+ 01F2  FE 0E 000A R		    dec min12
+ 01F6  C6 06 0008 R 09		    mov sec12,9
+ 01FB  C6 06 0009 R 05		    mov sec11,5    
+ 0200  EB 3B			    jmp m10
+ 0202  80 3E 000B R 00		m15:cmp min11,0
+ 0207  74 15			    jz m16
+ 0209  FE 0E 000B R		    dec min11
+ 020D  C6 06 0008 R 09		    mov sec12,9
+ 0212  C6 06 0009 R 05		    mov sec11,5
+ 0217  C6 06 000A R 09		    mov min12,9
+ 021C  EB 1F			    jmp m10
+ 021E  80 3E 0007 R 00		m16:cmp hour1,0
+ 0223  74 18			    jz m10
+ 0225  FE 0E 0007 R		    dec hour1
+ 0229  C6 06 0008 R 09		    mov sec12,9
+ 022E  C6 06 0009 R 05		    mov sec11,5
+ 0233  C6 06 000A R 09		    mov min12,9
+ 0238  C6 06 000B R 05		    mov min11,5   
+ 023D  C3			m10:ret    
+ 023E				clock1 endp
+				;----------------------------------------------
+ 023E				clock2 proc near          ;часы второго игрока
+ 023E  80 3E 0001 R 00		    cmp flash,0
+ 0243  75 78			    jnz m17
+ 0245  80 3E 001B R FF		    cmp player2,0ffh
+ 024A  75 71			    jnz m17
+ 024C  80 3E 0003 R 00		    cmp sec22,0
+ 0251  74 06			    jz m18
+ 0253  FE 0E 0003 R		    dec sec22
+ 0257  EB 64			    jmp m17
+ 0259  80 3E 0004 R 00		m18:cmp sec21,0
+ 025E  74 0B			    jz m19
+ 0260  FE 0E 0004 R		    dec sec21
+ 0264  C6 06 0003 R 09		    mov sec22,9
+ 0269  EB 52			    jmp m17
+ 026B  80 3E 0005 R 00		m19:cmp min22,0
+ 0270  74 10			    jz m20
+ 0272  FE 0E 0005 R		    dec min22
+ 0276  C6 06 0003 R 09		    mov sec22,9
+ 027B  C6 06 0004 R 05		    mov sec21,5    
+ 0280  EB 3B			    jmp m17
+ 0282  80 3E 0006 R 00		m20:cmp min21,0
+ 0287  74 15			    jz m21
+ 0289  FE 0E 0006 R		    dec min21
+ 028D  C6 06 0003 R 09		    mov sec22,9
+ 0292  C6 06 0004 R 05		    mov sec21,5
+ 0297  C6 06 0005 R 09		    mov min22,9
+ 029C  EB 1F			    jmp m17
+ 029E  80 3E 000C R 00		m21:cmp hour2,0
+ 02A3  74 18			    jz m17
+ 02A5  FE 0E 000C R		    dec hour2
+ 02A9  C6 06 0003 R 09		    mov sec22,9
+ 02AE  C6 06 0004 R 05		    mov sec21,5
+ 02B3  C6 06 0005 R 09		    mov min22,9
+ 02B8  C6 06 0006 R 05		    mov min21,5   
+ 02BD  C3			    m17: ret    
+ 02BE				clock2 endp
+
+				;----------------------------------------------
+ 02BE				Select proc near      ;процедура обработки входной информации
+ 02BE  E4 00			    in al,0h
+ 02C0  D0 C8			    ror al,1
+ 02C2  73 26			    jnc m5
+ 02C4  C6 06 0001 R 00		    mov flash,0h    
+ 02C9  E4 00			    in al,0h          ;определение активных часов
+ 02CB  D0 C0			    rol al,1
+ 02CD  73 0A			    jnc m9
+ 02CF  C6 06 001B R FF		    mov player2,0ffh      ;выделение идущих часов
+ 02D4  C6 06 001A R 00		    mov player1,0
+ 02D9  E4 00			m9: in al,0h          
+ 02DB  C0 C0 02			    rol al,2
+ 02DE  73 0A			    jnc m5
+ 02E0  C6 06 001A R FF		    mov player1,0ffh 
+ 02E5  C6 06 001B R 00		    mov player2,0
+ 02EA				m5: 
+ 02EA  E4 00			    in al,0h               ;определение активного знакоместа
+ 02EC  24 02			    and al,2h
+ 02EE  74 10			    jz m2
+ 02F0  FE 06 0000 R		    inc activ
+ 02F4  80 3E 0000 R 0A		    cmp activ,0ah
+ 02F9  75 05			    jnz m2
+ 02FB  C6 06 0000 R 00		    mov activ,0
+ 0300  C3			m2: ret   
+ 0301				Select endp
+				;--------------------------------------
+ 0301				OneMode proc near           ;   прроцедура изменения времени в
+ 0301  38 26 0000 R		    cmp activ,ah            ;   одном знакоместе
+ 0305  75 24			    jnz m7
+ 0307  FE C0			    inc al
+ 0309  80 FC 01			    cmp ah,1
+ 030C  74 17			    jz m8
+ 030E  80 FC 03			    cmp ah,3
+ 0311  74 12			    jz m8
+ 0313  80 FC 06			    cmp ah,6
+ 0316  74 0D			    jz m8
+ 0318  80 FC 08			    cmp ah,8
+ 031B  74 08			    jz m8
+ 031D  3C 0A			    cmp al,0ah              ; Для деситизначных индикаторов
+ 031F  75 0A			    jnz m7
+ 0321  B0 00			    mov al,0 
+ 0323  EB 06			    jmp m7
+ 0325  3C 06			m8: cmp al,06h              ; Для шестизначных индикаторов 
+ 0327  75 02			    jnz m7
+ 0329  B0 00			    mov al,0 
+ 032B  C3			m7: ret
+ 032C				OneMode endp
+				;--------------------------------------
+ 032C				Modify proc near      ;процедура изменения времени
+ 032C  80 3E 0001 R FF		    cmp flash,0ffh
+ 0331  75 75			    jnz m6
+ 0333  E4 00			    in al,0h
+ 0335  C0 C8 03			    ror al,3h
+ 0338  73 6E			    jnc m6
+ 033A  A0 0003 R		    mov al,sec22 ;вызов Процедур модификации 
+ 033D  B4 00			    mov ah,0
+ 033F  E8 FFBF			    call OneMode
+ 0342  A2 0003 R		    mov sec22,al ;Запись результата  
+				    
+ 0345  A0 0004 R		    mov al,sec21
+ 0348  B4 01			    mov ah,1
+ 034A  E8 FFB4			    call OneMode
+ 034D  A2 0004 R		    mov sec21,al   
+				    
+ 0350  A0 0005 R		    mov al,min22
+ 0353  B4 02			    mov ah,2
+ 0355  E8 FFA9			    call OneMode
+ 0358  A2 0005 R		    mov min22,al
+				 
+ 035B  A0 0006 R		    mov al,min21
+ 035E  B4 03			    mov ah,3
+ 0360  E8 FF9E			    call OneMode
+ 0363  A2 0006 R		    mov min21,al
+				    
+ 0366  A0 000C R		    mov al,hour2
+ 0369  B4 04			    mov ah,4
+ 036B  E8 FF93			    call OneMode
+ 036E  A2 000C R		    mov hour2,al
+				 
+ 0371  A0 0008 R		    mov al,sec12 ;вызов Процедур модификации 
+ 0374  B4 05			    mov ah,5
+ 0376  E8 FF88			    call OneMode
+ 0379  A2 0008 R		    mov sec12,al ;Запись результата  
+				    
+ 037C  A0 0009 R		    mov al,sec11
+ 037F  B4 06			    mov ah,6
+ 0381  E8 FF7D			    call OneMode
+ 0384  A2 0009 R		    mov sec11,al   
+				    
+ 0387  A0 000A R		    mov al,min12
+ 038A  B4 07			    mov ah,7
+ 038C  E8 FF72			    call OneMode
+ 038F  A2 000A R		    mov min12,al
+				 
+ 0392  A0 000B R		    mov al,min11
+ 0395  B4 08			    mov ah,8
+ 0397  E8 FF67			    call OneMode
+ 039A  A2 000B R		    mov min11,al
+				    
+ 039D  A0 0007 R		    mov al,hour1
+ 03A0  B4 09			    mov ah,9
+ 03A2  E8 FF5C			    call OneMode
+ 03A5  A2 0007 R		    mov hour1,al
+				    
+ 03A8  C3			m6:ret
+ 03A9				Modify endp
+				;--------------------------------------
+ 03A9				InitMap proc near
+
+ 03A9  C6 06 000E R 3F		       mov Map[0], 3FH
+ 03AE  C6 06 000F R 0C		       mov Map[1], 0CH
+ 03B3  C6 06 0010 R 76		       mov Map[2], 76H
+ 03B8  C6 06 0011 R 5E		       mov Map[3], 05EH
+ 03BD  C6 06 0012 R 4D		       mov Map[4], 4DH
+ 03C2  C6 06 0013 R 5B		       mov Map[5], 5BH
+ 03C7  C6 06 0014 R 7B		       mov Map[6], 7BH
+ 03CC  C6 06 0015 R 0E		       mov Map[7], 0EH
+ 03D1  C6 06 0016 R 7F		       mov Map[8], 7FH
+ 03D6  C6 06 0017 R 5F		       mov Map[9], 5FH
+ 03DB  C3			       ret
+ 03DC				InitMap endp
+				;-------------------------------------------------
+ 03DC				Translvid proc near        ; перевод и вывод одного знакоместа
+ 03DC  80 3E 0001 R 00		     cmp flash,0h
+ 03E1  74 1C			     jz m3
+ 03E3  A0 0018 R		     mov al,port
+ 03E6  3A 06 0000 R		     cmp al,activ
+ 03EA  75 13			     jnz m3
+ 03EC  B9 0100			     mov cx,100h
+ 03EF  E8 FC71			     call Delay            ; задержка мигания 
+ 03F2  B0 00			     mov al,0
+ 03F4  8A 16 0018 R		     mov dl,port
+ 03F8  EE			     out dx,al
+ 03F9  B9 0100			     mov cx,100h
+ 03FC  E8 FC64			     call Delay            ; задержка мигания 
+ 03FF  BB 000E R		 m3: mov bx, offset Map
+ 0402  A0 0019 R		     mov al,num
+ 0405  D7			     xlat
+ 0406  8A 16 0018 R		     mov dl,port
+ 040A  EE			     out dx,al
+ 040B  C3			     ret 
+ 040C				Translvid endp
+				;--------------------------------------------------
+ 040C				Vidout proc near       ;  Вывод  текущих часов
+ 040C  E8 FF9A			     call InitMap
+ 040F  A0 0003 R		     mov al,sec22
+ 0412  A2 0019 R		     mov num,al
+ 0415  C6 06 0018 R 00		     mov port,0
+ 041A  E8 FFBF			     call Translvid
+ 041D  A0 0004 R		     mov al,sec21
+ 0420  A2 0019 R		     mov num,al
+ 0423  C6 06 0018 R 01		     mov port,1
+ 0428  E8 FFB1			     call Translvid
+ 042B  A0 0005 R		     mov al,min22 
+ 042E  A2 0019 R		     mov num,al
+ 0431  C6 06 0018 R 02		     mov port,2
+ 0436  E8 FFA3			     call Translvid
+ 0439  A0 0006 R		     mov al,min21
+ 043C  A2 0019 R		     mov num,al
+ 043F  C6 06 0018 R 03		     mov port,3
+ 0444  E8 FF95			     call Translvid
+ 0447  A0 000C R		     mov al,hour2
+ 044A  A2 0019 R		     mov num,al
+ 044D  C6 06 0018 R 04		     mov port,4
+ 0452  E8 FF87			     call Translvid
+ 0455  A0 0008 R		     mov al,sec12
+ 0458  A2 0019 R		     mov num,al
+ 045B  C6 06 0018 R 05		     mov port,5
+ 0460  E8 FF79			     call Translvid
+ 0463  A0 0009 R		     mov al,sec11
+ 0466  A2 0019 R		     mov num,al
+ 0469  C6 06 0018 R 06		     mov port,6
+ 046E  E8 FF6B			     call Translvid   
+ 0471  A0 000A R		     mov al,min12
+ 0474  A2 0019 R		     mov num,al
+ 0477  C6 06 0018 R 07		     mov port,7
+ 047C  E8 FF5D			     call Translvid
+ 047F  A0 000B R		     mov al,min11
+ 0482  A2 0019 R		     mov num,al
+ 0485  C6 06 0018 R 08		     mov port,8
+ 048A  E8 FF4F			     call Translvid
+ 048D  A0 0007 R		     mov al,hour1
+ 0490  A2 0019 R		     mov num,al
+ 0493  C6 06 0018 R 09		     mov port,9
+ 0498  E8 FF41			     call Translvid     
+ 049B  C3			     ret
+ 049C				Vidout endp
+				;--------------------------------------------------
+
+				                        ;макроуровень программы
+ 049C				Start:
+ 049C  B8 ---- R		  mov ax,Data           ;  инициализация сегментных
+ 049F  8E D8			  mov DS,ax             ;  регистров
+ 04A1  B8 ---- R		  mov ax,Stac
+ 04A4  8E D0			  mov SS,ax
+ 04A6  BC 0124 R		  mov sp,offset StkTop  ;  и верхушки стека 
+ 04A9				cont:  
+ 04A9  E8 FB54			  call FuncPrep         ;  обнуление часов
+ 04AC  E8 FBBF			  call input		;  опрос управляющих клавиш
+ 04AF  E8 FE0C			  call Select		;  выбор знакомест
+ 04B2  E8 FE77			  call Modify		;  изменение текущего знакоместа
+ 04B5  E8 FD06			  call clock1		;  ход часов первого игрока
+ 04B8  E8 FD83			  call clock2		;  ход часов второго игрока
+ 04BB  E8 FBFB			  call pause		;  секундная задержка
+ 04BE  E8 FF4B			  call Vidout		;  отображение текущего времени
+ 04C1  E8 FC6B			  call Signal		;  вывод оповещающих сигналов
+ 04C4  E8 FC05			  call endgame		;  проверка окончания игры
+ 04C7  EB E0			  jmp cont
+
+				  org 0ff0h
+				  assume cs:nothing
+ 0FF0  EA ---- 049C R		  begin:jmp far ptr Start
+ 0FF5				Code   ends
+				  end begin
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:24:28
+Chess.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 001D	  Abs	  Private 
+Stac . . . . . . . . . . . . . .	16 Bit	 0124	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+Delay  . . . . . . . . . . . . .	P Near	 0063	  Code	Length= 000B Public
+  Cycle  . . . . . . . . . . . .	L Near	 0064	  Code	
+  Wait2  . . . . . . . . . . . .	L Near	 0067	  Code	
+FuncPrep . . . . . . . . . . . .	P Near	 0000	  Code	Length= 0063 Public
+  m40  . . . . . . . . . . . . .	L Near	 0062	  Code	
+InitMap  . . . . . . . . . . . .	P Near	 03A9	  Code	Length= 0033 Public
+Modify . . . . . . . . . . . . .	P Near	 032C	  Code	Length= 007D Public
+  m6 . . . . . . . . . . . . . .	L Near	 03A8	  Code	
+OneMode  . . . . . . . . . . . .	P Near	 0301	  Code	Length= 002B Public
+  m8 . . . . . . . . . . . . . .	L Near	 0325	  Code	
+  m7 . . . . . . . . . . . . . .	L Near	 032B	  Code	
+Select . . . . . . . . . . . . .	P Near	 02BE	  Code	Length= 0043 Public
+  m9 . . . . . . . . . . . . . .	L Near	 02D9	  Code	
+  m5 . . . . . . . . . . . . . .	L Near	 02EA	  Code	
+  m2 . . . . . . . . . . . . . .	L Near	 0300	  Code	
+Signal . . . . . . . . . . . . .	P Near	 012F	  Code	Length= 008F Public
+  m25  . . . . . . . . . . . . .	L Near	 014D	  Code	
+  m26  . . . . . . . . . . . . .	L Near	 0154	  Code	
+  m11  . . . . . . . . . . . . .	L Near	 0165	  Code	
+  m27  . . . . . . . . . . . . .	L Near	 017C	  Code	
+  m28  . . . . . . . . . . . . .	L Near	 0183	  Code	
+  m22  . . . . . . . . . . . . .	L Near	 0194	  Code	
+  m30  . . . . . . . . . . . . .	L Near	 01AC	  Code	
+  m29  . . . . . . . . . . . . .	L Near	 01BD	  Code	
+Translvid  . . . . . . . . . . .	P Near	 03DC	  Code	Length= 0030 Public
+  m3 . . . . . . . . . . . . . .	L Near	 03FF	  Code	
+Vidout . . . . . . . . . . . . .	P Near	 040C	  Code	Length= 0090 Public
+again  . . . . . . . . . . . . .	P Near	 0079	  Code	Length= 0040 Public
+  c01  . . . . . . . . . . . . .	L Near	 0079	  Code	
+  m55  . . . . . . . . . . . . .	L Near	 009A	  Code	
+  m56  . . . . . . . . . . . . .	L Near	 00B2	  Code	
+clock1 . . . . . . . . . . . . .	P Near	 01BE	  Code	Length= 0080 Public
+  m13  . . . . . . . . . . . . .	L Near	 01D9	  Code	
+  m14  . . . . . . . . . . . . .	L Near	 01EB	  Code	
+  m15  . . . . . . . . . . . . .	L Near	 0202	  Code	
+  m16  . . . . . . . . . . . . .	L Near	 021E	  Code	
+  m10  . . . . . . . . . . . . .	L Near	 023D	  Code	
+clock2 . . . . . . . . . . . . .	P Near	 023E	  Code	Length= 0080 Public
+  m18  . . . . . . . . . . . . .	L Near	 0259	  Code	
+  m19  . . . . . . . . . . . . .	L Near	 026B	  Code	
+  m20  . . . . . . . . . . . . .	L Near	 0282	  Code	
+  m21  . . . . . . . . . . . . .	L Near	 029E	  Code	
+  m17  . . . . . . . . . . . . .	L Near	 02BD	  Code	
+endgame  . . . . . . . . . . . .	P Near	 00CC	  Code	Length= 0063 Public
+  m24  . . . . . . . . . . . . .	L Near	 0103	  Code	
+  m23  . . . . . . . . . . . . .	L Near	 012E	  Code	
+input  . . . . . . . . . . . . .	P Near	 006E	  Code	Length= 000B Public
+pause  . . . . . . . . . . . . .	P Near	 00B9	  Code	Length= 0013 Public
+  C1 . . . . . . . . . . . . . .	L Near	 00C8	  Code	
+  m12  . . . . . . . . . . . . .	L Near	 00CB	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+Map  . . . . . . . . . . . . . .	Byte	 000E	  Data	
+Start  . . . . . . . . . . . . .	L Near	 049C	  Code	
+StkTop . . . . . . . . . . . . .	Word	 0124	  Stac	
+activ  . . . . . . . . . . . . .	Byte	 0000	  Data	
+begin  . . . . . . . . . . . . .	L Near	 0FF0	  Code	
+cont . . . . . . . . . . . . . .	L Near	 04A9	  Code	
+endgf  . . . . . . . . . . . . .	Byte	 000D	  Data	
+flash  . . . . . . . . . . . . .	Byte	 0001	  Data	
+hour1  . . . . . . . . . . . . .	Byte	 0007	  Data	
+hour2  . . . . . . . . . . . . .	Byte	 000C	  Data	
+kbdin  . . . . . . . . . . . . .	Byte	 0002	  Data	
+min11  . . . . . . . . . . . . .	Byte	 000B	  Data	
+min12  . . . . . . . . . . . . .	Byte	 000A	  Data	
+min21  . . . . . . . . . . . . .	Byte	 0006	  Data	
+min22  . . . . . . . . . . . . .	Byte	 0005	  Data	
+num  . . . . . . . . . . . . . .	Byte	 0019	  Data	
+player1  . . . . . . . . . . . .	Byte	 001A	  Data	
+player2  . . . . . . . . . . . .	Byte	 001B	  Data	
+portout  . . . . . . . . . . . .	Byte	 001C	  Data	
+port . . . . . . . . . . . . . .	Byte	 0018	  Data	
+sec11  . . . . . . . . . . . . .	Byte	 0009	  Data	
+sec12  . . . . . . . . . . . . .	Byte	 0008	  Data	
+sec21  . . . . . . . . . . . . .	Byte	 0004	  Data	
+sec22  . . . . . . . . . . . . .	Byte	 0003	  Data	
+
+	   0 Warnings
+	   0 Errors

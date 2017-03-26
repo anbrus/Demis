@@ -1,0 +1,81 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/05/17 12:51:26
+ADC.asm							     Page 1 - 1
+
+
+				.386
+
+ = 1000				RomSize    EQU   4096
+
+ 0000				Code       segment use16
+				           assume cs:Code,ds:Code,es:Code
+
+ 0000 3F 0C 76 5E 4D 5B		Image      db    03Fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh    ;Образы 16-тиричных символов
+       7B 0E
+ 0008  7F 5F 6F 79 33 7C	           db    07Fh,05Fh,06Fh,079h,033h,07Ch,073h,063h    ;от 0 до F
+       73 63
+
+ 0010				Start:
+ 0010  B8 ---- R		           mov   ax,Code
+ 0013  8E D8			           mov   ds,ax
+ 0015  8E C0			           mov   es,ax
+				;Здесь размещается код программы
+
+ 0017  8D 1E 0000 R		           lea   bx,Image
+
+ 001B				StartADC:                    ;Запускаем преобразование импульсом \_/
+				                             ;Преобразование начинается по фронту импульса
+ 001B  B0 00			           mov   al,0
+ 001D  E6 00			           out   0,al
+ 001F  B0 01			           mov   al,1
+ 0021  E6 00			           out   0,al
+				           
+ 0023				WaitRdy:
+ 0023  E4 01			           in    al,1        ;Ждём единичку на выходе Rdy АЦП - признак
+				                             ;завершения преобразования
+ 0025  A8 01			           test  al,1
+ 0027  74 FA			           jz    WaitRdy
+				           
+ 0029  E4 00			           in    al,0        ;Считываем из АЦП данные
+				           
+ 002B  8A E0			           mov   ah,al       ;Преобразуем и выводим на индикаторы
+ 002D  24 0F			           and   al,0Fh
+ 002F  D7			           xlat
+ 0030  E6 01			           out   1,al        ;Выводим младшую тетраду
+ 0032  8A C4			           mov   al,ah
+ 0034  C0 E8 04			           shr   al,4
+ 0037  D7			           xlat
+ 0038  E6 02			           out   2,al        ;А теперь старшую
+				           
+ 003A  EB DF			           jmp   StartADC    ;И начинаем опрос АЦП заново
+
+				;В следующей строке необходимо указать смещение стартовой точки
+				           org   RomSize-16
+				           assume cs:nothing
+ 0FF0  EA ---- 0010 R		           jmp   Far Ptr Start
+ 0FF5				Code       ends
+				end
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/05/17 12:51:26
+ADC.asm							     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+Image  . . . . . . . . . . . . .	Byte	 0000	  Code	
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+StartADC . . . . . . . . . . . .	L Near	 001B	  Code	
+Start  . . . . . . . . . . . . .	L Near	 0010	  Code	
+WaitRdy  . . . . . . . . . . . .	L Near	 0023	  Code	
+
+	   0 Warnings
+	   0 Errors

@@ -1,0 +1,11 @@
+Turbo Assembler  Version 3.1  Copyright (c) 1988, 1992 Borland International
+
+Assembling file:   tablo.asm
+**Error** tablo.asm(3) Illegal instruction
+**Error** tablo.asm(912) Illegal forward reference: ROMSIZE
+**Error** tablo.asm(912) Undefined symbol: ROMSIZE
+Error messages:    3
+Warning messages:  None
+Passes:            2
+Remaining memory:  306k
+

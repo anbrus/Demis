@@ -1,0 +1,93 @@
+// StdElem.idl : IDL source for StdElem.dll
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (StdElem.tlb) and marshalling code.
+
+import "oaidl.idl";
+import "ocidl.idl";
+	[
+		object,
+		uuid(5A99AE06-2098-4ED2-9965-605037B3F4E1),
+		dual,
+		helpstring("IElemLib Interface"),
+		pointer_default(unique)
+	]
+	interface IElemLib : IDispatch
+	{
+		[propget, id(1), helpstring("property sLibraryName")] HRESULT sLibraryName([out, retval] BSTR *pVal);
+		[propget, id(2), helpstring("property nElementsCount")] HRESULT nElementsCount([out, retval] long *pVal);
+		[id(3), helpstring("method GetElementName")] HRESULT GetElementName(long Index,[out, retval] BSTR *pRetVal);
+		[id(4), helpstring("method GetElementType")] HRESULT GetElementType(long Index, [out,retval] long *pRetVal);
+		[id(5), helpstring("method GetElementIcon")] HRESULT GetElementIcon(long Index, [out,retval] long *pRetVal);
+	};
+	[
+		object,
+		uuid(C4347DF5-8BE7-48E4-A870-572D6A0458D6),
+		dual,
+		helpstring("IElement Interface"),
+		pointer_default(unique)
+	]
+	interface IElement : IDispatch
+	{
+		[propget, id(1), helpstring("property hElement")] HRESULT hElement([out, retval] long *pVal);
+		[propput, id(1), helpstring("property hElement")] HRESULT hElement([in] long newVal);
+		[propget, id(2), helpstring("property nType")] HRESULT nType([out, retval] long *pVal);
+		[propget, id(3), helpstring("property sName")] HRESULT sName([out, retval] BSTR *pVal);
+		[propget, id(4), helpstring("property sClsId")] HRESULT sClsId([out, retval] BSTR *pVal);
+		[propget, id(5), helpstring("property hArchWnd")] HRESULT hArchWnd([out, retval] long *pVal);
+		[propget, id(6), helpstring("property hConstrWnd")] HRESULT hConstrWnd([out, retval] long *pVal);
+		[propget, id(7), helpstring("property nAddress")] HRESULT nAddress([out, retval] long *pVal);
+		[propget, id(8), helpstring("property bModifiedFlag")] HRESULT bModifiedFlag([out, retval] BOOL *pVal);
+		[propget, id(9), helpstring("property sTipText")] HRESULT sTipText([out, retval] BSTR *pVal);
+		[propget, id(10), helpstring("property bArchSelected")] HRESULT bArchSelected([out, retval] BOOL *pVal);
+		[propput, id(10), helpstring("property bArchSelected")] HRESULT bArchSelected([in] BOOL newVal);
+		[propget, id(11), helpstring("property bConstrSelected")] HRESULT bConstrSelected([out, retval] BOOL *pVal);
+		[propput, id(11), helpstring("property bConstrSelected")] HRESULT bConstrSelected([in] BOOL newVal);
+		[propget, id(12), helpstring("property nPointCount")] HRESULT nPointCount([out, retval] long *pVal);
+		[propget, id(13), helpstring("property nPortData")] HRESULT nPortData([out, retval] long *pVal);
+		[propput, id(13), helpstring("property nPortData")] HRESULT nPortData([in] long newVal);
+		[propget, id(14), helpstring("property nPinState")] HRESULT nPinState([out, retval] long *pVal);
+		[propput, id(14), helpstring("property nPinState")] HRESULT nPinState([in] long newVal);
+		[propget, id(15), helpstring("property nArchAngle")] HRESULT nArchAngle([out, retval] long *pVal);
+		[propput, id(15), helpstring("property nArchAngle")] HRESULT nArchAngle([in] long newVal);
+		[propget, id(16), helpstring("property nConstrAngle")] HRESULT nConstrAngle([out, retval] long *pVal);
+		[propput, id(16), helpstring("property nConstrAngle")] HRESULT nConstrAngle([in] long newVal);
+		[id(17), helpstring("method Show")] HRESULT Show(long hArchParentWnd, long hConstrParentWnd, [out,retval] BOOL *pRetVal);
+		[id(18), helpstring("method Create")] HRESULT Create(BSTR sElemName,BOOL bArchMode,[out,retval] BOOL *pRetVal);
+		[id(19), helpstring("method Reset")] HRESULT Reset(BOOL bEditMode, CURRENCY* pTickCounter,long TaktFreq,long FreePinLevel,[out,retval] BOOL *pRetVal);
+		[id(20), helpstring("method ConnectPin")] HRESULT ConnectPin(long nPinIndex, BOOL bConnect,[out,retval] BOOL *pRetVal);
+		[id(21), helpstring("method GetPinType")] HRESULT GetPinType(long nPinIndex,[out,retval] long *pRetVal);
+		[id(22), helpstring("method GetPointPos")] HRESULT GetPointPos(long nPointIndex,[out,retval] long *pRetVal);
+		[id(23), helpstring("method Save")] HRESULT Save(long hFile,[out,retval] BOOL *pRetVal);
+		[id(24), helpstring("method Load")] HRESULT Load(long hFile,[out,retval] BOOL *pRetVal);
+		[id(25), helpstring("method OnInstrCounterEvent")] HRESULT OnInstrCounterEvent();
+	};
+
+[
+	uuid(D30F470C-C4B7-4014-8F92-F4BECEF07E06),
+	version(1.0),
+	helpstring("StdElem 1.0 Type Library")
+]
+library STDELEMLib
+{
+	importlib("stdole32.tlb");
+	importlib("stdole2.tlb");
+
+	[
+		uuid(6B4C02AF-DC58-4935-B438-552DEBB72761),
+		helpstring("ElemLib Class")
+	]
+	coclass ElemLib
+	{
+		[default] interface IElemLib;
+	};
+	[
+		uuid(508879A8-2F6F-421E-A852-385411F84874),
+		helpstring("Element Class")
+	]
+	coclass Element
+	{
+		[default] interface IElement;
+	};
+};

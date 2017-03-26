@@ -1,0 +1,831 @@
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 1
+Osc.asm
+
+
+
+      1				     ;Задайте объём ПЗУ	в байтах
+      2	      =1000		     RomSize	EQU   4096
+      3
+      4	      =0001		     Reg0	    EQU	  0001h	  ;Порт	кнопок
+      5	      =0002		     Reg1	    EQU	  0002h	  ;Младший порт	данных АЦП
+      6	      =0004		     Reg2	    EQU	  0004h	  ;Старший порт	данных АЦП
+      7	      =0008		     IndHPort1	    EQU	  0008h	  ;Порт	для горизонтальных линий матрицы
+      8	      =0010		     IndVPort1	    EQU	  0010h	  ;Порт	для вертикальных линий матрицы
+      9	      =0020		     DispPort1	    EQU	  0020h	  ;Порт	для выбора матрицы
+     10	      =0040		     IndHPort	    EQU	  0040h	  ;Порт	для горизонтальных линий матрицы
+     11	      =0080		     IndVPort	    EQU	  0080h	  ;Порт	для вертикальных линий матрицы
+     12	      =0100		     DispPort	    EQU	  0100h	  ;Порт	для выбора матрицы
+     13	      =0200		     NumMPort3	    EQU	  0200h
+     14	      =0400		     NumMPort2	    EQU	  0400h
+     15	      =0800		     NumMPort1	    EQU	  0800h
+     16	      =1000		     NumMPort	    EQU	  1000h
+     17	      =2000		     IndHPort2	    EQU	  2000h	  ;Порт	для горизонтальных линий матрицы
+     18	      =4000		     IndVPort2	    EQU	  4000h	  ;Порт	для вертикальных линий матрицы
+     19	      =8000		     DispPort2	    EQU	  8000h	  ;Порт	для выбора матрицы
+     20
+     21	      =0000		     ADCStartPort   EQU	  0	  ;Порт	запуска	АЦП
+     22
+     23	      =0001		     DiscrPlusMask  EQU	  1	   ;Маска клавиши + периода дискретизации
+     24	      =0002		     DiscrMinusMask EQU	  2	   ;Маска клавиши - периода дискретизации
+     25	      =0004		     StorePlusMask  EQU	  4	   ;Маска клавиши + периода наблюдения
+     26	      =0008		     StoreMinusMask EQU	  8	   ;Маска клавиши - периода наблюдения
+     27	      =0010		     RecMask	    EQU	  16	   ;Маска клавиши Rec
+     28	      =0020		     PlayMask	    EQU	  32	   ;Маска клавиши Play
+     29	      =0005		     KbdCounterMax  EQU	  5	   ;Задержка перед повторной реакции на	кнопки
+     30	      =07D0		     DelayValue	    EQU	  2000	   ;Задержка для организации периода дискретизации.
+     31								   ;Зависит от быстродействия компьютера
+     32	      =001E		     RecDelayValue  EQU	  30	   ;Задержка записи.
+     33								   ;Зависит от быстродействия компьютера
+     34
+     35	0000			     IntTable	SEGMENT	AT 0 use16
+     36				     ;Здесь размещаются	адреса обработчиков прерываний
+     37	0000			     IntTable	ENDS
+     38
+     39	0000			     Data	SEGMENT	AT 40h use16
+     40				     ;Здесь размещаются	описания переменных
+     41	0000  50*(????)		     OscImage	dw    80 dup (?)
+     42	00A0  ????		     DiscrTime	dw    ?		  ;Период дискретизации	в 2-10 формате умноженный на 10
+     43	00A2  ????		     StoreTime	dw    ?		  ;Период наблюдения в 2-10 формате
+     44	00A4  ????		     KbdCounter	dw    ?		  ;Счетчик задержки опроса кнопок
+     45	00A6  ????		     DelayCounter dw  ?		  ;Счетчик задержки дискретизации
+     46	00A8  ??		     NewADCVal	db    ?		  ;Новый отсчёт	АЦП
+     47	00A9  ??		     OldADCVal	db    ?		  ;Предыдущий отсчёт АЦП
+     48	00AA			     Data	ENDS
+     49
+     50				     ;Задайте необходимый адрес	стека
+     51	0000			     Stk	SEGMENT	AT 80h use16
+     52				     ;Задайте необходимый размер стека
+     53	0000  64*(????)				dw    100 dup (?)
+     54	00C8			     StkTop	Label Word
+     55	00C8			     Stk	ENDS
+     56
+     57	0000			     RecBuf	SEGMENT	AT 100h	use16
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 2
+Osc.asm
+
+
+
+     58	0000			     RecBuf	ENDS
+     59
+     60	0000			     InitData	SEGMENT	use16
+     61				     ;Здесь размещаются	описания констант
+     62	0000			     InitData	ENDS
+     63
+     64	0000			     Code	SEGMENT	use16
+     65				     ;Здесь размещаются	описания констант
+     66
+     67				     ;Образы цифр от 0 до 9
+     68	0000  3F 0C 76 5E 4D 5B	7B+  NumImage	db    03fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh,07Fh,05Fh
+     69	      0E 7F 5F
+     70
+     71						ASSUME cs:Code,ds:Data,es:Data
+     72
+     73				     ;Процедура	отображает текущий период дискретизации	на индикаторах
+     74	000A			     ShowDiscrTime    proc near
+     75	000A  32 E4				xor   ah,ah
+     76	000C  A0 00A2r				mov   al,Byte Ptr StoreTime
+     77	000F  BB 0000r				lea   bx,NumImage
+     78	0012  03 D8				add   bx,ax
+     79	0014  2E: 8A 17				mov   dl,cs:[bx]      ;dl:=образ десятых долей секунды
+     80	0017  A0 00A3r				mov   al,Byte Ptr StoreTime+1
+     81	001A  BB 0000r				lea   bx,NumImage
+     82	001D  03 D8				add   bx,ax
+     83	001F  2E: 8A 37				mov   dh,cs:[bx]      ;dh:=образ секунд
+     84	0022  8B C2				mov   ax,dx
+     85	0024  80 CC 80				or    ah,080h	      ;Зажгём точечку после целых секунд
+     86	0027  BA 0800				mov   dx,NumMPort1
+     87	002A  EE				out   dx,al
+     88	002B  8A C4				mov   al,ah
+     89	002D  BA 1000				mov   dx,NumMPort
+     90	0030  EE				out   dx,al
+     91
+     92	0031  32 E4				xor   ah,ah
+     93	0033  A0 00A0r				mov   al,Byte Ptr DiscrTime
+     94	0036  BB 0000r				lea   bx,NumImage
+     95	0039  03 D8				add   bx,ax
+     96	003B  2E: 8A 17				mov   dl,cs:[bx]      ;dl:=образ десятых долей секунды
+     97	003E  A0 00A1r				mov   al,Byte Ptr DiscrTime+1
+     98	0041  BB 0000r				lea   bx,NumImage
+     99	0044  03 D8				add   bx,ax
+    100	0046  2E: 8A 37				mov   dh,cs:[bx]      ;dh:=образ секунд
+    101	0049  8B C2				mov   ax,dx
+    102	004B  BA 0400				mov   dx,NumMPort2
+    103	004E  EE				out   dx,al
+    104	004F  BA 0200				mov   dx,NumMPort3
+    105	0052  8A C4				mov   al,ah
+    106	0054  EE				out   dx,al
+    107
+    108	0055  C3				ret
+    109	0056			     ShowDiscrTime    endp
+    110
+    111				     ;Процедура	выполняет начальную инициализацию сразу	после включения
+    112	0056			     Initialize	proc  Near
+    113						;Инициализация образа
+    114	0056  BF 0000r				lea   di,OscImage
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 3
+Osc.asm
+
+
+
+    115	0059  B9 0050				mov   cx,LENGTH	OscImage
+    116	005C  B8 0080				mov   ax,080h
+    117	005F  F3> AB				rep   stosw
+    118
+    119						;Инициализация периода дискретизации
+    120	0061  C7 06 00A0r 0002			mov   DiscrTime,0002h
+    121	0067  C7 06 00A2r 0001			mov   StoreTime,0001h
+    122	006D  E8 FF9A				call  ShowDiscrTime
+    123
+    124						;Инициализируем	счётчик	опроса кнопок
+    125	0070  C7 06 00A4r 0000			mov   KbdCounter,0
+    126						;счётчик задержки дискретизации
+    127	0076  C7 06 00A6r 0000			mov   DelayCounter,0
+    128
+    129	007C  C6 06 00A8r 08			mov   NewADCVal,8
+    130	0081  C6 06 00A9r 08			mov   OldADCVal,8
+    131
+    132	0086  C3				ret
+    133	0087			     Initialize	endp
+    134
+    135				     ;Выводит готовый образ на матричные индикаторы
+    136	0087			     ShowOscImage     proc Near
+    137	0087  BE 0000r				lea   si,OscImage     ;Указатель на текущий столбик
+    138	008A  B9 0050				mov   cx,80	      ;Счётчик столбиков
+    139	008D  B3 01				mov   bl,1	      ;Счётчик столбиков внутри	одной матрицы
+    140	008F  BA 0001				mov   dx,1	      ;Счётчик матриц
+    141
+    142	0092			     SOIShowNextCol:
+    143	0092  81 FA 0100			cmp   dx,0100h
+    144	0096  73 32				jnc   SOIDispMatrix3
+    145
+    146						;Гасим матрицы
+    147	0098  32 C0				xor   al,al
+    148	009A  52				push  dx
+    149	009B  BA 0100				mov   dx,DispPort
+    150	009E  EE				out   dx,al
+    151	009F  BA 0020				mov   dx,DispPort1
+    152	00A2  EE				out   dx,al
+    153	00A3  5A				pop   dx
+    154
+    155						;Выводим текущий столбик
+    156	00A4  AC				lodsb
+    157	00A5  E6 40				out   IndHPort,al
+    158	00A7  AC				lodsb
+    159	00A8  E6 08				out   IndHPort1,al
+    160
+    161						;Активируем вертикальный столбик
+    162	00AA  8A C3				mov   al,bl
+    163	00AC  E6 80				out   IndVPort,al
+    164	00AE  E6 10				out   IndVPort1,al
+    165
+    166						;Активируем матрицу
+    167	00B0  8B C2				mov   ax,dx
+    168	00B2  52				push  dx
+    169	00B3  BA 0100				mov   dx,DispPort
+    170	00B6  EE				out   dx,al
+    171	00B7  BA 0020				mov   dx,DispPort1
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 4
+Osc.asm
+
+
+
+    172	00BA  EE				out   dx,al
+    173	00BB  5A				pop   dx
+    174
+    175						;Переходим к следующему	столбику
+    176	00BC  8A C3				mov   al,bl
+    177	00BE  D0 E0				shl   al,1
+    178	00C0  73 04				jnc   SOINoChangeMatrix12
+    179	00C2  B0 01				mov   al,1
+    180	00C4  D1 E2				shl   dx,1
+    181	00C6			     SOINoChangeMatrix12:
+    182	00C6  8A D8				mov   bl,al
+    183
+    184	00C8  E2 C8				loop  SOIShowNextCol
+    185
+    186	00CA			     SOIDispMatrix3:
+    187						;Гасим матрицы
+    188	00CA  32 C0				xor   al,al
+    189	00CC  52				push  dx
+    190	00CD  BA 0100				mov   dx,DispPort
+    191	00D0  EE				out   dx,al
+    192	00D1  BA 0020				mov   dx,DispPort1
+    193	00D4  EE				out   dx,al
+    194	00D5  BA 8000				mov   dx,DispPort2
+    195	00D8  EE				out   dx,al
+    196	00D9  5A				pop   dx
+    197
+    198						;Выводим текущий столбик
+    199	00DA  AC				lodsb
+    200	00DB  52				push  dx
+    201	00DC  BA 2000				mov   dx,IndHPort2
+    202	00DF  EE				out   dx,al
+    203	00E0  5A				pop   dx
+    204
+    205						;Активируем вертикальный столбик
+    206	00E1  8A C3				mov   al,bl
+    207	00E3  52				push  dx
+    208	00E4  BA 4000				mov   dx,IndVPort2
+    209	00E7  EE				out   dx,al
+    210	00E8  5A				pop   dx
+    211
+    212						;Активируем матрицу
+    213	00E9  8B C2				mov   ax,dx
+    214	00EB  52				push  dx
+    215	00EC  BA 8000				mov   dx,DispPort2
+    216	00EF  8A C4				mov   al,ah
+    217	00F1  EE				out   dx,al
+    218	00F2  5A				pop   dx
+    219
+    220						;Гасим матрицы
+    221	00F3  32 C0				xor   al,al
+    222	00F5  52				push  dx
+    223	00F6  BA 8000				mov   dx,DispPort2
+    224	00F9  EE				out   dx,al
+    225	00FA  5A				pop   dx
+    226
+    227						;Выводим текущий столбик
+    228	00FB  AC				lodsb
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 5
+Osc.asm
+
+
+
+    229	00FC  52				push  dx
+    230	00FD  BA 2000				mov   dx,IndHPort2
+    231	0100  EE				out   dx,al
+    232	0101  5A				pop   dx
+    233
+    234						;Активируем вертикальный столбик
+    235	0102  8A C3				mov   al,bl
+    236	0104  52				push  dx
+    237	0105  BA 4000				mov   dx,IndVPort2
+    238	0108  EE				out   dx,al
+    239	0109  5A				pop   dx
+    240
+    241						;Активируем матрицу
+    242	010A  8B C2				mov   ax,dx
+    243	010C  52				push  dx
+    244	010D  BA 8000				mov   dx,DispPort2
+    245	0110  8A C4				mov   al,ah
+    246	0112  D0 E0				shl   al,1
+    247	0114  EE				out   dx,al
+    248	0115  5A				pop   dx
+    249
+    250						;Переходим к следующему	столбику
+    251	0116  8A C3				mov   al,bl
+    252	0118  D0 E0				shl   al,1
+    253	011A  73 06				jnc   SOINoChangeMatrix3
+    254	011C  B0 01				mov   al,1
+    255	011E  D1 E2 D1 E2			shl   dx,2
+    256	0122			     SOINoChangeMatrix3:
+    257	0122  8A D8				mov   bl,al
+    258
+    259	0124  49				dec   cx
+    260	0125  74 03				jz    SOIExitLoop
+    261	0127  E9 FF68				jmp   SOIShowNextCol
+    262
+    263	012A			     SOIExitLoop:
+    264						;Гасим матрицы
+    265	012A  32 C0				xor   al,al
+    266	012C  BA 0100				mov   dx,DispPort
+    267	012F  EE				out   dx,al
+    268	0130  BA 0020				mov   dx,DispPort1
+    269	0133  EE				out   dx,al
+    270	0134  BA 8000				mov   dx,DispPort2
+    271	0137  EE				out   dx,al
+    272
+    273	0138  C3				ret
+    274	0139			     ShowOscImage     endp
+    275
+    276				     ;Измеряет текущее значение	напряжения и возвращает	его в al
+    277	0139			     GetADCValue      proc near
+    278	0139  32 C0				xor   al,al
+    279	013B  E6 00				out   ADCStartPort,al
+    280	013D  B0 01				mov   al,1
+    281	013F  E6 00				out   ADCStartPort,al
+    282
+    283	0141  A0 00A8r				mov   al,NewADCVal
+    284	0144  A2 00A9r				mov   OldADCVal,al
+    285						;Можно читать данные
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 6
+Osc.asm
+
+
+
+    286	0147  E4 04				in    al,Reg2
+    287						;Выделим старшие биты чтобы влезть в нашу матрицу
+    288	0149  24 0F				and   al,0Fh
+    289	014B  A2 00A8r				mov   NewADCVal,al
+    290
+    291	014E  C3				ret
+    292	014F			     GetADCValue      endp
+    293
+    294				     ;Обновляет	образ осциллограммы в соответствии с новым отсчётом
+    295	014F			     UpdateOscImage   proc near
+    296						;Весь образ надо сдвинуть на один столбик вправо
+    297	014F  FD				std
+    298	0150  BE 009Cr				lea   si,OscImage+SIZE OscImage-4
+    299	0153  8B FE				mov   di,si
+    300	0155  83 C7 02				add   di,2
+    301	0158  B9 004F				mov   cx,LENGTH	OscImage-1
+    302	015B  F3> A5				rep   movsw
+    303	015D  FC				cld
+    304
+    305						;А новое значение поместить в первый столбик
+    306						;Сформируем образ столбика
+    307	015E  A0 00A8r				mov   al,NewADCVal
+    308	0161  3A 06 00A9r			cmp   al,OldADCVal
+    309	0165  74 3C				jz    @NewOld
+    310	0167  73 1D				jnc   @NewBOld
+    311
+    312						;Новый отсчёт меньше старого
+    313	0169  A0 00A9r				mov   al,OldADCVal
+    314	016C  2A 06 00A8r			sub   al,NewADCVal
+    315	0170  8A C8				mov   cl,al
+    316	0172  8A D8				mov   bl,al
+    317	0174  B8 8000				mov   ax,8000h
+    318	0177  32 ED				xor   ch,ch
+    319	0179			     @ShLeft:
+    320	0179  F9				stc
+    321	017A  D1 D8				rcr   ax,1
+    322	017C  E2 FB				loop  @ShLeft
+    323
+    324	017E  8A 0E 00A8r			mov   cl,NewADCVal
+    325	0182  D3 E8				shr   ax,cl
+    326	0184  EB 26				jmp   @ShEnd
+    327
+    328	0186			     @NewBOld:
+    329						;Новый отсчёт >= старый
+    330	0186  A0 00A8r				mov   al,NewADCVal
+    331	0189  2A 06 00A9r			sub   al,OldADCVal
+    332	018D  8A C8				mov   cl,al
+    333	018F  B8 0001				mov   ax,1
+    334	0192  32 ED				xor   ch,ch
+    335	0194			     @ShRight:
+    336	0194  F9				stc
+    337	0195  D1 D0				rcl   ax,1
+    338	0197  E2 FB				loop  @ShRight
+    339
+    340	0199  B1 0F				mov   cl,15
+    341	019B  2A 0E 00A8r			sub   cl,NewADCVal
+    342	019F  D3 E0				shl   ax,cl
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 7
+Osc.asm
+
+
+
+    343	01A1  EB 09				jmp   @ShEnd
+    344
+    345	01A3			     @NewOld:
+    346						;Новый отсчёт =	старый
+    347	01A3  B8 8000				mov   ax,8000h
+    348	01A6  8A 0E 00A8r			mov   cl,NewADCVal
+    349	01AA  D3 E8				shr   ax,cl
+    350
+    351	01AC			     @ShEnd:
+    352	01AC  A3 0000r				mov   [OscImage],ax
+    353
+    354	01AF  C3				ret
+    355	01B0			     UpdateOscImage   endp
+    356
+    357				     ;Рассчитывает количество отсчётов для записи/воспроизведения сигнала
+    358				     ;Возвращает количество в dx:cx
+    359				     ;Расчёт делаем только для случая, когда период дискретизации=20 мкс
+    360				     ;Для других значений будем	пересчитывать во время вывода на дисплей.
+    361	01B0			     GetSampleCount   proc near
+    362	01B0  A0 00A3r				mov   al,Byte Ptr StoreTime+1
+    363	01B3  B4 0A				mov   ah,10
+    364	01B5  F6 E4				mul   ah
+    365	01B7  02 06 00A2r			add   al,Byte Ptr StoreTime
+    366	01BB  80 D4 00				adc   ah,0		      ;ax=StoreTime в двоичном виде
+    367
+    368						;mov   bx,5000
+    369	01BE  BB 0005				mov   bx,5
+    370	01C1  F7 E3				mul   bx
+    371	01C3  8B C8				mov   cx,ax	  ;dx:cx=StoreTime/20 -	количество выборок для записи
+    372
+    373	01C5  C3				ret
+    374	01C6			     GetSampleCount   endp
+    375
+    376	01C6			     RecordSignal Proc	near
+    377	01C6  E8 FFE7				call  GetSampleCount
+    378
+    379	01C9  B8 0000s				mov   ax,RecBuf
+    380	01CC  8E C0				mov   es,ax
+    381
+    382	01CE  BB 0000				mov   bx,0	  ;Смещение адреса текущего отсчёта в буфере
+    383
+    384	01D1			     RSStartSampling:
+    385	01D1  32 C0				xor   al,al
+    386	01D3  E6 00				out   ADCStartPort,al
+    387	01D5  B0 01				mov   al,1
+    388	01D7  E6 00				out   ADCStartPort,al
+    389
+    390	01D9  E4 04				in    al,Reg2
+    391	01DB  24 0F				and   al,0Fh
+    392	01DD  26: 88 07				mov   es:[bx],al
+    393
+    394	01E0  BE 001E				mov   si,RecDelayValue
+    395	01E3			     RSWaitLoop1:
+    396	01E3  B8 2710				mov   ax,10000
+    397	01E6			     RSWaitLoop2:
+    398	01E6  48				dec   ax
+    399	01E7  75 FD				jnz   RSWaitLoop2
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 8
+Osc.asm
+
+
+
+    400	01E9  4E				dec   si
+    401	01EA  75 F7				jnz   RSWaitLoop1
+    402
+    403	01EC  83 E9 01				sub   cx,1
+    404	01EF  83 DA 00				sbb   dx,0
+    405	01F2  72 0E				jc    RSExitProc
+    406
+    407	01F4  83 C3 01				add   bx,1
+    408	01F7  73 D8				jnc   RSStartSampling
+    409	01F9  8C C0				mov   ax,es
+    410	01FB  05 1000				add   ax,4096
+    411	01FE  8E C0				mov   es,ax
+    412	0200  EB CF				jmp   RSStartSampling
+    413
+    414	0202			     RSExitProc:
+    415	0202  B8 0000s				mov   ax,Data
+    416	0205  8E C0				mov   es,ax
+    417	0207  C3				ret
+    418	0208			     RecordSignal endp
+    419
+    420	0208			     PlaySignal	Proc  near
+    421	0208  83 EC 02				sub   sp,2
+    422	020B  8B EC				mov   bp,sp
+    423
+    424	020D  A0 00A1r				mov   al,Byte Ptr DiscrTime+1
+    425	0210  B4 0A				mov   ah,10
+    426	0212  F6 E4				mul   ah
+    427	0214  02 06 00A0r			add   al,Byte Ptr DiscrTime
+    428	0218  80 D4 00				adc   ah,0
+    429	021B  D1 E8				shr   ax,1
+    430	021D  89 46 00				mov   [bp],ax
+    431
+    432	0220  B8 0000s				mov   ax,RecBuf
+    433	0223  8E C0				mov   es,ax
+    434
+    435	0225  E8 FF88				call  GetSampleCount
+    436	0228  BB 0000				mov   bx,0	  ;Смещение адреса текущего отсчёта в буфере
+    437
+    438	022B			     PSShowNextSample:
+    439	022B  A0 00A8r				mov   al,NewADCVal
+    440	022E  A2 00A9r				mov   OldADCVal,al
+    441
+    442	0231  51				push  cx
+    443	0232  52				push  dx
+    444
+    445	0233  8B 4E 00				mov   cx,[bp]
+    446	0236  33 C0				xor   ax,ax
+    447	0238			     PSIntegrateNextSample:
+    448	0238  26: 02 07				add   al,es:[bx]
+    449	023B  80 D4 00				adc   ah,0
+    450	023E  49				dec   cx
+    451	023F  75 F7				jnz   PSIntegrateNextSample
+    452
+    453	0241  F7 76 00				div   Word Ptr [bp]
+    454
+    455	0244  A2 00A8r				mov   NewADCVal,al
+    456	0247  06				push  es
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 9
+Osc.asm
+
+
+
+    457	0248  53				push  bx
+    458	0249  B8 0000s				mov   ax,Data
+    459	024C  8E C0				mov   es,ax
+    460	024E  E8 FEFE				call  UpdateOscImage
+    461	0251  E8 FE33				call  ShowOscImage
+    462	0254  5B				pop   bx
+    463	0255  07				pop   es
+    464
+    465	0256  5A				pop   dx
+    466	0257  59				pop   cx
+    467
+    468	0258  2B 4E 00				sub   cx,[bp]
+    469	025B  83 DA 00				sbb   dx,0
+    470	025E  72 0E				jc    PSExitProc
+    471
+    472	0260  03 5E 00				add   bx,[bp]
+    473	0263  73 C6				jnc   PSShowNextSample
+    474	0265  8C C0				mov   ax,es
+    475	0267  05 1000				add   ax,4096
+    476	026A  8E C0				mov   es,ax
+    477	026C  EB BD				jmp   PSShowNextSample
+    478
+    479	026E			     PSExitProc:
+    480	026E  B8 0000s				mov   ax,Data
+    481	0271  8E C0				mov   es,ax
+    482	0273  83 C4 02				add   sp,2
+    483	0276  C3				ret
+    484	0277			     PlaySignal	endp
+    485
+    486				     ;Проверяет	состояние кнопок "+" и "-" и соответствующим образом изменяет
+    487				     ;период дискретизации
+    488	0277			     CheckKeys	proc  near
+    489						;Кнопки	проверяем только через некоторое время после
+    490						;первого нажатия
+    491	0277  83 3E 00A4r 00			cmp   KbdCounter,0
+    492	027C  74 07				jz    KbdReady
+    493	027E  FF 0E 00A4r			dec   KbdCounter
+    494	0282  E9 00B5				jmp   CKExitProc
+    495
+    496	0285			     KbdReady:
+    497	0285  E4 01				in    al,Reg0
+    498
+    499						;А нажата ли кнопка?
+    500	0287  B4 01				mov   ah,DiscrPlusMask
+    501	0289  80 CC 02				or    ah,DiscrMinusMask
+    502	028C  80 CC 04				or    ah,StorePlusMask
+    503	028F  80 CC 08				or    ah,StoreMinusMask
+    504	0292  80 CC 10				or    ah,RecMask
+    505	0295  80 CC 20				or    ah,PlayMask
+    506	0298  22 C4				and   al,ah
+    507	029A  75 03				jnz   CKCheckForDiscrPlus
+    508	029C  E9 009B				jmp   CKExitProc
+    509
+    510	029F			     CKCheckForDiscrPlus:
+    511						;Обработаем кнопку "+" периода дискретизации
+    512	029F  A8 01				test  al,DiscrPlusMask
+    513	02A1  74 1A				jz    CKCheckForDiscrMinus ;Нажали другую кнопку
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 10
+Osc.asm
+
+
+
+    514	02A3  A1 00A0r				mov   ax,DiscrTime    ;А можно ли увеличивать период дискретизации?
+    515	02A6  3D 0200				cmp   ax,00200h
+    516	02A9  74 2F				jz    CKInvalidDiscrTime ;Нельзя увеличивать период дискретизации
+    517	02AB  04 02				add   al,2
+    518	02AD  37				aaa		      ;Период у	нас в 2-10 формате, корректируем
+    519	02AE  A3 00A0r				mov   DiscrTime,ax
+    520						;Теперь	некоторое время	на нажатия кнопок не реагируем
+    521	02B1  C7 06 00A4r 0005			mov   KbdCounter,KbdCounterMax
+    522	02B7  E8 FD50				call  ShowDiscrTime    ;Обновим	индикаторы
+    523	02BA  EB 7E 90				jmp   CKExitProc
+    524
+    525	02BD			     CKCheckForDiscrMinus:
+    526						;Обработаем кнопку "-" периода дискретизации
+    527	02BD  A8 02				test  al,DiscrMinusMask	;Нажали	другую кнопку
+    528	02BF  74 1B				jz    CKCheckForStorePlus
+    529	02C1  A1 00A0r				mov   ax,DiscrTime
+    530	02C4  3D 0002				cmp   ax,00002h	      ;А можно ли уменьшать период дискретизации?
+    531	02C7  74 11				jz    CKInvalidDiscrTime
+    532	02C9  2C 02				sub   al,2
+    533	02CB  3F				aas		      ;Период у	нас в 2-10 формате, корректируем
+    534	02CC  A3 00A0r				mov   DiscrTime,ax
+    535						;Теперь	некоторое время	на нажатия кнопок не реагируем
+    536	02CF  C7 06 00A4r 0005			mov   KbdCounter,KbdCounterMax
+    537	02D5  E8 FD32				call  ShowDiscrTime    ;Обновим	индикаторы
+    538	02D8  EB 60				jmp   CKExitProc
+    539
+    540	02DA			     CKInvalidDiscrTime:
+    541	02DA  EB 5E				jmp   CKExitProc
+    542
+    543	02DC			     CKCheckForStorePlus:
+    544						;Обработаем кнопку "+" периода наблюдения
+    545	02DC  A8 04				test  al,StorePlusMask
+    546	02DE  74 19				jz    CKCheckForStoreMinus ;Нажали другую кнопку
+    547	02E0  A1 00A2r				mov   ax,StoreTime    ;А можно ли увеличивать период дискретизации?
+    548	02E3  3D 0100				cmp   ax,00100h
+    549	02E6  74 52				jz    CKExitProc       ;Нельзя увеличивать период дискретизации
+    550	02E8  04 01				add   al,1
+    551	02EA  37				aaa		      ;Период у	нас в 2-10 формате, корректируем
+    552	02EB  A3 00A2r				mov   StoreTime,ax
+    553						;Теперь	некоторое время	на нажатия кнопок не реагируем
+    554	02EE  C7 06 00A4r 0005			mov   KbdCounter,KbdCounterMax
+    555	02F4  E8 FD13				call  ShowDiscrTime    ;Обновим	индикаторы
+    556	02F7  EB 41				jmp   CKExitProc
+    557
+    558	02F9			     CKCheckForStoreMinus:
+    559						;Обработаем кнопку "-" периода наблюдения
+    560	02F9  A8 08				test  al,StoreMinusMask	;Нажали	другую кнопку
+    561	02FB  74 19				jz    CKCheckForRec
+    562	02FD  A1 00A2r				mov   ax,StoreTime
+    563	0300  3D 0001				cmp   ax,00001h	      ;А можно ли уменьшать период дискретизации?
+    564	0303  74 35				jz    CKExitProc
+    565	0305  2C 01				sub   al,1
+    566	0307  3F				aas		      ;Период у	нас в 2-10 формате, корректируем
+    567	0308  A3 00A2r				mov   StoreTime,ax
+    568						;Теперь	некоторое время	на нажатия кнопок не реагируем
+    569	030B  C7 06 00A4r 0005			mov   KbdCounter,KbdCounterMax
+    570	0311  E8 FCF6				call  ShowDiscrTime    ;Обновим	индикаторы
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 11
+Osc.asm
+
+
+
+    571	0314  EB 24				jmp   CKExitProc
+    572
+    573	0316			     CKCheckForRec:
+    574						;Обработаем кнопку Rec
+    575	0316  A8 10				test  al,RecMask ;Нажали другую	кнопку
+    576	0318  74 0E				jz    CKCheckForPlay
+    577	031A  E8 FEA9				call  RecordSignal
+    578
+    579						;Теперь	некоторое время	на нажатия кнопок не реагируем
+    580	031D  C7 06 00A4r 0005			mov   KbdCounter,KbdCounterMax
+    581	0323  E8 FCE4				call  ShowDiscrTime    ;Обновим	индикаторы
+    582	0326  EB 12				jmp   CKExitProc
+    583
+    584	0328			     CKCheckForPlay:
+    585						;Обработаем кнопку Play
+    586	0328  A8 20				test  al,PlayMask ;Нажали другую кнопку
+    587	032A  74 0E				jz    CKExitProc
+    588	032C  E8 FED9				call  PlaySignal
+    589
+    590						;Теперь	некоторое время	на нажатия кнопок не реагируем
+    591	032F  C7 06 00A4r 0005			mov   KbdCounter,KbdCounterMax
+    592	0335  E8 FCD2				call  ShowDiscrTime    ;Обновим	индикаторы
+    593	0338  EB 00				jmp   CKExitProc
+    594
+    595	033A			     CKExitProc:
+    596	033A  C3				ret
+    597	033B			     CheckKeys	endp
+    598
+    599				     ;Процедура	организует задержку для	формирования периода дискретизации
+    600	033B			     DelayProc	proc  near
+    601	033B  B9 07D0				mov   cx,DelayValue
+    602	033E			     DelayLoop1:
+    603	033E  B8 0064				mov   ax,100
+    604	0341			     DelayLoop2:
+    605	0341  48				dec   ax
+    606	0342  75 FD				jnz   DelayLoop2
+    607	0344  E2 F8				loop  DelayLoop1
+    608
+    609	0346  C3				ret
+    610	0347			     DelayProc	endp
+    611
+    612	0347			     Discretization proc near
+    613						;Пока DelayCounter<>0 новое значение с АЦП читать не будем
+    614						;Но образ на матрицах нужно обновлять, иначе они погаснут
+    615	0347  83 3E 00A6r 00			cmp   DelayCounter,0
+    616	034C  75 14				jnz   DDiscrEnd
+    617
+    618						;Установим DelayCounter	в соответствие с периодом дискретизации
+    619	034E  A1 00A0r				mov   ax,DiscrTime
+    620	0351  0A E4				or    ah,ah
+    621	0353  74 04				jz    DAH0
+    622	0355  04 0A				add   al,10
+    623	0357  32 E4				xor   ah,ah
+    624	0359			     DAH0:
+    625	0359  A3 00A6r				mov   DelayCounter,ax
+    626
+    627	035C  E8 FDDA				call  GetADCValue
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 12
+Osc.asm
+
+
+
+    628	035F  E8 FDED				call  UpdateOscImage
+    629
+    630	0362			     DDiscrEnd:
+    631	0362  FF 0E 00A6r			dec   DelayCounter
+    632
+    633	0366  C3				ret
+    634	0367			     Discretization endp
+    635
+    636	0367			     Start:
+    637	0367  B8 0000s				mov   ax,Data
+    638	036A  8E D8				mov   ds,ax
+    639	036C  8E C0				mov   es,ax
+    640	036E  B8 0000s				mov   ax,Stk
+    641	0371  8E D0				mov   ss,ax
+    642	0373  BC 00C8r				lea   sp,StkTop
+    643				     ;Здесь размещается	код программы
+    644
+    645	0376  E8 FCDD				call  Initialize
+    646
+    647	0379			     MainLoop:
+    648	0379  E8 FD0B				call  ShowOscImage
+    649	037C  E8 FFC8				call  Discretization
+    650	037F  E8 FEF5				call  CheckKeys
+    651	0382  E8 FFB6				call  DelayProc
+    652
+    653	0385  EB F2				jmp   MainLoop
+    654
+    655
+    656				     ;В	следующей строке необходимо указать смещение стартовой точки
+    657						org   RomSize-16-((SIZE	InitData+15) AND 0FFF0h)
+    658						ASSUME cs:NOTHING
+    659	0FF0  EA 00000367sr			jmp   Far Ptr Start
+    660	0FF5			     Code	ENDS
+    661				     END
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 13
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "07/06/04"
+??FILENAME			  Text	 "Osc	  "
+??TIME				  Text	 "07:00:00"
+??VERSION			  Number 030A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 OSC
+@NEWBOLD			  Near	 CODE:0186
+@NEWOLD				  Near	 CODE:01A3
+@SHEND				  Near	 CODE:01AC
+@SHLEFT				  Near	 CODE:0179
+@SHRIGHT			  Near	 CODE:0194
+@WORDSIZE			  Text	 2
+ADCSTARTPORT			  Number 0000
+CHECKKEYS			  Near	 CODE:0277
+CKCHECKFORDISCRMINUS		  Near	 CODE:02BD
+CKCHECKFORDISCRPLUS		  Near	 CODE:029F
+CKCHECKFORPLAY			  Near	 CODE:0328
+CKCHECKFORREC			  Near	 CODE:0316
+CKCHECKFORSTOREMINUS		  Near	 CODE:02F9
+CKCHECKFORSTOREPLUS		  Near	 CODE:02DC
+CKEXITPROC			  Near	 CODE:033A
+CKINVALIDDISCRTIME		  Near	 CODE:02DA
+DAH0				  Near	 CODE:0359
+DDISCREND			  Near	 CODE:0362
+DELAYCOUNTER			  Word	 DATA:00A6
+DELAYLOOP1			  Near	 CODE:033E
+DELAYLOOP2			  Near	 CODE:0341
+DELAYPROC			  Near	 CODE:033B
+DELAYVALUE			  Number 07D0
+DISCRETIZATION			  Near	 CODE:0347
+DISCRMINUSMASK			  Number 0002
+DISCRPLUSMASK			  Number 0001
+DISCRTIME			  Word	 DATA:00A0
+DISPPORT			  Number 0100
+DISPPORT1			  Number 0020
+DISPPORT2			  Number 8000
+GETADCVALUE			  Near	 CODE:0139
+GETSAMPLECOUNT			  Near	 CODE:01B0
+INDHPORT			  Number 0040
+INDHPORT1			  Number 0008
+INDHPORT2			  Number 2000
+INDVPORT			  Number 0080
+INDVPORT1			  Number 0010
+INDVPORT2			  Number 4000
+INITIALIZE			  Near	 CODE:0056
+KBDCOUNTER			  Word	 DATA:00A4
+KBDCOUNTERMAX			  Number 0005
+KBDREADY			  Near	 CODE:0285
+MAINLOOP			  Near	 CODE:0379
+NEWADCVAL			  Byte	 DATA:00A8
+NUMIMAGE			  Byte	 CODE:0000
+NUMMPORT			  Number 1000
+NUMMPORT1			  Number 0800
+Turbo Assembler	 Version 3.1	    07/06/04 07:00:00	    Page 14
+Symbol Table
+
+
+
+NUMMPORT2			  Number 0400
+NUMMPORT3			  Number 0200
+OLDADCVAL			  Byte	 DATA:00A9
+OSCIMAGE			  Word	 DATA:0000
+PLAYMASK			  Number 0020
+PLAYSIGNAL			  Near	 CODE:0208
+PSEXITPROC			  Near	 CODE:026E
+PSINTEGRATENEXTSAMPLE		  Near	 CODE:0238
+PSSHOWNEXTSAMPLE		  Near	 CODE:022B
+RECDELAYVALUE			  Number 001E
+RECMASK				  Number 0010
+RECORDSIGNAL			  Near	 CODE:01C6
+REG0				  Number 0001
+REG1				  Number 0002
+REG2				  Number 0004
+ROMSIZE				  Number 1000
+RSEXITPROC			  Near	 CODE:0202
+RSSTARTSAMPLING			  Near	 CODE:01D1
+RSWAITLOOP1			  Near	 CODE:01E3
+RSWAITLOOP2			  Near	 CODE:01E6
+SHOWDISCRTIME			  Near	 CODE:000A
+SHOWOSCIMAGE			  Near	 CODE:0087
+SOIDISPMATRIX3			  Near	 CODE:00CA
+SOIEXITLOOP			  Near	 CODE:012A
+SOINOCHANGEMATRIX12		  Near	 CODE:00C6
+SOINOCHANGEMATRIX3		  Near	 CODE:0122
+SOISHOWNEXTCOL			  Near	 CODE:0092
+START				  Near	 CODE:0367
+STKTOP				  Word	 STK:00C8
+STOREMINUSMASK			  Number 0008
+STOREPLUSMASK			  Number 0004
+STORETIME			  Word	 DATA:00A2
+UPDATEOSCIMAGE			  Near	 CODE:014F
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+DATA				  16  00AA  AT 0040
+INITDATA			  16  0000 Para	  none
+INTTABLE			  16  0000  AT 0000
+RECBUF				  16  0000  AT 0100
+STK				  16  00C8  AT 0080
+

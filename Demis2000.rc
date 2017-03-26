@@ -1,0 +1,749 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "#define _AFX_NO_SPLITTER_RESOURCES\r\n"
+    "#define _AFX_NO_PROPERTY_RESOURCES\r\n"
+    "\r\n"
+    "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)\r\n"
+    "#ifdef _WIN32\r\n"
+    "LANGUAGE 9, 1\r\n"
+    "#pragma code_page(1252)\r\n"
+    "#endif\r\n"
+    "#include ""res\\Demis2000.rc2""  // non-Microsoft Visual C++ edited resources\r\n"
+    "#include ""afxres.rc""         // Standard components\r\n"
+    "#include ""afxolecl.rc""       // OLE container resources\r\n"
+    "#endif\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_MAINFRAME MENU 
+BEGIN
+    POPUP "&Файл"
+    BEGIN
+        MENUITEM "&Новый проект\tCtrl+N",       ID_PRJ_NEW
+        MENUITEM "&Открыть проект\tCtrl+O",     ID_PRJ_OPEN
+        MENUITEM "&Сохранить...\tCtrl+S",       ID_FILE_SAVE
+        MENUITEM "Сохранить &Как...",           ID_FILE_SAVE_AS
+        MENUITEM SEPARATOR
+        MENUITEM "П&редварительный просмотр",   ID_FILE_PRINT_PREVIEW
+        MENUITEM "&Печать",                     ID_FILE_PRINT
+        MENUITEM SEPARATOR
+        MENUITEM "Предыдущий проект",           ID_FILE_MRU_PRJ1
+        MENUITEM SEPARATOR
+        MENUITEM "&Выход\tALT+F4",              ID_APP_EXIT
+    END
+    POPUP "&Вид"
+    BEGIN
+        MENUITEM "Панель &Инструментов",        ID_VIEW_TOOLBAR
+        MENUITEM "Панель &Статуса",             ID_VIEW_STATUS_BAR
+    END
+    POPUP "&Окна"
+    BEGIN
+        MENUITEM "&Каскадом",                   ID_WINDOW_CASCADE
+        MENUITEM "&Черепицей",                  ID_WINDOW_TILE_HORZ
+        MENUITEM "&Выстроить значки",           ID_WINDOW_ARRANGE
+    END
+    POPUP "&Справка"
+    BEGIN
+        MENUITEM "&Оглавление",                 ID_HELP_FINDER
+        MENUITEM SEPARATOR
+        MENUITEM "О &программе...",             ID_APP_ABOUT
+    END
+END
+
+IDR_ASSMTYPE_ADD MENU 
+BEGIN
+    POPUP "&Правка"
+    BEGIN
+        MENUITEM "&Отмена\tCtrl+Z",             ID_EDIT_UNDO
+        MENUITEM SEPARATOR
+        MENUITEM "&Вырезать\tCtrl+X",           ID_EDIT_CUT
+        MENUITEM "&Копировать\tCtrl+C",         ID_EDIT_COPY
+        MENUITEM "Вст&авить\tCtrl+V",           ID_EDIT_PASTE
+        MENUITEM SEPARATOR
+        MENUITEM "&Найти...\tCtrl+F",           ID_EDIT_FIND
+        MENUITEM "Найти &далее\tF3",            ID_EDIT_REPEAT
+        MENUITEM "&Заменить\tCtrl+H",           ID_EDIT_REPLACE
+    END
+END
+
+IDR_PRJTYPE_ADD MENU 
+BEGIN
+    POPUP "П&роект"
+    BEGIN
+        MENUITEM "&Ассемблирование",            ID_ASSEMBLE
+        MENUITEM "&Компоновка",                 ID_LINK
+        MENUITEM "&Сборка\tF9",                 ID_BUILD
+        MENUITEM SEPARATOR
+        MENUITEM "&Отладка",                    ID_DEBUG
+        MENUITEM "&Прогон\tCtrl+F9",            ID_RUN
+        MENUITEM "Ос&танов\tCtrl+F2",           ID_BREAK
+        MENUITEM "Па&раметры",                  ID_EMULATORCFG
+    END
+END
+
+IDM_PRJPOPUP MENU 
+BEGIN
+    POPUP "Корневое"
+    BEGIN
+        MENUITEM "&Ассемблировать",             ID_ASSEMBLE
+        MENUITEM "С&компоновать",               ID_LINK
+        MENUITEM "С&борка",                     ID_BUILD
+        MENUITEM "&Прогон",                     ID_RUN
+        MENUITEM SEPARATOR
+        MENUITEM "&Сохранить проект",           ID_FILE_SAVE
+    END
+    POPUP "Ассемблируемые"
+    BEGIN
+        MENUITEM "Добавить",                    ID_SOURCE_ADD
+    END
+    POPUP "Включаемые"
+    BEGIN
+        MENUITEM "Добавить",                    ID_INC_ADD
+    END
+    POPUP "Архитектура"
+    BEGIN
+        MENUITEM "Задать",                      ID_ARCH_ADD
+    END
+    POPUP "ASM"
+    BEGIN
+        MENUITEM "Открыть",                     ID_SOURCE_OPEN
+        MENUITEM "Удалить",                     ID_SOURCE_DEL
+        MENUITEM "Содержит стартовую точку",    ID_CONTAINS_ENTRYPOINT
+    END
+    POPUP "INC"
+    BEGIN
+        MENUITEM "Открыть",                     ID_INC_OPEN
+        MENUITEM "Удалить",                     ID_INC_DEL
+    END
+    POPUP "Архитектура"
+    BEGIN
+        MENUITEM "Открыть",                     ID_ARCH_OPEN
+        MENUITEM "Удалить",                     ID_ARCH_DEL
+    END
+END
+
+IDR_CONTEXT_DEBUG MENU 
+BEGIN
+    POPUP "DasmList"
+    BEGIN
+        MENUITEM "&Адрес",                      ID_NEW_ADDRESS
+    END
+END
+
+IDR_DEBUGTYPE_ADD MENU 
+BEGIN
+    POPUP "&Отладка"
+    BEGIN
+        MENUITEM "Шаг &без захода\tF8",         ID_STEPOVER
+        MENUITEM "Шаг &с заходом\tF7",          ID_STEPINTO
+        MENUITEM "Выполнять &до\tF4",           ID_RUNTO
+        MENUITEM "&Прогон\tCtrl+F9",            ID_RUN
+        MENUITEM "Ос&танов\tCtrl+F2",           ID_BREAK
+    END
+END
+
+IDR_ARCHTYPE_ADD MENU 
+BEGIN
+    POPUP "&Архитектура"
+    BEGIN
+        MENUITEM SEPARATOR
+        MENUITEM "&Удалить",                    ID_ARCHELEM_DEL
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_DEBUGTYPE           ICON                    "res\\Debug.ico"
+IDI_CLOSEDFOLDER        ICON                    "res\\Clsdfold.ico"
+IDI_OPENEDFOLDER        ICON                    "res\\Openfold.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DUMPCFG DIALOG  0, 0, 117, 46
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Адрес(hex)"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_ADDRESS,45,5,65,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,10,25,40,14
+    PUSHBUTTON      "Cancel",IDCANCEL,65,25,40,14
+    CTEXT           "Адрес:",IDC_STATIC,5,5,35,12,SS_CENTERIMAGE
+END
+
+IDD_ABOUTBOX DIALOGEX 0, 0, 242, 98
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "О программе"
+FONT 8, "MS Sans Serif", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,155,80,32,14,WS_GROUP
+    CTEXT           "Design Microsystems версия 3.5",IDC_STATIC,105,2,133,8,
+                    SS_NOPREFIX
+    CTEXT           "Copyright (С) 2001-2017 Брусницын А.А.",IDC_STATIC,105,22,
+                    133,8
+    CTEXT           "Руководитель: к.т.н. профессор",IDC_STATIC,105,53,133,8
+    CTEXT           "группа ВС1-96 РГАТА",IDC_STATIC,105,35,133,8
+    CTEXT           "Комаров В.М.",IDC_STATIC,105,64,133,8
+    CONTROL         157,IDC_STATIC,"Static",SS_BITMAP | SS_REALSIZEIMAGE,4,2,
+                    100,92
+END
+
+IDD_EMULATORCFG DIALOG  0, 0, 164, 117
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Параметры системы"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_TAKTFREQ,73,15,45,12,ES_NUMBER
+    EDITTEXT        IDC_ROMSIZE,73,78,45,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "лог. 0",IDC_FREEPIN_0,"Button",BS_AUTORADIOBUTTON | 
+                    WS_GROUP,73,102,34,11
+    CONTROL         "лог. 1",IDC_FREEPIN_1,"Button",BS_AUTORADIOBUTTON,73,92,
+                    34,11
+    DEFPUSHBUTTON   "OK",IDOK,125,70,35,12
+    PUSHBUTTON      "Отмена",IDCANCEL,125,85,35,12
+    PUSHBUTTON      "Справка",ID_HELP,125,101,35,12
+    CTEXT           "Процессор: Intel 80386",IDC_STATIC,4,2,156,10,
+                    SS_CENTERIMAGE
+    LTEXT           "Объём ПЗУ, Кб:",IDC_STATIC,4,78,55,12,SS_CENTERIMAGE
+    LTEXT           "Адрес ОЗУ:",IDC_STATIC,4,31,55,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_RAMSTART,73,31,45,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    LTEXT           "Объём ОЗУ, Кб:",IDC_STATIC,4,47,55,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_RAMSIZE,73,47,45,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    LTEXT           "Адрес ПЗУ:",IDC_STATIC,4,62,55,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_ROMSTART,73,62,45,12,ES_AUTOHSCROLL | ES_READONLY | 
+                    ES_NUMBER
+    LTEXT           "Тактовая частота:",IDC_STATIC,4,15,65,12,SS_CENTERIMAGE
+    CTEXT           "Гц",IDC_STATIC,119,15,16,12,SS_CENTERIMAGE
+    LTEXT           "Свободный вход =",IDC_STATIC,4,96,63,12,SS_CENTERIMAGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_DUMPCFG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 110
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 39
+    END
+
+    IDD_ABOUTBOX, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 238
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 94
+    END
+
+    IDD_EMULATORCFG, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 160
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 113
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_DEBUGTYPE_ADD ACCELERATORS 
+BEGIN
+    VK_F4,          ID_RUNTO,               VIRTKEY, NOINVERT
+    VK_F7,          ID_STEPINTO,            VIRTKEY, NOINVERT
+    VK_F8,          ID_STEPOVER,            VIRTKEY, NOINVERT
+END
+
+IDR_ARCHTYPE ACCELERATORS 
+BEGIN
+    VK_DELETE,      ID_ARCHELEM_DEL,        VIRTKEY, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_RGATA               BITMAP                  "RGATU.bmp"
+IDR_MAINFRAME           BITMAP                  "res\\Toolbar.bmp"
+IDR_ARCHTYPE            BITMAP                  "res\\archtype.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Toolbar
+//
+
+IDR_MAINFRAME TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_PRJ_NEW
+    BUTTON      ID_PRJ_OPEN
+    BUTTON      ID_FILE_SAVE
+    BUTTON      ID_EDIT_CUT
+    BUTTON      ID_EDIT_COPY
+    BUTTON      ID_EDIT_PASTE
+    BUTTON      ID_FILE_PRINT
+    BUTTON      ID_ASSEMBLE
+    BUTTON      ID_BUILD
+    BUTTON      ID_RUN
+    BUTTON      ID_DEBUG
+    BUTTON      ID_BREAK
+END
+
+IDR_ARCHTYPE TOOLBAR  16, 15
+BEGIN
+    BUTTON      ID_ARCHELEM_DEL
+    SEPARATOR
+    BUTTON      ID_ARCHMODE
+    BUTTON      ID_CONSTRMODE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 3,5,0,0
+ PRODUCTVERSION 3,5,0,0
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x40004L
+ FILETYPE 0x1L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "041904b0"
+        BEGIN
+            VALUE "CompanyName", "РГАТУ"
+            VALUE "FileDescription", "Design Microsystem v3.5"
+            VALUE "FileVersion", "3.5"
+            VALUE "InternalName", "Demis3.5"
+            VALUE "LegalCopyright", "Copyright © 2001-2017 РГАТУ"
+            VALUE "OriginalFilename", "Demis.exe"
+            VALUE "ProductName", "Design Microsystem v3.5"
+            VALUE "ProductVersion", "3.5"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x419, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    IDP_OLE_INIT_FAILED     "OLE initialization failed.  Make sure that the OLE libraries are the correct version."
+    ID_ROWCOL               " "
+    IDP_FAILED_TO_CREATE    "Failed to create object.  Make sure the object is entered in the system registry."
+    CG_ID_VIEW_INFOBAR      "Show or hide InfoBar\nToggle InfoBar"
+    CG_ID_VIEW_PROJECTBAR   "Show or hide Project Bar\nToggle Project Bar"
+    ID_INC_ADD              "Добавить файл в папку"
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_MAINFRAME           "Design Microsystems v3.5"
+    IDR_PRJTYPE             "\nProject\nПроект\nПроект (*.prj)\n.prj\nProject\nProject Document"
+    IDR_ASSMTYPE            "\nSource\nТекст программы\nПрограмма на Ассемблере (*.asm)\n.asm\nAssm\nAssm Document"
+    IDR_ARCHTYPE            "\nArch\nАрхитектура\nАрхитектура (*.arh)\n.arh\nArch\nArch Document"
+    IDR_DEBUGTYPE           "Отладчик"
+END
+
+STRINGTABLE 
+BEGIN
+    IDR_INFOFRAME           "Информация"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_APP_TITLE       "Design Microsystems"
+    AFX_IDS_IDLEMESSAGE     "Для получения справки нажмите F1"
+    AFX_IDS_HELPMODEMESSAGE "Select an object on which to get Help"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INDICATOR_EXT        "EXT"
+    ID_INDICATOR_CAPS       "CAP"
+    ID_INDICATOR_NUM        "NUM"
+    ID_INDICATOR_SCRL       "SCRL"
+    ID_INDICATOR_OVR        "OVR"
+    ID_INDICATOR_REC        "REC"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "Создать новый документ\nНовый документ"
+    ID_FILE_OPEN            "Открыть документ\nОткрыть"
+    ID_FILE_CLOSE           "Закрыть текущий документ\nЗакрыть"
+    ID_FILE_SAVE            "Сохранить текущий документ\nСохранить документ"
+    ID_FILE_SAVE_AS         "Сохранить текущий документ под новым именем\nСохранить Как"
+    ID_FILE_PRINT           "Печать содержимого текущего окна\nПечать"
+    ID_FILE_PRINT_PREVIEW   "Предварительный просмотр перед печатью\nПредварительный просмотр"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_APP_ABOUT            "Вывести информацию о программе\nО программе"
+    ID_APP_EXIT             "Выход из программы\nВыход"
+    ID_HELP_INDEX           "Opens Help\nHelp Topics"
+    ID_HELP_FINDER          "Вывести оглавление справки\nОглавление справки"
+    ID_HELP_USING           "Display instructions about how to use help\nHelp"
+    ID_CONTEXT_HELP         "Display help for clicked on buttons, menus and windows\nHelp"
+    ID_HELP                 "Display help for current task or command\nHelp"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_MRU_FILE1       "Открыть этот файл"
+    ID_FILE_MRU_FILE2       "Открыть этот текст программы"
+    ID_FILE_MRU_FILE3       "Открыть этот текст программы"
+    ID_FILE_MRU_FILE4       "Open this document"
+    ID_FILE_MRU_FILE5       "Open this document"
+    ID_FILE_MRU_FILE6       "Open this document"
+    ID_FILE_MRU_FILE7       "Open this document"
+    ID_FILE_MRU_FILE8       "Open this document"
+    ID_FILE_MRU_FILE9       "Open this document"
+    ID_FILE_MRU_FILE10      "Open this document"
+    ID_FILE_MRU_FILE11      "Open this document"
+    ID_FILE_MRU_FILE12      "Open this document"
+    ID_FILE_MRU_FILE13      "Open this document"
+    ID_FILE_MRU_FILE14      "Open this document"
+    ID_FILE_MRU_FILE15      "Open this document"
+    ID_FILE_MRU_FILE16      "Open this document"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_NEXT_PANE            "Switch to the next window pane\nNext Pane"
+    ID_PREV_PANE            "Switch back to the previous window pane\nPrevious Pane"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_WINDOW_NEW           "Open another window for the active document\nNew Window"
+    ID_WINDOW_ARRANGE       "Выстроить значки свёрнутых окон\nВыстроить значки"
+    ID_WINDOW_CASCADE       "Упорядочить окна каскадом\nКаскад"
+    ID_WINDOW_TILE_HORZ     "Упорядочить окна черепицей\nЧерепица"
+    ID_WINDOW_TILE_VERT     "Arrange windows as non-overlapping tiles\nTile Windows"
+    ID_WINDOW_SPLIT         "Split the active window into panes\nSplit"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EDIT_CLEAR           "Erase the selection\nErase"
+    ID_EDIT_CLEAR_ALL       "Erase everything\nErase All"
+    ID_EDIT_COPY            "Копировать выделенное в буфер обмена\nКопировать"
+    ID_EDIT_CUT             "Вырезать выделенное и поместить в буфер обмена\nВырезать"
+    ID_EDIT_FIND            "Find the specified text\nFind"
+    ID_EDIT_PASTE           "Вставить содержимое буфера обмена\nВставить"
+    ID_EDIT_PASTE_LINK      "Insert Clipboard contents and a link to its source\nPaste Link"
+    ID_EDIT_PASTE_SPECIAL   "Insert Clipboard contents with options\nPaste Special"
+    ID_EDIT_REPEAT          "Repeat the last action\nRepeat"
+    ID_EDIT_REPLACE         "Replace specific text with different text\nReplace"
+    ID_EDIT_SELECT_ALL      "Select the entire document\nSelect All"
+    ID_EDIT_UNDO            "Отменить последнее действие\nОтмена"
+    ID_EDIT_REDO            "Redo the previously undone action\nRedo"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_VIEW_TOOLBAR         "Показать или спрятать панель инструментов"
+    ID_VIEW_STATUS_BAR      "Показать или спрятать панель статуса"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_OLE_INSERT_NEW       "Insert new embedded object\nNew Object"
+    ID_OLE_EDIT_LINKS       "Edit linked objects\nEdit Links"
+    ID_OLE_EDIT_CONVERT     "Convert object to different type\nConvert Object"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_OLE_VERB_FIRST       "Activate embedded or linked object"
+    57873                   "Activate embedded or linked object"
+    57874                   "Activate embedded or linked object"
+    57875                   "Activate embedded or linked object"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCSIZE          "Change the window size"
+    AFX_IDS_SCMOVE          "Change the window position"
+    AFX_IDS_SCMINIMIZE      "Reduce the window to an icon"
+    AFX_IDS_SCMAXIMIZE      "Enlarge the window to full size"
+    AFX_IDS_SCNEXTWINDOW    "Switch to the next document window"
+    AFX_IDS_SCPREVWINDOW    "Switch to the previous document window"
+    AFX_IDS_SCCLOSE         "Close the active window and prompts to save the documents"
+END
+
+STRINGTABLE 
+BEGIN
+    AFX_IDS_SCRESTORE       "Restore the window to normal size"
+    AFX_IDS_SCTASKLIST      "Activate Task List"
+    AFX_IDS_MDICHILD        "Activate this window"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ASSEMBLE             "Ассемблирование и связывание программы\nАссемблировать"
+    ID_RUN                  "Запустить программу\nПрогон"
+    ID_DEBUG                "Начать отладку программы\nОтладка"
+    ID_BREAK                "Остановить программу\nОстановить"
+    ID_STEPINTO             "Выполнить текущую инструкцию с заходом"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ARCH_NEW             "Создать новую архитектуру"
+    ID_ARCH_OPEN            "Открыть файл с архитектурой"
+    ID_ARCH_SAVE            "Сохранить архитектуру в файле\nСохранить архитектуру"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_STEPOVER             "Выполнить текущую инструкцию без захода"
+    ID_DASMALL              "Дизассемблировать всю программу"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_PRJ_ADDFILE          "Добавить файл в папку"
+    ID_PRJ_SAVE             "Сохранить проект"
+    ID_PRJ_OPEN             "Открыть проект\tОткрыть проект"
+    ID_PRJ_NEW              "Новый проект\tНовый проект"
+    ID_0                    "Ассемблировать"
+    ID_SOURCE_OPEN          "Открыть файл"
+    ID_SOURCE_DEL           "Удалить из проекта"
+    ID_ARCH_DEL             "Удалить архитектуру из проекта"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_SOURCE_ADD           "Добавить файл в папку"
+    ID_ARCH_ADD             "Задать текущую архитектуру"
+    ID_LIB_ADD              "Добавить библиотеку"
+    ID_OBJ_ADD              "Добавить объектный файл"
+    ID_OBJ_DEL              "Удалить из проекта"
+    ID_LIB_DEL              "Удалить из проекта"
+    ID_SOURCE_NEW           "Создать новый текст программы"
+    ID_OBJ_NEW              "Создать новый текст программы"
+    ID_RUNTO                "Выполнять программу до курсора"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_EMULATORCFG          "Настройка параметров системы"
+    ID_FILE_MRU_PRJ1        "Открыть этот документ"
+    ID_ARCHELEM_DEL         "Удалить выделенные элементы\nУдалить"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_BUILD                "Ассемблирование и связывание программы\nСборка программы"
+    ID_LINK                 "Компоновка программы\nКомпоновка"
+    ID_LINK_FLAG            "Признак участия/не участия файла в компоновке"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INC_DEL              "Удалить из проекта\nУдалить"
+    ID_ARCH_STATUS          " "
+    ID_INSTR_COUNTER        "CPU: 00:00:00"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_INC_OPEN             "Открыть файл\nОткрыть"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_CONTAINS_ENTRYPOINT  "Модуль содержит стартовую точку"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ARCHMODE             "Режим архитектуры\nАрхитектура"
+    ID_CONSTRMODE           "Режим лицевой панели\nЛицевая панель"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDR_MAINFRAME           ICON                    "res\\Demis2000.ico"
+IDR_ASSMTYPE            ICON                    "res\\Asm.ico"
+IDR_PRJTYPE             ICON                    "res\\Prj.ico"
+IDR_ARCHTYPE            ICON                    "res\\Arch.ico"
+IDR_INFOFRAME           ICON                    "res\\ico00002.ico"
+IDR_INCTYPE             ICON                    "res\\idr_assm.ico"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Accelerator
+//
+
+IDR_MAINFRAME ACCELERATORS 
+BEGIN
+    "A",            ID_EDIT_SELECT_ALL,     VIRTKEY, CONTROL, NOINVERT
+    "C",            ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    "F",            ID_EDIT_FIND,           VIRTKEY, CONTROL, NOINVERT
+    "H",            ID_EDIT_REPLACE,        VIRTKEY, CONTROL, NOINVERT
+    "N",            ID_PRJ_NEW,             VIRTKEY, CONTROL, NOINVERT
+    "O",            ID_PRJ_OPEN,            VIRTKEY, CONTROL, NOINVERT
+    "S",            ID_FILE_SAVE,           VIRTKEY, CONTROL, NOINVERT
+    "V",            ID_EDIT_PASTE,          VIRTKEY, CONTROL, NOINVERT
+    VK_BACK,        ID_EDIT_UNDO,           VIRTKEY, ALT, NOINVERT
+    VK_DELETE,      ID_EDIT_CUT,            VIRTKEY, SHIFT, NOINVERT
+    VK_ESCAPE,      ID_CANCEL_EDIT_CNTR,    VIRTKEY, NOINVERT
+    VK_F1,          ID_HELP,                VIRTKEY, NOINVERT
+    VK_F1,          ID_CONTEXT_HELP,        VIRTKEY, SHIFT, NOINVERT
+    VK_F2,          ID_BREAK,               VIRTKEY, CONTROL, NOINVERT
+    VK_F3,          ID_EDIT_REPEAT,         VIRTKEY, NOINVERT
+    VK_F6,          ID_NEXT_PANE,           VIRTKEY, NOINVERT
+    VK_F6,          ID_PREV_PANE,           VIRTKEY, SHIFT, NOINVERT
+    VK_F9,          ID_BUILD,               VIRTKEY, NOINVERT
+    VK_F9,          ID_RUN,                 VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_COPY,           VIRTKEY, CONTROL, NOINVERT
+    VK_INSERT,      ID_EDIT_PASTE,          VIRTKEY, SHIFT, NOINVERT
+    VK_RETURN,      ID_OLE_EDIT_PROPERTIES, VIRTKEY, ALT, NOINVERT
+    "X",            ID_EDIT_CUT,            VIRTKEY, CONTROL, NOINVERT
+    "Z",            ID_EDIT_UNDO,           VIRTKEY, CONTROL, NOINVERT
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    ID_FILE_NEW             "asd"
+END
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+#define _AFX_NO_SPLITTER_RESOURCES
+#define _AFX_NO_PROPERTY_RESOURCES
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE 9, 1
+#pragma code_page(1252)
+#endif
+#include "res\Demis2000.rc2"  // non-Microsoft Visual C++ edited resources
+#include "afxres.rc"         // Standard components
+#include "afxolecl.rc"       // OLE container resources
+#endif
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

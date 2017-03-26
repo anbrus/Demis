@@ -1,0 +1,255 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <Keyword>MFCProj</Keyword>
+    <ProjectGuid>{96DAC4FD-1C33-4517-8A45-9CEC47B56BE5}</ProjectGuid>
+    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <ProjectName>Demis</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140_xp</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>Dynamic</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>14.0.25420.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>Debug\</OutDir>
+    <IntDir>Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Debug/Demis2000.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Debug/</AssemblerListingLocation>
+      <ObjectFileName>.\Debug/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>Debug/Demis.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <ProgramDatabaseFile>.\Debug/Demis.pdb</ProgramDatabaseFile>
+      <SubSystem>Windows</SubSystem>
+      <AdditionalDependencies>shell32.lib</AdditionalDependencies>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Debug/Demis2000.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AFXDLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
+      <FavorSizeOrSpeed>Speed</FavorSizeOrSpeed>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>stdafx.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>.\Release/Demis2000.pch</PrecompiledHeaderOutputFile>
+      <AssemblerListingLocation>.\Release/</AssemblerListingLocation>
+      <ObjectFileName>.\Release/</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
+      <WarningLevel>Level3</WarningLevel>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Link>
+      <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
+      <OutputFile>Release/Demis.exe</OutputFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
+      <SubSystem>Windows</SubSystem>
+    </Link>
+    <Midl>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <TargetEnvironment>Win32</TargetEnvironment>
+      <TypeLibraryName>.\Release/Demis2000.tlb</TypeLibraryName>
+    </Midl>
+    <ResourceCompile>
+      <PreprocessorDefinitions>_AFXDLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <Culture>0x0419</Culture>
+    </ResourceCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="ArchDoc.cpp" />
+    <ClCompile Include="ArchFrame.cpp" />
+    <ClCompile Include="ArchView.cpp" />
+    <ClCompile Include="ChildFrm.cpp" />
+    <ClCompile Include="DasmView.cpp" />
+    <ClCompile Include="DebugFrame.cpp" />
+    <ClCompile Include="Demis2000.cpp" />
+    <ClCompile Include="DumpView.cpp" />
+    <ClCompile Include="Flag.cpp" />
+    <ClCompile Include="MainFrm.cpp" />
+    <ClCompile Include="PrjCfgDlg.cpp" />
+    <ClCompile Include="PrjDoc.cpp" />
+    <ClCompile Include="PrjFrame.cpp" />
+    <ClCompile Include="PrjListView.cpp" />
+    <ClCompile Include="RegisterEdit.cpp" />
+    <ClCompile Include="RegsView.cpp" />
+    <ClCompile Include="StackView.cpp" />
+    <ClCompile Include="StdAfx.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="StdEditDoc.cpp" />
+    <ClCompile Include="StdEditView.cpp" />
+    <ClCompile Include="StdElem.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="Demis2000.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="ArchDoc.h" />
+    <ClInclude Include="ArchFrame.h" />
+    <ClInclude Include="ArchView.h" />
+    <ClInclude Include="ChildFrm.h" />
+    <ClInclude Include="DasmView.h" />
+    <ClInclude Include="DebugFrame.h" />
+    <ClInclude Include="definitions.h" />
+    <ClInclude Include="Demis2000.h" />
+    <ClInclude Include="DumpView.h" />
+    <ClInclude Include="ElemInterface.h" />
+    <ClInclude Include="Flag.h" />
+    <ClInclude Include="MainFrm.h" />
+    <ClInclude Include="PrjCfgDlg.h" />
+    <ClInclude Include="PrjDoc.h" />
+    <ClInclude Include="PrjFrame.h" />
+    <ClInclude Include="PrjListView.h" />
+    <ClInclude Include="RegisterEdit.h" />
+    <ClInclude Include="RegsView.h" />
+    <ClInclude Include="Resource.h" />
+    <ClInclude Include="StackView.h" />
+    <ClInclude Include="StdAfx.h" />
+    <ClInclude Include="StdEditDoc.h" />
+    <ClInclude Include="StdEditView.h" />
+    <ClInclude Include="StdElem.h" />
+    <ClInclude Include="StdElem\StdElem.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="res\Arch.ico" />
+    <Image Include="res\archtype.bmp" />
+    <Image Include="res\ArchTypeC.bmp" />
+    <Image Include="res\Asm.ico" />
+    <Image Include="res\Clsdfold.ico" />
+    <Image Include="res\Debug.ico" />
+    <Image Include="res\Demis2000.ico" />
+    <Image Include="res\Demis2000Doc.ico" />
+    <Image Include="res\ico00001.ico" />
+    <Image Include="res\ico00002.ico" />
+    <Image Include="res\icon1.ico" />
+    <Image Include="res\idr_assm.ico" />
+    <Image Include="res\idr_main.ico" />
+    <Image Include="res\mainfram.bmp" />
+    <Image Include="res\Openfold.ico" />
+    <Image Include="res\Prj.ico" />
+    <Image Include="res\Toolbar.bmp" />
+    <Image Include="res\ToolBarC.bmp" />
+    <Image Include="RGATU.bmp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Debug\Assm.dll" />
+    <None Include="Debug\Dasm.dll" />
+    <None Include="Demis2000.reg" />
+    <CustomBuild Include="Help\Demis.hhp">
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">makehelp.bat Debug</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(OutDir)Demis.chm;%(Outputs)</Outputs>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">makehelp.bat Release</Command>
+      <Outputs Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(OutDir)Demis.chm;%(Outputs)</Outputs>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">true</ExcludedFromBuild>
+    </CustomBuild>
+    <None Include="res\Demis2000.rc2" />
+    <None Include="res\rt_manif.bin" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="Debug\Emulator.lib" />
+    <Library Include="htmlhelp.lib" />
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="res\Demis2000.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="ReadMe.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <Xml Include="res\manifest.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="Assm\Assm.vcxproj">
+      <Project>{af14a44f-d3bf-4d82-b088-25af880f39f6}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Dasm\Dasm.vcxproj">
+      <Project>{5336955f-4d20-405e-af27-1412c2febb55}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="Emulator\Emulator.vcxproj">
+      <Project>{83774e6b-698a-48ce-9a98-b02ce294b6fd}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="StdElem\StdElem.vcxproj">
+      <Project>{eb78a123-52c2-40c7-bbba-fe8cbbce1a59}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

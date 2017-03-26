@@ -1,0 +1,7 @@
+[SOURCE]=00000001,Reklama.asm
+[ARCH]=00000000,Reklama.arh
+[ROMSIZE]=32
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(103,33,925,498)D:\Work\VC\Demis2k\Gluk\Reklama.asm
+[WND.arh]=(138,69,960,534)D:\Work\VC\Demis2k\Gluk\Reklama.arh

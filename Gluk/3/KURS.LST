@@ -1,0 +1,1198 @@
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 1
+Kurs.asm
+
+
+
+      1					 .386
+      2
+      3		  =1000			 RomSize       EQU   4096
+      4		  =0032			 NMax	       EQU   50
+      5		  =000A			 MinTime       EQU   10
+      6		  =0020			 CountRotate   EQU   32
+      7		  =0010			 OneSec	       EQU   16
+      8		  =001E			 MaxRes	       EQU   30
+      9		  =0000			 MinRes	       EQU   0
+     10		  =0001			 MinNom	       EQU   1
+     11		  =0028			 MaxNom	       EQU   40
+     12		  =2FFF			 DelayValue    EQU   02FFFh
+     13		  =B2B8			 ConstR1       EQU   45752
+     14		  =D41C			 ConstR2       EQU   54300
+     15		  =300C			 ConstR3       EQU   12300
+     16		  =0001			 _HandR	       EQU   00000001b
+     17		  =0002			 _AutoR	       EQU   00000010b
+     18		  =0004			 _RandomR      EQU   00000100b
+     19		  =0008			 _NextPD       EQU   00001000b
+     20		  =0010			 _BackPD       EQU   00010000b
+     21		  =0020			 _NextRes      EQU   00100000b
+     22		  =0040			 _BackRes      EQU   01000000b
+     23		  =0080			 _Start	       EQU   10000000b
+     24		  =0001			 _NextAutoR    EQU   00000001b
+     25		  =0002			 _NextRandomR  EQU   00000010b
+     26		  =0000			 _ClearARRPV   EQU   00000000b
+     27		  =0002			 _DatResetRes  EQU   00000010b
+     28		  =0004			 _DatResetDiamag EQU  000000100b
+     29		  =0008			 _DatResetTol  EQU   00001000b
+     30
+     31		  =0000			 ButtonPort	 EQU   0
+     32		  =0000			 ACP&IndPort	 EQU   0
+     33		  =0002			 ACPDataPort	 EQU   2
+     34		  =000B			 ResRotatePort	 EQU   0bh
+     35		  =000C			 DiamagRotatePort EQU  0ch
+     36		  =000D			 TolRotatePort	 EQU   0dh
+     37		  =0001			 InPort		 EQU   1
+     38		  =000E			 OutPort	 EQU   0eh
+     39		  =0002			 DigIndPortSelected EQU	 2
+     40		  =0001			 DigIndPortData	  EQU  1
+     41		  =0008			 MatIndSelected	  EQU 8
+     42		  =0009			 MatIndData	  EQU 9
+     43		  =000A			 MatIndStolSelected  EQU  0Ah
+     44
+     45	    0000			 Data	    SEGMENT AT 40h use16
+     46
+     47	    0000  ??				    FlagR	  db  ?
+     48	    0001  ??				    FlagPD	  db  ?
+     49	    0002  ??				    FlagRes&RR	  db  ?
+     50	    0003  ??				    FlagARRPV	  db  ?
+     51	    0004  ??				    DelayHEX	  db  ?
+     52	    0005  ??				    NomHEX	  db  ?
+     53	    0006  ??				    ResHEH	  db  ?
+     54	    0007  ??				    NomRandom	  db  ?
+     55	    0008  ??				    DelayBCD	  db  ?
+     56	    0009  ??				    NomBCD	  db  ?
+     57	    000A  ??				    ResBCD	  db  ?
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 2
+Kurs.asm
+
+
+
+     58	    000B  ????				    RandomConst1  dw  ?
+     59	    000D  ????				    RandomConst2  dw  ?
+     60	    000F  ????				    RandomConst3  dw  ?
+     61	    0011  ??				    ResRotate	  db  ?
+     62	    0012  ??				    DiamagRotate  db  ?
+     63	    0013  ??				    TolRotate	  db  ?
+     64	    0014			 Data	    ENDS
+     65
+     66
+     67	    0000			 Stk	    SEGMENT AT 300h use16
+     68	    0000  19*(????)			    dw	  25 dup (?)
+     69	    0032			 StkTop	    Label Word
+     70	    0032			 Stk	    ENDS
+     71
+     72
+     73	    0000			 Code	    SEGMENT use16
+     74						    ASSUME cs:Code,ds:Data,es:Code
+     75	    0000  3F 0C	76 5E 4D 5B 7B+	     Image  DB	 03Fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh,07Fh,05Fh
+     76		  0E 7F	5F
+     77	    000A  FF 3F	3F 3F 3F 0F 2F+	 BaseImage  DB	 0FFh, 03Fh, 03Fh, 03Fh, 03Fh, 00Fh, 02Fh, 02Fh,02Fh, 02Fh, 00Fh, 03Fh,	    +
+     78		  2F 2F	2F 0F 3F 3F 3F+	 03Fh, 03Fh, 03Fh, 0FFh,0FFh, 080h, 080h, 080h,	080h, 080h, 080h, 080h,080h, 080h, 080h,    +
+     79		  3F FF	FF 80 80 80 80+	 080h, 080h, 080h, 080h, 0FFh
+     80		  80 80	80 80 80 80 80+
+     81		  80 80	80 FF
+     82	    002A  FF FF	FF 3F 80 BE BE+		    DB	 0FFh, 0FFh, 0FFh, 03Fh, 080h, 0BEh, 0BEh, 0BEh,0BEh, 0BEh, 0BEh, 0BEh,	    +
+     83		  BE BE	BE BE BE 80 3F+	 080h, 03Fh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 080h,	0BFh, 0BFh, 0BFh, 0B9h,0B1h, 0B9h, 0BFh,    +
+     84		  FF FF	FF FF FF 80 BF+	 0BFh, 0BFh, 080h, 0FFh, 0FFh
+     85		  BF BF	B9 B1 B9 BF BF+
+     86		  BF 80	FF FF
+     87	    004A  BF 7F	FF FF FF FF FF+		    DB	 0BFh, 07Fh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	    +
+     88		  FF FF	FF FF FF FF FF+	 0FFh, 0FFh, 07Fh, 0BFh,0FFh, 0FFh, 0FEh, 0FDh,	01Bh, 017h, 00Fh, 01Fh,01Fh, 00Fh, 017h,    +
+     89		  7F BF	FF FF FE FD 1B+	 01Bh, 0FDh, 0FEh, 0FFh, 0FFh
+     90		  17 0F	1F 1F 0F 17 1B+
+     91		  FD FE	FF FF
+     92	    006A  FF FF	FF 03 FB D9 D9+		    DB	 0FFh, 0FFh, 0FFh, 003h, 0FBh, 0D9h, 0D9h, 0DBh,0FBh, 0DBh, 089h, 0D9h,	    +
+     93		  DB FB	DB 89 D9 FB 03+	 0FBh, 003h, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 080h,	0BFh, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BFh,    +
+     94		  FF FF	FF FF FF 80 BF+	 0BFh, 0BFh, 080h, 0FFh, 0FFh
+     95		  BF BF	BF BF BF BF BF+
+     96		  BF 80	FF FF
+     97	    008A  FF CF	07 77 77 77 07+		    DB	 0FFh, 0CFh, 007h, 077h, 077h, 077h, 007h, 0CFh,0CFh, 007h, 077h, 077h,	    +
+     98		  CF CF	07 77 77 77 07+	 077h, 007h, 0CFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh,    +
+     99		  CF FF	FF FF FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+    100		  FF FF	FF FF FF FF FF+
+    101		  FF FF	FF FF
+    102	    00AA  FF FF	FF FF FF FF FF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h,000h, 0FFh, 0FFh, 0FFh,	    +
+    103		  00 00	FF FF FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 081h,	099h, 0BDh, 0BDh, 080h,080h, 0BDh, 0BDh,    +
+    104		  FF FF	FF FF FF 81 99+	 099h, 081h, 0FFh, 0FFh, 0FFh
+    105		  BD BD	80 80 BD BD 99+
+    106		  81 FF	FF FF
+    107	    00CA  FF FF	FF FF FF FF FF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 007h,007h, 0FFh, 0FFh, 0FFh,	    +
+    108		  07 07	FF FF FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 081h,	081h, 081h, 081h, 080h,080h, 081h, 081h,    +
+    109		  FF FF	FF FF FF 81 81+	 081h, 081h, 0FFh, 0FFh, 0FFh
+    110		  81 81	80 80 81 81 81+
+    111		  81 FF	FF FF
+    112	    00EA  FF FF	FF 3F 5F 6F 6F+		    DB	 0FFh, 0FFh, 0FFh, 03Fh, 05Fh, 06Fh, 06Fh, 06Fh,06Fh, 06Fh, 06Fh, 05Fh,	    +
+    113		  6F 6F	6F 6F 5F 3F FF+	 03Fh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	080h, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BFh,    +
+    114		  FF FF	FF FF FF FF 80+	 080h, 0FFh, 0FFh, 0FFh, 0FFh
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 3
+Kurs.asm
+
+
+
+    115		  BF BF	BF BF BF BF 80+
+    116		  FF FF	FF FF
+    117	    010A  FF FF	FF FF 03 FB FB+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 003h, 0FBh, 0FBh, 0FBh,0FBh, 0FBh, 0FBh, 003h,	    +
+    118		  FB FB	FB FB 03 DF DF+	 0DFh, 0DFh, 01Fh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	080h, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BFh,    +
+    119		  1F FF	FF FF FF FF 80+	 080h, 0FBh, 0FBh, 0F8h, 0FFh
+    120		  BF BF	BF BF BF BF 80+
+    121		  FB FB	F8 FF
+    122	    012A  FF FF	FF FF FF FF FF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	    +
+    123		  FF FF	FF FF FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FDh, 0F9h, 0F5h, 0EDh,	0DDh, 0BDh, 0BDh, 0BDh,0BDh, 0BDh, 0BDh,    +
+    124		  FF FF	FD F9 F5 ED DD+	 0DDh, 0EDh, 0F5h, 0F9h, 0FDh
+    125		  BD BD	BD BD BD BD DD+
+    126		  ED F5	F9 FD
+    127
+    128	    014A  0F 3F	3F 3F 3F 3F 3F+		    DB	 00Fh, 03Fh, 03Fh, 03Fh, 03Fh, 03Fh, 03Fh, 03Fh,03Fh, 03Fh, 03Fh, 03Fh,	    +
+    129		  3F 3F	3F 3F 3F 3F 3F+	 03Fh, 03Fh, 00Fh, 0FFh,0FFh, 0FEh, 0FFh, 0FEh,	0FFh, 0FEh, 0FFh, 0FEh,0FFh, 0FEh, 0FFh,    +
+    130		  0F FF	FF FE FF FE FF+	 0FEh, 0FFh, 0FEh, 0FFh, 0FFh
+    131		  FE FF	FE FF FE FF FE+
+    132		  FF FE	FF FF
+    133	    016A  FF FF	03 FB 5B FB 57+		    DB	 0FFh, 0FFh, 003h, 0FBh, 05Bh, 0FBh, 057h, 0FBh,05Bh, 0FBh, 003h, 0FFh,	    +
+    134		  FB 5B	FB 03 FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 000h, 07Fh,	055h, 07Fh, 055h, 07Fh,055h, 07Fh, 000h,    +
+    135		  FF FF	FF FF 00 7F 55+	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+    136		  7F 55	7F 55 7F 00 FF+
+    137		  FF FF	FF FF
+    138	    018A  FF FF	03 FB 0B 6B 6B+		    DB	 0FFh, 0FFh, 003h, 0FBh, 00Bh, 06Bh, 06Bh, 06Bh,008h, 0FBh, 003h, 0FFh,	    +
+    139		  6B 08	FB 03 FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 000h, 07Fh,	055h, 07Fh, 055h, 07Fh,055h, 07Fh, 000h,    +
+    140		  FF FF	FF FF 00 7F 55+	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+    141		  7F 55	7F 55 7F 00 FF+
+    142		  FF FF	FF FF
+    143	    01AA  FF FF	FF FF 00 FE FE+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0FEh, 0FEh,0FEh, 0FEh, 07Eh, 0FEh,	    +
+    144		  FE FE	FE 7E FE 00 FF+	 000h, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	080h, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BEh,    +
+    145		  FF FF	FF FF FF FF 80+	 0BFh, 080h, 0FFh, 0FFh, 0FFh
+    146		  BF BF	BF BF BF BE BF+
+    147		  80 FF	FF FF
+    148	    01CA  FF 01	7D 7D 7D 7D 7D+		    DB	 0FFh, 001h, 07Dh, 07Dh, 07Dh, 07Dh, 07Dh, 001h,07Dh, 07Dh, 07Dh, 07Dh,	    +
+    149		  01 7D	7D 7D 7D 7D 01+	 07Dh, 001h, 0FFh, 0FFh,0FFh, 0C0h, 0DFh, 0DFh,	0DFh, 0DFh, 0DFh, 0DFh,0DFh, 0DFh, 0DFh,    +
+    150		  FF FF	FF C0 DF DF DF+	 0DFh, 0DFh, 0C0h, 0FFh, 0FFh
+    151		  DF DF	DF DF DF DF DF+
+    152		  DF C0	FF FF
+    153	    01EA  FF FF	FF EF 0F EF EF+		    DB	 0FFh, 0FFh, 0FFh, 0EFh, 00Fh, 0EFh, 0EFh, 0E7h,0E7h, 0EFh, 0EFh, 00Fh,	    +
+    154		  E7 E7	EF EF 0F EF FF+	 0EFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0F0h, 0F7h, 0F7h, 0F7h,0F7h, 0F7h, 0F7h,    +
+    155		  FF FF	FF FF FF FF F0+	 0F0h, 0FFh, 0FFh, 0FFh, 0FFh
+    156		  F7 F7	F7 F7 F7 F7 F0+
+    157		  FF FF	FF FF
+    158	    020A  FF FF	FF FF EF 83 BA+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0EFh, 083h, 0BAh, 029h,029h, 0BAh, 083h, 0EFh,	    +
+    159		  29 29	BA 83 EF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0FFh, 0FFh, 00Ch, 0E0h,0E0h, 00Ch, 0FFh,    +
+    160		  FF FF	FF FF FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+    161		  FF 0C	E0 E0 0C FF FF+
+    162		  FF FF	FF FF
+    163	    022A  FF FF	FF FF FF FF FF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h,000h, 0FFh, 0FFh, 0FFh,	    +
+    164		  00 00	FF FF FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0F7h,	0E7h, 0C7h, 087h, 000h,000h, 087h, 0C7h,    +
+    165		  FF FF	FF FF FF F7 E7+	 0E7h, 0F7h, 0FFh, 0FFh, 0FFh
+    166		  C7 87	00 00 87 C7 E7+
+    167		  F7 FF	FF FF
+    168	    024A  1F 0F	07 7F 7F 7F 7F+		    DB	 01Fh, 00Fh, 007h, 07Fh, 07Fh, 07Fh, 07Fh, 07Fh,07Fh, 07Fh, 07Fh, 07Fh,	    +
+    169		  7F 7F	7F 7F 7F 7F 7F+	 07Fh, 07Fh, 07Fh, 0FFh,0F0h, 0F0h, 0F0h, 0FEh,	0FEh, 0FEh, 0FEh, 0FEh,0FEh, 0FEh, 0FEh,    +
+    170		  7F FF	F0 F0 F0 FE FE+	 0FEh, 0FEh, 0FEh, 0FEh, 0FFh
+    171		  FE FE	FE FE FE FE FE+
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 4
+Kurs.asm
+
+
+
+    172		  FE FE	FE FF
+    173	    026A  FF FF	FF 1F 1F 1F 7F+		    DB	 0FFh, 0FFh, 0FFh, 01Fh, 01Fh, 01Fh, 07Fh, 07Fh,07Fh, 07Fh, 07Fh, 07Fh,	    +
+    174		  7F 7F	7F 7F 7F 7F 7F+	 07Fh, 07Fh, 07Fh, 0FFh,0FBh, 0F9h, 0F8h, 0F8h,	0F8h, 0F8h, 0F8h, 0FAh,0FEh, 0FEh, 0FEh,    +
+    175		  7F FF	FB F9 F8 F8 F8+	 0FEh, 0FEh, 0FEh, 0FEh, 0FFh
+    176		  F8 F8	FA FE FE FE FE+
+    177		  FE FE	FE FF
+    178
+    179	    028A  7F 3F	DF EF F7 FB FD+		    DB	 07Fh, 03Fh, 0DFh, 0EFh, 0F7h, 0FBh, 0FDh, 0FEh,0FEh, 0FDh, 0FBh, 0F7h,	    +
+    180		  FE FE	FD FB F7 EF DF+	 0EFh, 0DFh, 03Fh, 07Fh,0FFh, 000h, 07Fh, 07Fh,	07Fh, 07Fh, 060h, 06Eh,06Eh, 060h, 07Fh,    +
+    181		  3F 7F	FF 00 7F 7F 7F+	 07Fh, 07Fh, 07Fh, 000h, 0FFh
+    182		  7F 60	6E 6E 60 7F 7F+
+    183		  7F 7F	00 FF
+    184	    02AA  FF DB	B1 00 71 BB FF+		    DB	 0FFh, 0DBh, 0B1h, 000h, 071h, 0BBh, 0FFh, 0FFh,0FFh, 0DBh, 0B1h, 000h,	    +
+    185		  FF FF	DB B1 00 71 BB+	 071h, 0BBh, 0FFh, 0FFh,0FFh, 0DBh, 0B1h, 000h,	071h, 0BBh, 0FFh, 0FFh,0FFh, 0DBh, 0B1h,    +
+    186		  FF FF	FF DB B1 00 71+	 000h, 071h, 0BBh, 0FFh, 0FFh
+    187		  BB FF	FF FF DB B1 00+
+    188		  71 BB	FF FF
+    189	    02CA  FF FF	FF FF 0E ED EB+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 00Eh, 0EDh, 0EBh, 0E7h,0E7h, 0EBh, 0EDh, 00Eh,	    +
+    190		  E7 E7	EB ED 0E FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0F0h, 0C7h, 0F7h, 0F7h,0F7h, 0F7h, 0C7h,    +
+    191		  FF FF	FF FF FF FF F0+	 0F0h, 0FFh, 0FFh, 0FFh, 0FFh
+    192		  C7 F7	F7 F7 F7 C7 F0+
+    193		  FF FF	FF FF
+    194	    02EA  FF 01	FD FD 7D DD AD+		    DB	 0FFh, 001h, 0FDh, 0FDh, 07Dh, 0DDh, 0ADh, 055h,055h, 0ADh, 0DDh, 07Dh,	    +
+    195		  55 55	AD DD 7D FD FD+	 0FDh, 0FDh, 001h, 0FFh,0FFh, 080h, 0BFh, 0BFh,	0BFh, 09Eh, 0ADh, 0B0h,0B0h, 0ADh, 09Eh,    +
+    196		  01 FF	FF 80 BF BF BF+	 0BFh, 0BFh, 0BFh, 080h, 0FFh
+    197		  9E AD	B0 B0 AD 9E BF+
+    198		  BF BF	80 FF
+    199	    030A  FF FF	01 7D 7D 7D 7D+		    DB	 0FFh, 0FFh, 001h, 07Dh, 07Dh, 07Dh, 07Dh, 07Dh,001h, 0FFh, 001h, 0FDh,	    +
+    200		  7D 01	FF 01 FD FD 3D+	 0FDh, 03Dh, 001h, 0FFh,0FFh, 0FFh, 0FFh, 0C2h,	0DBh, 0DBh, 0DBh, 0DAh,0DBh, 0DBh, 0C2h,    +
+    201		  01 FF	FF FF FF C2 DB+	 0FEh, 0FEh, 0FEh, 0FEh, 0FFh
+    202		  DB DB	DA DB DB C2 FE+
+    203		  FE FE	FE FF
+    204	    032A  7F BF	DF DF C7 C7 DF+		    DB	 07Fh, 0BFh, 0DFh, 0DFh, 0C7h, 0C7h, 0DFh, 0DFh,0DFh, 0DFh, 0DFh, 0DFh,	    +
+    205		  DF DF	DF DF DF DF DF+	 0DFh, 0DFh, 0BFh, 07Fh,0F8h, 0FBh, 0F8h, 0F6h,	0E2h, 0F6h, 0F8h, 0FBh,0FBh, 0F8h, 0F6h,    +
+    206		  BF 7F	F8 FB F8 F6 E2+	 0E2h, 0F6h, 0F8h, 0FBh, 0F8h
+    207		  F6 F8	FB FB F8 F6 E2+
+    208		  F6 F8	FB F8
+    209	    034A  FF DF	DF 1F DF DF DF+		    DB	 0FFh, 0DFh, 0DFh, 01Fh, 0DFh, 0DFh, 0DFh, 0DFh,0DFh, 0DFh, 0DFh, 0DFh,	    +
+    210		  DF DF	DF DF DF 1F DF+	 01Fh, 0DFh, 0DFh, 0FFh,0FFh, 0FFh, 0FFh, 0F0h,	0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh,    +
+    211		  DF FF	FF FF FF F0 FF+	 0FFh, 0F0h, 0FFh, 0FFh, 0FFh
+    212		  FF FF	FF FF FF FF FF+
+    213		  F0 FF	FF FF
+    214	    036A  FF FF	FF FF FF FF FF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 003h,	    +
+    215		  FF FF	FF FF 03 FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	080h, 0FEh, 0FEh, 0FEh,0FEh, 0FEh, 0FEh,    +
+    216		  FF FF	FF FF FF FF 80+	 080h, 0FFh, 0FFh, 0FFh, 0FFh
+    217		  FE FE	FE FE FE FE 80+
+    218		  FF FF	FF FF
+    219	    038A  FF FF	FF FF FF 7F BF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 07Fh, 0BFh, 0DFh,0EFh, 0EFh, 0EFh, 0EFh,	    +
+    220		  DF EF	EF EF EF 0F FF+	 00Fh, 0FFh, 0FFh, 0FFh,0FFh, 0FEh, 0FCh, 0FAh,	0F6h, 0EFh, 0EFh, 0EFh,0EFh, 0EFh, 0EFh,    +
+    221		  FF FF	FF FE FC FA F6+	 0EFh, 0EEh, 0EEh, 0E0h, 0FFh
+    222		  EF EF	EF EF EF EF EF+
+    223		  EE EE	E0 FF
+    224	    03AA  FF 01	FD FD FD FD 7D+		    DB	 0FFh, 001h, 0FDh, 0FDh, 0FDh, 0FDh, 07Dh, 001h,001h, 07Dh, 07Dh, 07Dh,	    +
+    225		  01 01	7D 7D 7D FD FD+	 0FDh, 0FDh, 001h, 0FFh,0FFh, 080h, 0BFh, 0BFh,	0BFh, 0BFh, 0BEh, 0B0h,0B0h, 0BEh, 0BEh,    +
+    226		  01 FF	FF 80 BF BF BF+	 0BEh, 0BFh, 0BFh, 080h, 0FFh
+    227		  BF BE	B0 B0 BE BE BE+
+    228		  BF BF	80 FF
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 5
+Kurs.asm
+
+
+
+    229
+    230	    03CA  FF 3F	3F 3F 3F 0F 2F+		    DB	 0FFh, 03Fh, 03Fh, 03Fh, 03Fh, 00Fh, 02Fh, 02Fh,02Fh, 02Fh, 00Fh, 03Fh,	    +
+    231		  2F 2F	2F 0F 3F 3F 3F+	 03Fh, 03Fh, 03Fh, 0FFh,0FFh, 080h, 080h, 080h,	080h, 080h, 080h, 080h,080h, 080h, 080h,    +
+    232		  3F FF	FF 80 80 80 80+	 080h, 080h, 080h, 080h, 0FFh
+    233		  80 80	80 80 80 80 80+
+    234		  80 80	80 FF
+    235	    03EA  FF FF	FF FF FF 7F BF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 07Fh, 0BFh, 0DFh,0EFh, 0EFh, 0EFh, 0EFh,	    +
+    236		  DF EF	EF EF EF 0F FF+	 00Fh, 0FFh, 0FFh, 0FFh,0FFh, 0FEh, 0FCh, 0FAh,	0F6h, 0EFh, 0EFh, 0EFh,0EFh, 0EFh, 0EFh,    +
+    237		  FF FF	FF FE FC FA F6+	 0EFh, 0EEh, 0EEh, 0E0h, 0FFh
+    238		  EF EF	EF EF EF EF EF+
+    239		  EE EE	E0 FF
+    240	    040A  FF 01	FD FD 7D DD AD+		    DB	 0FFh, 001h, 0FDh, 0FDh, 07Dh, 0DDh, 0ADh, 055h,055h, 0ADh, 0DDh, 07Dh,	    +
+    241		  55 55	AD DD 7D FD FD+	 0FDh, 0FDh, 001h, 0FFh,0FFh, 080h, 0BFh, 0BFh,	0BFh, 09Eh, 0ADh, 0B0h,0B0h, 0ADh, 09Eh,    +
+    242		  01 FF	FF 80 BF BF BF+	 0BFh, 0BFh, 0BFh, 080h, 0FFh
+    243		  9E AD	B0 B0 AD 9E BF+
+    244		  BF BF	80 FF
+    245	    042A  FF FF	FF FF FF FF FF+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 007h,007h, 0FFh, 0FFh, 0FFh,	    +
+    246		  07 07	FF FF FF FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 081h,	081h, 081h, 081h, 080h,080h, 081h, 081h,    +
+    247		  FF FF	FF FF FF 81 81+	 081h, 081h, 0FFh, 0FFh, 0FFh
+    248		  81 81	80 80 81 81 81+
+    249		  81 FF	FF FF
+    250	    044A  FF FF	FF EF 0F EF EF+		    DB	 0FFh, 0FFh, 0FFh, 0EFh, 00Fh, 0EFh, 0EFh, 0E7h,0E7h, 0EFh, 0EFh, 00Fh,	    +
+    251		  E7 E7	EF EF 0F EF FF+	 0EFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0F0h, 0F7h, 0F7h, 0F7h,0F7h, 0F7h, 0F7h,    +
+    252		  FF FF	FF FF FF FF F0+	 0F0h, 0FFh, 0FFh, 0FFh, 0FFh
+    253		  F7 F7	F7 F7 F7 F7 F0+
+    254		  FF FF	FF FF
+    255	    046A  FF FF	FF FF FF 00 FE+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0AAh,0FEh, 0AAh, 0FEh, 000h,	    +
+    256		  AA FE	AA FE 00 FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0FFh, 000h, 07Fh, 055h,07Fh, 055h, 07Fh,    +
+    257		  FF FF	FF FF FF FF FF+	 000h, 0FFh, 0FFh, 0FFh, 0FFh
+    258		  00 7F	55 7F 55 7F 00+
+    259		  FF FF	FF FF
+    260	    048A  FF FF	FF FF FF 00 FE+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EAh,0FEh, 0EAh, 0FEh, 000h,	    +
+    261		  EA FE	EA FE 00 FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0FFh, 000h, 07Fh, 07Dh,07Fh, 05Fh, 07Fh,    +
+    262		  FF FF	FF FF FF FF FF+	 000h, 0FFh, 0FFh, 0FFh, 0FFh
+    263		  00 7F	7D 7F 5F 7F 00+
+    264		  FF FF	FF FF
+    265	    04AA  FF FF	FF FF FF 00 FE+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EAh,0FEh, 0EAh, 0FEh, 000h,	    +
+    266		  EA FE	EA FE 00 FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0FFh, 000h, 07Fh, 057h,07Fh, 057h, 07Fh,    +
+    267		  FF FF	FF FF FF FF FF+	 000h, 0FFh, 0FFh, 0FFh, 0FFh
+    268		  00 7F	57 7F 57 7F 00+
+    269		  FF FF	FF FF
+    270	    04CA  FF FF	FF FF FF 00 FE+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EEh,0FEh, 0EEh, 0FEh, 000h,	    +
+    271		  EE FE	EE FE 00 FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0FFh, 000h, 07Fh, 055h,07Fh, 055h, 07Fh,    +
+    272		  FF FF	FF FF FF FF FF+	 000h, 0FFh, 0FFh, 0FFh, 0FFh
+    273		  00 7F	55 7F 55 7F 00+
+    274		  FF FF	FF FF
+    275	    04EA  FF FF	FF FF FF 00 FE+		    DB	 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EEh,0FEh, 0EEh, 0FEh, 000h,	    +
+    276		  EE FE	EE FE 00 FF FF+	 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh,	0FFh, 000h, 07Fh, 077h,07Fh, 077h, 07Fh,    +
+    277		  FF FF	FF FF FF FF FF+	 000h, 0FFh, 0FFh, 0FFh, 0FFh
+    278		  00 7F	77 7F 77 7F 00+
+    279		  FF FF	FF FF
+    280
+    281	    050A			    VibrDestr  PROC  NEAR
+    282	    050A  8A E0				    VD1:       mov   ah,al
+    283	    050C  B7 00					       mov   bh,0
+    284	    050E  E4 00				    VD2:       in    al,0
+    285	    0510  3A E0					       cmp   ah,al
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 6
+Kurs.asm
+
+
+
+    286	    0512  75 F6					       jne   VD1
+    287	    0514  FE C7					       inc   bh
+    288	    0516  80 FF	32				       cmp   bh,NMax
+    289	    0519  75 F3					       jne   VD2
+    290	    051B  8A C4					       mov   al,ah
+    291	    051D  C3					       ret
+    292	    051E			   VibrDestr  ENDP
+    293
+    294	    051E			   ScanButton	   PROC	 NEAR
+    295	    051E  50					       push ax
+    296	    051F  E4 00					       in   al,ButtonPort
+    297	    0521  3C 00					       cmp  al,0
+    298	    0523  74 20					       Jz ExitScanButton
+    299	    0525  E8 FFE2				       call  VibrDestr
+    300	    0528  E4 00					       in   al,ButtonPort
+    301	    052A  8A E0					       Mov ah,al
+    302	    052C  24 07					       and al,00000111b
+    303	    052E  3C 00					       cmp al,0
+    304	    0530  74 03					       jz NextScanButton
+    305	    0532  A2 0000r				       mov FlagR,al
+    306							     ;	jmp ExitScanButton
+    307	    0535  8A C4				NextScanButton:mov al,ah
+    308	    0537  24 18					       and al,00011000b
+    309	    0539  3C 00					       cmp al,0
+    310	    053B  74 03					       jz Next2ScanButton
+    311	    053D  A2 0001r				       mov FlagPD,al
+    312							     ;	jmp ExitScanButton
+    313	    0540  8A C4			       Next2ScanButton:mov al,ah
+    314	    0542  A2 0002r				       mov FlagRes&RR,al
+    315	    0545  A2 0002r			ExitScanButton:mov FlagRes&RR,al
+    316	    0548  58					       pop ax
+    317	    0549  C3					       ret
+    318	    054A			   ScanButton	   ENDP
+    319
+    320	    054A			   ScanTime	PROC   NEAR
+    321	    054A  50						push  ax
+    322	    054B  51						push  cx
+    323	    054C  A0 0001r					mov   al,FlagPD
+    324	    054F  0A 06	0000r					or    al,FlagR
+    325	    0553  E6 00						out   ACP&IndPort,al
+    326	    0555  0C 20						or    al,00100000b
+    327	    0557  E6 00						out   ACP&IndPort,al
+    328	    0559  E4 01					WaitRdy:in    al,InPort
+    329	    055B  A8 01						test  al,1
+    330	    055D  74 FA						jz    WaitRdy
+    331	    055F  E4 02						in    al,ACPDataPort
+    332	    0561  B1 03						mov   cl,3
+    333	    0563  D2 E8						shr   al,cl
+    334	    0565  04 0A						add   al,MinTime
+    335	    0567  A2 0004r					mov   DelayHEX,al
+    336	    056A  E8 0010					call  hex_bcd
+    337	    056D  A2 0008r					mov  DelayBCD,al
+    338	    0570  E8 0280					call PortOut
+    339	    0573  59						pop cx
+    340	    0574  58						pop ax
+    341	    0575  C3						ret
+    342	    0576			   ScanTime	 ENDP
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 7
+Kurs.asm
+
+
+
+    343
+    344	    0576			   ClearOutPort	 proc near
+    345	    0576  50					     push ax
+    346	    0577  B0 00					     mov al,0
+    347	    0579  E6 0E					     out OutPort,al
+    348	    057B  58					     pop ax
+    349	    057C  C3					     ret
+    350	    057D			   ClearOutPort	 endp
+    351
+    352	    057D			   HEX_BCD     PROC NEAR; В cl-hex в al-bcd
+    353	    057D  51					  push cx
+    354	    057E  33 C9					  xor cx,cx
+    355	    0580  8A C8					  mov cl,al
+    356	    0582  B0 00					  mov al,0
+    357	    0584  80 F9	00				  cmp cl,0
+    358	    0587  74 05					  jz ExitHEX_BCD
+    359	    0589  04 01			      LoopHEX_BCD:Add al,1
+    360	    058B  27					  daa
+    361	    058C  E2 FB					  loop LoopHEX_BCD
+    362	    058E  59			      ExitHEX_BCD:pop cx
+    363	    058F  C3					  ret
+    364	    0590			   HEX_BCD     ENDP
+    365
+    366	    0590			   Init		 PROC	NEAR
+    367	    0590  C6 06	0001r 08			       mov   FlagPD,_NextPD
+    368	    0595  C6 06	0000r 01			       mov   FlagR,_HandR
+    369	    059A  C6 06	0003r 00			       mov   FlagARRPV,0;
+    370							 ;     mov   DelayHEX,0
+    371							 ;     mov   DelayBCD,0
+    372	    059F  C6 06	0005r 01			       mov   NomHEX,MinNom
+    373	    05A4  C6 06	0009r 01			       mov   NomBCD,MinNom
+    374	    05A9  C6 06	0006r 00			       mov   ResHEH, MinRes
+    375	    05AE  C6 06	000Ar 00			       mov   ResBCD, MinRes
+    376	    05B3  C6 06	0011r 01			       mov   ResRotate,1
+    377	    05B8  C6 06	0012r 01			       mov   DiamagRotate,1
+    378	    05BD  C6 06	0013r 01			       mov   TolRotate,	1
+    379	    05C2  C7 06	000Br B2B8			       mov   RandomConst1,ConstR1
+    380	    05C8  C7 06	000Dr D41C			       mov   RandomConst2,ConstR2
+    381	    05CE  C7 06	000Fr 300C			       mov   RandomConst3,ConstR3
+    382	    05D4  E4 01			    NextResRotateLeft: in al,InPort
+    383	    05D6  A8 02					       test al,_DatResetRes
+    384	    05D8  75 0B					       jnz NextInit1
+    385	    05DA  E8 00BB				       call Delay
+    386	    05DD  E8 00B8				       call Delay
+    387	    05E0  E8 010A				       call ResRotateLeft
+    388	    05E3  EB EF					       jmp NextResRotateLeft
+    389	    05E5			     NextTolRotateLeft:
+    390	    05E5  E4 01				     NextInit1:in al,InPort
+    391	    05E7  A8 08					       test al,_DatResetTol
+    392	    05E9  75 08					       jnz nextInit2
+    393	    05EB  E8 00AA				       call Delay
+    394	    05EE  E8 010D				       call tolRotateLeft
+    395	    05F1  EB F2					       jmp NextTolRotateLeft
+    396	    05F3			  NextDiamagRotateLeft:
+    397	    05F3  E4 01				     nextInit2:in al,InPort
+    398	    05F5  A8 04					       test al,_DatResetDiamag
+    399	    05F7  75 08					       jnz NextInit3
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 8
+Kurs.asm
+
+
+
+    400	    05F9  E8 009C				       call Delay
+    401	    05FC  E8 0121				       call DiamagRotateLeft
+    402	    05FF  EB F2					       jmp NextDiamagRotateLeft
+    403	    0601  B9 0020			      NextInit3:mov cx,CountRotate
+    404	    0604  E8 0091		     NexttolRotateRight:call Delay
+    405	    0607  E8 0105					call tolRotateRight
+    406	    060A  E2 F8						loop NexttolRotateRight
+    407	    060C  E8 FF67					call  ClearOutPort
+    408	    060F  C3						ret
+    409	    0610			   Init		 ENDP
+    410
+    411	    0610			   OutDigInf	 PROC	NEAR
+    412	    0610  50					   push	ax
+    413	    0611  53					   push	bx
+    414	    0612  52					   push	dx
+    415	    0613  56					   push	si
+    416	    0614  57					   push	di
+    417	    0615  BB 0000r				   lea	 bx,Image
+    418	    0618  B2 FE					   mov	 dl,0FEh
+    419	    061A  BF 0008r				   lea	 di,DelayBCD
+    420	    061D  B9 0003				   mov	 cx, 3
+    421
+    422	    0620  B0 00				NextDig:  mov al,0
+    423	    0622  E6 01					  out	DigIndPortData,al
+    424	    0624  8A C2					  mov al,dl
+    425	    0626  E6 02					  out	DigIndPortSelected,al
+    426	    0628  8A 05					  mov	al,[di]
+    427	    062A  32 E4					  xor	ah,ah
+    428	    062C  8A F0					  mov	dh,al
+    429	    062E  24 0F					  and	al,0Fh
+    430	    0630  8B F0					  mov	si,ax
+    431	    0632  2E: 8A 00				  mov al,cs:[bx+si]
+    432	    0635  E6 01					  out	DigIndPortData,al
+    433	    0637  B0 00					  mov al,0
+    434	    0639  E6 01					  out	DigIndPortData,al
+    435	    063B  D0 C2					  rol dl,1
+    436	    063D  8A C2					  mov al,dl
+    437	    063F  E6 02					  out	DigIndPortSelected,al
+    438	    0641  8A C6					  mov	al,dh
+    439	    0643  C0 E8	04				  shr	al,4
+    440	    0646  8B F0					  mov	si,ax
+    441	    0648  2E: 8A 00				  mov al,cs:[bx+si]
+    442	    064B  E6 01					  out	DigIndPortData,al
+    443	    064D  D0 C2					  rol dl,1
+    444	    064F  47					  inc di
+    445	    0650  E2 CE					  loop NextDig
+    446	    0652  5F					  pop di
+    447	    0653  5E					  pop si
+    448	    0654  5A					  pop dx
+    449	    0655  5B					  pop bx
+    450	    0656  58					  pop ax
+    451	    0657  C3					  ret
+    452	    0658			   OutDigInf	 ENDP
+    453
+    454	    0658			   Res	  PROC NEAR
+    455	    0658  50				       Push ax
+    456	    0659  A0 0006r			       mov al, ResHEH
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 9
+Kurs.asm
+
+
+
+    457	    065C  F6 06	0002r 20		       test FlagRes&RR,_NextRes
+    458	    0661  74 0B				       jz SubRes
+    459	    0663  3C 1E				       cmp al,MaxRes
+    460	    0665  74 2F				       jz ExitRes
+    461	    0667  FE C0				       inc al
+    462	    0669  E8 0081			       call ResRotateLeft
+    463	    066C  EB 10				       jmp NextRes
+    464	    066E  F6 06	0002r 40		SubRes:test FlagRes&RR,_BackRes
+    465	    0673  74 21				       jz  ExitRes
+    466	    0675  3C 00				       cmp al,MinRes
+    467	    0677  74 1D				       jz ExitRes
+    468	    0679  FE C8				       dec al
+    469	    067B  E8 00C4			       call ResRotateRight
+    470	    067E  A2 0006r		       NextRes:mov ResHEH,al
+    471	    0681  E8 FEF9			       call  hex_bcd
+    472	    0684  A2 000Ar			       mov ResBCD,al
+    473	    0687  E8 000E			       call   Delay
+    474	    068A  E8 FE91			       call   ScanButton
+    475	    068D  E8 FEBA			       call   ScanTime
+    476	    0690  E8 FF7D			       call  OutDigInf
+    477
+    478	    0693  E8 FEE0			       call  ClearOutPort
+    479	    0696  58			       ExitRes:pop ax
+    480	    0697  C3				       ret
+    481	    0698			   Res	  ENDP
+    482
+    483
+    484	    0698			 Delay	    proc  near
+    485	    0698  51				    push  cx
+    486	    0699  B9 2FFF			    mov	  cx,DelayValue
+    487	    069C  41			 DelayLoop: inc	  cx
+    488	    069D  49				    dec	cx
+    489	    069E  41				    inc	cx
+    490	    069F  49				    dec	cx
+    491	    06A0  41				    inc	  cx
+    492	    06A1  49				    dec	cx
+    493	    06A2  E2 F8				    loop  DelayLoop
+    494	    06A4  59				    pop	  cx
+    495	    06A5  C3				    ret
+    496	    06A6			 Delay	    endp
+    497
+    498	    06A6			 Delay1_16sec proc
+    499	    06A6  51				    push  cx
+    500	    06A7  E8 FFEE			    call   Delay
+    501	    06AA  E8 FE71			    call   ScanButton
+    502	    06AD  E8 FE9A			    call   ScanTime
+    503	    06B0  E8 FF5D			    call  OutDigInf
+    504	    06B3  E8 FFA2			    call  res
+    505
+    506	    06B6  59				    pop	  cx
+    507	    06B7  C3				    ret
+    508	    06B8			 Delay1_16sec endp
+    509
+    510	    06B8			 NomD_Pos   proc  near
+    511	    06B8  50					push ax
+    512	    06B9  52					push dx
+    513	    06BA  51					push cx
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 10
+Kurs.asm
+
+
+
+    514	    06BB  32 E4					xor ah,ah
+    515	    06BD  B1 05					mov cl,5
+    516	    06BF  BA 0003				mov dx,3
+    517	    06C2  B0 00					mov al,0
+    518	    06C4  EE			      NextClear:out dx,al
+    519	    06C5  42					inc dx
+    520	    06C6  E2 FC					loop NextClear
+    521	    06C8  A0 0005r				mov al,NomHEX
+    522	    06CB  FE C8					dec al		   ; т к нумерация с 1
+    523	    06CD  B1 03					mov cl,3
+    524	    06CF  D2 E8					shr al,cl
+    525	    06D1  8A C8					mov cl,al
+    526	    06D3  8B D0					mov dx,ax
+    527	    06D5  A0 0005r				mov al,NomHEX
+    528	    06D8  FE C8					dec al		   ; тоже
+    529	    06DA  C0 E1	03				shl cl,3
+    530	    06DD  2A C1					sub al,cl
+    531	    06DF  8A C8					mov cl,al
+    532	    06E1  B0 01					mov al,1
+    533	    06E3  D2 E0					shl al,cl
+    534	    06E5  83 C2	03				add dx,3
+    535	    06E8  EE					out dx,al
+    536	    06E9  59					pop cx
+    537	    06EA  5A					pop dx
+    538	    06EB  58					pop ax
+    539	    06EC  C3					ret
+    540	    06ED			 NomD_Pos   endp
+    541
+    542	    06ED			 ResRotateLeft	proc near	     ;К	началу
+    543	    06ED  50					  push ax
+    544	    06EE  B0 01					  mov al,1
+    545	    06F0  E6 0E					  out OutPort  ,al
+    546	    06F2  A0 0011r				  mov al,ResRotate
+    547	    06F5  D0 C0					  rol al,1
+    548	    06F7  E6 0B					  out ResRotatePort,al
+    549	    06F9  A2 0011r				  mov ResRotate,al
+    550	    06FC  58					  pop ax
+    551	    06FD  C3					  ret
+    552	    06FE			 ResRotateLeft	endp
+    553
+    554	    06FE			 TolRotateLeft	proc near	    ;К забору
+    555	    06FE  50					  push ax
+    556	    06FF  B0 04					  mov al,4
+    557	    0701  E6 0E					  out OutPort  ,al
+    558	    0703  A0 0013r				  mov al,TolRotate
+    559	    0706  D0 C0					  rol al,1
+    560	    0708  E6 0D					  out TolRotatePort,al
+    561	    070A  A2 0013r				  mov TolRotate,al
+    562	    070D  58					  pop ax
+    563	    070E  C3					  ret
+    564	    070F			 TolRotateLeft	endp
+    565
+    566	    070F			 TolRotateRight	 proc near	      ;К показу
+    567	    070F  50					  push ax
+    568	    0710  B0 08					  mov al,8
+    569	    0712  E6 0E					  out OutPort  ,al
+    570	    0714  A0 0013r				  mov al,TolRotate
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 11
+Kurs.asm
+
+
+
+    571	    0717  D0 C8					  ror al,1
+    572	    0719  E6 0D					  out TolRotatePort,al
+    573	    071B  A2 0013r				  mov TolRotate,al
+    574	    071E  58					  pop ax
+    575	    071F  C3					  ret
+    576	    0720			 TolRotateRight	 endp
+    577
+    578	    0720			 DiamagRotateLeft  proc	near		;К началу
+    579	    0720  50					  push ax
+    580	    0721  B0 10					  mov al,10h
+    581	    0723  E6 0E					  out OutPort  ,al
+    582	    0725  A0 0012r				  mov al,DiamagRotate
+    583	    0728  D0 C0					  rol al,1
+    584	    072A  E6 0C					  out DiamagRotatePort,al
+    585	    072C  A2 0012r				  mov DiamagRotate,al
+    586	    072F  58					  pop ax
+    587	    0730  C3					  ret
+    588	    0731			 DiamagRotateLeft  endp
+    589
+    590	    0731			 DiamagRotateRight  proc near		    ;
+    591	    0731  50					  push ax
+    592	    0732  B0 20					  mov al,20h
+    593	    0734  E6 0E					  out OutPort  ,al
+    594	    0736  A0 0012r				  mov al,DiamagRotate
+    595	    0739  D0 C8					  ror al,1
+    596	    073B  E6 0C					  out DiamagRotatePort,al
+    597	    073D  A2 0012r				  mov DiamagRotate,al
+    598	    0740  58					  pop ax
+    599	    0741  C3					  ret
+    600	    0742			 DiamagRotateRight  endp
+    601
+    602	    0742			 ResRotateRight	 proc near
+    603	    0742  50					  push ax
+    604	    0743  B0 02					  mov al,2
+    605	    0745  E6 0E					  out OutPort  ,al
+    606	    0747  A0 0011r				  mov al,ResRotate
+    607	    074A  D0 C8					  ror al,1
+    608	    074C  E6 0B					  out ResRotatePort,al
+    609	    074E  A2 0011r				  mov ResRotate,al
+    610	    0751  58					  pop ax
+    611	    0752  C3					  ret
+    612	    0753			 ResRotateRight	 endp
+    613
+    614	    0753			 OutImage   proc  near
+    615	    0753  50				       push ax
+    616	    0754  51				       push cx
+    617	    0755  52				       push dx
+    618	    0756  53				       push bx
+    619
+    620	    0757  33 C9				       xor cx,cx
+    621	    0759  32 F6				       xor dh,dh
+    622	    075B  BB 000Ar			       lea bx,BaseImage
+    623	    075E  8A 16	0005r			       mov dl,NomHEX
+    624	    0762  FE CA				       dec dl			; т к с	первого
+    625	    0764  B1 05				       mov cl,5
+    626	    0766  D3 E2				       shl dx,cl
+    627	    0768  03 DA				       add bx,dx
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 12
+Kurs.asm
+
+
+
+    628
+    629	    076A  B6 04				       mov dh,4
+    630	    076C  B4 01				       mov ah,1
+    631	    076E  B2 01			    NextMatInd:mov dl,1
+    632	    0770  B9 0008			       mov cx,8
+    633	    0773  2E: 8A 07		       NextRow:mov al,cs:[bx]
+    634	    0776  F6 D0				       not al
+    635	    0778  E6 09				       out MatIndData,al
+    636
+    637	    077A  8A C4				       mov al,ah
+    638	    077C  E6 08				       out MatIndSelected, al
+    639	    077E  8A C2				       mov al,dl
+    640	    0780  E6 0A				       out MatIndStolSelected,al
+    641
+    642	    0782  B0 00				       mov al,0h
+    643	    0784  E6 09				       out MatIndData,al
+    644	    0786  E6 0A				       out MatIndStolSelected,al
+    645	    0788  D0 E2				       shl dl,1
+    646	    078A  43				       inc bx
+    647	    078B  E2 E6				       loop NextRow
+    648	    078D  D0 E4				       shl ah,1
+    649	    078F  FE CE				       dec dh
+    650	    0791  80 FE	00			       cmp dh,0
+    651	    0794  75 D8				       jnz  NextMatInd
+    652	    0796  5B				       pop bx
+    653	    0797  5A				       pop dx
+    654	    0798  59				       pop cx
+    655	    0799  58				       pop ax
+    656	    079A  C3				       ret
+    657	    079B			 OutImage   endp
+    658
+    659	    079B			 TolLeft   proc	near
+    660	    079B  51					       push cx
+    661	    079C  B9 0020				       mov cx,CountRotate
+    662	    079F  E8 FF04		   RepeatTolRotateLeft:call Delay1_16sec
+    663	    07A2  E8 FF59				       call tolRotateLeft
+    664	    07A5  E2 F8					       loop RepeatTolRotateLeft
+    665	    07A7  E8 FDCC				       call  ClearOutPort
+    666	    07AA  59					       pop cx
+    667	    07AB  C3					       ret
+    668	    07AC			 TolLeft  endp
+    669
+    670	    07AC			 TolRight proc near
+    671	    07AC  51					      push cx
+    672	    07AD  B9 0020				      mov cx,CountRotate
+    673	    07B0  E8 FEF3		 RepeatTolRotateRight:call Delay1_16sec
+    674	    07B3  E8 FF59				      call tolRotateRight
+    675	    07B6  E2 F8					      loop RepeatTolRotateRight
+    676	    07B8  E8 FDBB				      call  ClearOutPort
+    677	    07BB  59					      pop cx
+    678	    07BC  C3					      ret
+    679	    07BD			 TolRight endp
+    680
+    681	    07BD			 DiamagLeft  proc near
+    682	    07BD  51					      Push cx
+    683	    07BE  B9 0010				      mov cx,OneSec
+    684	    07C1  E8 FF5C				      call DiamagRotateLeft
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 13
+Kurs.asm
+
+
+
+    685	    07C4  E8 FEDF			 Repeat1Loop :call Delay1_16sec
+    686	    07C7  E2 FB					      loop Repeat1Loop
+    687	    07C9  E8 FDAA				      call  ClearOutPort
+    688	    07CC  59					      pop  cx
+    689	    07CD  C3					      ret
+    690	    07CE			 DiamagLeft  endp
+    691
+    692	    07CE			 DiamagRight proc near
+    693	    07CE  51					       push cx
+    694	    07CF  B9 0010				       mov cx,OneSec
+    695	    07D2  E8 FF5C				       call DiamagRotateRight
+    696	    07D5  E8 FECE			   RepeatLoop :call Delay1_16sec
+    697	    07D8  E2 FB					       loop RepeatLoop
+    698	    07DA  E8 FD99				       call  ClearOutPort
+    699	    07DD  59					       pop cx
+    700	    07DE  C3					       ret
+    701	    07DF			 DiamagRight endp
+    702
+    703
+    704
+    705	    07DF			 DemDiaposNext	proc near    ;+1
+    706	    07DF  E8 FFB9				       call TolLeft
+    707	    07E2  E8 FFE9				       call DiamagRight
+    708	    07E5  E8 FFC4				       call TolRight
+    709	    07E8  C3					       ret
+    710	    07E9			 DemDiaposNext	endp
+    711
+    712	    07E9			 DemDiaposBack Proc near	   ;-1
+    713	    07E9  E8 FFAF				      call TolLeft
+    714	    07EC  E8 FFCE				      call DiamagLeft
+    715	    07EF  E8 FFBA				      call TolRight
+    716
+    717	    07F2  C3					     ret
+    718	    07F3			 DemDiaposBack	endp
+    719
+    720	    07F3			 PortOut proc near
+    721	    07F3  50					   push	ax
+    722	    07F4  A0 0012r				   mov al,DiamagRotate
+    723	    07F7  E6 0C					   out DiamagRotatePort,al
+    724	    07F9  A2 0012r				   mov DiamagRotate,al
+    725	    07FC  A0 0013r				   mov al,TolRotate
+    726	    07FF  E6 0D					   out TolRotatePort,al
+    727	    0801  A2 0013r				   mov TolRotate,al
+    728	    0804  A0 0011r				   mov al,ResRotate
+    729	    0807  E6 0B					   out ResRotatePort,al
+    730	    0809  A2 0011r				   mov ResRotate,al
+    731	    080C  58					   pop ax
+    732	    080D  C3				     ret
+    733	    080E			 PortOut endp
+    734
+    735	    080E			 HandR	    proc  near
+    736	    080E  F6 06	0000r 01			test FlagR,_HandR
+    737	    0813  74 45					jz ExitHandR
+    738	    0815  C6 06	0003r 00			mov  FlagARRPV,_ClearARRPV
+    739	    081A  E8 FE9B				call NomD_Pos
+    740	    081D  E8 FF33				call OutImage
+    741	    0820  E8 FDED				call  OutDigInf
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 14
+Kurs.asm
+
+
+
+    742	    0823  F6 06	0002r 80			test FlagRes&RR,_Start
+    743	    0828  74 30					jz ExitHandR
+    744	    082A  8A 0E	0005r				mov cl,NomHEX
+    745	    082E  F6 06	0001r 10			test FlagPD,_BackPD
+    746	    0833  74 0E					jz Add_1_Nom
+    747	    0835  80 F9	01				cmp cl,MinNom
+    748	    0838  74 20					jz ExitHandR
+    749	    083A  FE C9					dec cl
+    750	    083C  51					push cx
+    751	    083D  E8 FFA9				call DemDiaposBack
+    752	    0840  59					pop cx
+    753	    0841  EB 0C					jmp NextHandR
+    754	    0843  80 F9	28		      Add_1_Nom:cmp cl,MaxNom
+    755	    0846  74 12					jz ExitHandR
+    756	    0848  FE C1					inc cl
+    757	    084A  51					push cx
+    758	    084B  E8 FF91				call DemDiaposNext
+    759	    084E  59					pop cx
+    760	    084F  8A C1			     NextHandR:	mov al,cl
+    761	    0851  A2 0005r				mov NomHEX,al
+    762	    0854  E8 FD26				call  hex_bcd
+    763	    0857  A2 0009r				mov NomBCD,al
+    764	    085A  C3			      ExitHandR:ret
+    765	    085B			 HandR	    endp
+    766
+    767	    085B			 AutoR	   proc	 near
+    768	    085B  F6 06	0000r 02			test FlagR,_AutoR
+    769	    0860  74 73	90 90				jz ExitAutoR
+    770	    0864  E8 FEEC				call OutImage
+    771	    0867  E8 FDA6				call  OutDigInf
+    772
+    773	    086A  80 26	0003r 01			and FlagARRPV,_NextAutoR
+    774	    086F  F6 06	0003r 01			test FlagARRPV,_NextAutoR
+    775	    0874  75 0E					Jnz NextAutoR
+    776	    0876  F6 06	0002r 80			test FlagRes&RR,_Start
+    777	    087B  74 58					jz ExitAutoR
+    778	    087D  C6 06	0003r 01			mov FlagARRPV,_NextAutoR
+    779	    0882  EB 51					Jmp ExitAutoR
+    780
+    781	    0884  8A 0E	0005r		      NextAutoR:mov cl,NomHEX
+    782	    0888  F6 06	0001r 10			test FlagPD,_BackPD
+    783	    088D  74 0E					jz _Add_1_Nom
+    784	    088F  80 F9	01				cmp cl,MinNom
+    785	    0892  74 41					jz ExitAutoR
+    786	    0894  FE C9					dec cl
+    787	    0896  51					push cx
+    788	    0897  E8 FF4F				call DemDiaposBack
+    789	    089A  59					pop cx
+    790	    089B  EB 0C					jmp NextAutoR2
+    791	    089D  80 F9	28		     _Add_1_Nom:cmp cl,MaxNom
+    792	    08A0  74 33					jz ExitAutoR
+    793	    08A2  FE C1					inc cl
+    794	    08A4  51					push cx
+    795	    08A5  E8 FF37				call DemDiaposNext
+    796	    08A8  59					pop cx
+    797	    08A9  8A C1			     NextAutoR2:mov al,cl
+    798	    08AB  A2 0005r				mov NomHEX,al
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 15
+Kurs.asm
+
+
+
+    799	    08AE  E8 FCCC				call  hex_bcd
+    800	    08B1  A2 0009r				mov NomBCD,al
+    801	    08B4  E8 FE01				call NomD_Pos
+    802	    08B7  33 C9					xor cx,cx
+    803	    08B9  33 C0					xor ax,ax
+    804	    08BB  A0 0004r				mov al,DelayHEX
+    805	    08BE  B1 04					mov cl,4
+    806	    08C0  D3 E0					shl ax,cl
+    807	    08C2  8B C8					mov cx,ax
+    808	    08C4			 NextDelayAutoR:
+    809	    08C4  E8 FDDF				call Delay1_16sec
+    810	    08C7  F6 06	0000r 02			test FlagR,_AutoR	     ;Если выбран другой режим
+    811	    08CC  74 07					jz ExitAutoR
+    812	    08CE  51					 push cx
+    813	    08CF  E8 FE81				call OutImage
+    814	    08D2  59					pop cx
+    815	    08D3  E2 EF					loop NextDelayAutoR
+    816	    08D5  C3			      ExitAutoR:ret
+    817	    08D6			 AutoR	   endp
+    818
+    819	    08D6			 Random	proc  near
+    820	    08D6  50				      push ax
+    821	    08D7  A1 000Br		   NextRandom:mov ax,RandomConst1
+    822	    08DA  03 06	000Dr			      add ax,RandomConst2
+    823	    08DE  A3 000Br			      mov RandomConst1,ax
+    824	    08E1  03 06	000Fr			      add ax,RandomConst3
+    825	    08E5  A3 000Dr			      mov RandomConst2,ax
+    826	    08E8  D1 D0				      rcl ax,1
+    827	    08EA  35 8000			      xor ax,8000h
+    828	    08ED  A3 000Fr			      mov RandomConst3,ax
+    829	    08F0  24 3F				      and al,0111111b
+    830	    08F2  3C 28				      cmp al,40
+    831	    08F4  77 E1				      ja NextRandom
+    832	    08F6  3C 00				      cmp al,0
+    833	    08F8  74 DD				      Jz NextRandom
+    834	    08FA  A2 0007r			      mov NomRandom,al
+    835	    08FD  58				      pop ax
+    836	    08FE  C3				      ret
+    837	    08FF			 Random	     endp
+    838
+    839	    08FF			 RandomR    proc  near
+    840	    08FF  F6 06	0000r 04			    test FlagR,_RandomR
+    841	    0904  0F 84	00B5				    jz ExitRandomR
+    842
+    843	    0908  E8 FE48				    call OutImage
+    844	    090B  E8 FD02				    call  OutDigInf
+    845	    090E  E8 FDA7				    call NomD_Pos
+    846	    0911  80 26	0003r 02			    and	FlagARRPV,_NextRandomR
+    847	    0916  F6 06	0003r 02			    test FlagARRPV,_NextRandomR
+    848	    091B  75 11					    Jnz	NextRandomR
+    849	    091D  F6 06	0002r 80			    test FlagRes&RR,_Start
+    850	    0922  0F 84	0097				    jz ExitRandomR
+    851	    0926  C6 06	0003r 02			    mov	FlagARRPV,_NextRandomR
+    852	    092B  E9 008F				   Jmp ExitRandomR
+    853
+    854
+    855
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 16
+Kurs.asm
+
+
+
+    856	    092E  A0 0005r		       NextRandomR: mov	al,NomHEX
+    857	    0931  3A 06	0007r				    cmp	al,NomRandom
+    858	    0935  72 05					    jb NomHEX_Men_NomRandom	    ;NomHEX<NomRandom
+    859	    0937  77 35					    ja NomHEX_Bol_NomRandom	     ;NomHEX>NomRandom
+    860	    0939  E9 0081				    jmp	ExitRandomR
+    861	    093C  A0 0007r		 NomHEX_Men_NomRandom:mov al,NomRandom
+    862	    093F  2A 06	0005r				    sub	al,NomHEX
+    863	    0943  50					    push ax
+    864	    0944  A0 0007r				    mov	 al,NomRandom
+    865	    0947  E8 FC33				    call  hex_bcd
+    866	    094A  A2 0009r				    mov	NomBCD,al
+    867	    094D  E8 FE4B				    call TolLeft
+    868
+    869	    0950  58					    pop	ax
+    870	    0951  33 C9					    xor	cx,cx
+    871	    0953  8A C8					    mov	cl,al
+    872	    0955  51				IncNomNext:push	cx
+    873	    0956  E8 FDD8				    call DiamagRotateRight
+    874	    0959  E8 FD4A				    call Delay1_16sec
+    875	    095C  E8 FD47				    call Delay1_16sec
+    876	    095F  E8 FC14				    call  ClearOutPort
+    877	    0962  FE 06	0005r				    inc	NomHEX
+    878	    0966  E8 FD4F				    call NomD_Pos
+    879	    0969  59					    pop	cx
+    880	    096A  E2 E9					    loop IncNomNext
+    881	    096C  EB 30					    Jmp	NextRandomR2
+    882	    096E  A0 0005r		  NomHEX_Bol_NomRandom:mov al,NomHEX
+    883	    0971  2A 06	0007r				    sub	al,NomRandom
+    884	    0975  50					    push ax
+    885	    0976  A0 0007r				    mov	 al,NomRandom
+    886	    0979  E8 FC01				    call  hex_bcd
+    887	    097C  A2 0009r				    mov	NomBCD,al
+    888	    097F  E8 FE19				    call TolLeft
+    889	    0982  58					    pop	ax
+    890	    0983  33 C9					    xor	cx,cx
+    891	    0985  8A C8					    mov	cl,al
+    892	    0987  51				DecNomNext :push cx
+    893	    0988  E8 FD95				    call DiamagRotateLeft
+    894	    098B  E8 FD18				    call Delay1_16sec
+    895	    098E  E8 FD15				    call Delay1_16sec
+    896	    0991  E8 FBE2				    call  ClearOutPort
+    897	    0994  FE 0E	0005r				    Dec	NomHEX
+    898	    0998  E8 FD1D				    call NomD_Pos
+    899	    099B  59					    pop	cx
+    900	    099C  E2 E9					    loop DecNomNext
+    901
+    902	    099E  E8 FE0B		       NextRandomR2:call TolRight
+    903	    09A1  33 C0					    xor	ax,ax
+    904	    09A3  A0 0004r				    mov	al,DelayHEX
+    905	    09A6  B1 04					    mov	cl,4
+    906	    09A8  D3 E0					    shl	ax,cl
+    907	    09AA  8B C8					    mov	cx,ax
+    908	    09AC  E8 FCF7		   NextDelayRandomR:call Delay1_16sec
+    909	    09AF  F6 06	0000r 04			    test FlagR,_RandomR
+    910	    09B4  74 07					    jz ExitRandomR		    ; если выбран другой режим
+    911	    09B6  51					    push cx
+    912	    09B7  E8 FD99				    call OutImage
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 17
+Kurs.asm
+
+
+
+    913	    09BA  59					    pop	cx
+    914	    09BB  E2 EF					    loop NextDelayRandomR
+    915	    09BD  C3				ExitRandomR:ret
+    916	    09BE			 RandomR	 endp
+    917
+    918	    09BE			 Start:
+    919	    09BE  B8 0000s			    mov	  ax,Data
+    920	    09C1  8E D8				    mov	  ds,ax
+    921	    09C3  B8 0000s			    mov	  ax,Code
+    922	    09C6  8E C0				    mov	  es,ax
+    923	    09C8  B8 0000s			    mov	  ax,Stk
+    924	    09CB  8E D0				    mov	  ss,ax
+    925	    09CD  BC 0032r			    lea	  sp,StkTop
+    926	    09D0  E4 40				    in al,40h
+    927	    09D2  E8 FBBB			    call   Init
+    928
+    929	    09D5  E8 FB46		  startprog:call   ScanButton
+    930	    09D8  E8 FB6F			    call   ScanTime
+    931
+    932	    09DB  E8 FC7A			    call   Res
+    933	    09DE  E8 FE2D			    call   HandR
+    934	    09E1  E8 FE77			    call   AutoR
+    935	    09E4  E8 FF18			    call   RandomR
+    936	    09E7  E8 FEEC			    call   Random
+    937	    09EA  EB E9				    jmp	startprog
+    938
+    939
+    940
+    941						    org	  RomSize-16
+    942						    ASSUME cs:NOTHING
+    943	    0FF0  EA 000009BEsr			    jmp	  Far Ptr Start
+    944	    0FF5			 Code	    ENDS
+    945					 END
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 18
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "19/04/05"
+??FILENAME			  Text	 "Kurs	  "
+??TIME				  Text	 "18:53:59"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 KURS
+@WORDSIZE			  Text	 2
+ACP&INDPORT			  Number 0000
+ACPDATAPORT			  Number 0002
+ADD_1_NOM			  Near	 CODE:0843
+AUTOR				  Near	 CODE:085B
+BASEIMAGE			  Byte	 CODE:000A
+BUTTONPORT			  Number 0000
+CLEAROUTPORT			  Near	 CODE:0576
+CONSTR1				  Number B2B8
+CONSTR2				  Number D41C
+CONSTR3				  Number 300C
+COUNTROTATE			  Number 0020
+DECNOMNEXT			  Near	 CODE:0987
+DELAY				  Near	 CODE:0698
+DELAY1_16SEC			  Near	 CODE:06A6
+DELAYBCD			  Byte	 DATA:0008
+DELAYHEX			  Byte	 DATA:0004
+DELAYLOOP			  Near	 CODE:069C
+DELAYVALUE			  Number 2FFF
+DEMDIAPOSBACK			  Near	 CODE:07E9
+DEMDIAPOSNEXT			  Near	 CODE:07DF
+DIAMAGLEFT			  Near	 CODE:07BD
+DIAMAGRIGHT			  Near	 CODE:07CE
+DIAMAGROTATE			  Byte	 DATA:0012
+DIAMAGROTATELEFT		  Near	 CODE:0720
+DIAMAGROTATEPORT		  Number 000C
+DIAMAGROTATERIGHT		  Near	 CODE:0731
+DIGINDPORTDATA			  Number 0001
+DIGINDPORTSELECTED		  Number 0002
+EXITAUTOR			  Near	 CODE:08D5
+EXITHANDR			  Near	 CODE:085A
+EXITHEX_BCD			  Near	 CODE:058E
+EXITRANDOMR			  Near	 CODE:09BD
+EXITRES				  Near	 CODE:0696
+EXITSCANBUTTON			  Near	 CODE:0545
+FLAGARRPV			  Byte	 DATA:0003
+FLAGPD				  Byte	 DATA:0001
+FLAGR				  Byte	 DATA:0000
+FLAGRES&RR			  Byte	 DATA:0002
+HANDR				  Near	 CODE:080E
+HEX_BCD				  Near	 CODE:057D
+IMAGE				  Byte	 CODE:0000
+INCNOMNEXT			  Near	 CODE:0955
+INIT				  Near	 CODE:0590
+INPORT				  Number 0001
+LOOPHEX_BCD			  Near	 CODE:0589
+MATINDDATA			  Number 0009
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 19
+Symbol Table
+
+
+
+MATINDSELECTED			  Number 0008
+MATINDSTOLSELECTED		  Number 000A
+MAXNOM				  Number 0028
+MAXRES				  Number 001E
+MINNOM				  Number 0001
+MINRES				  Number 0000
+MINTIME				  Number 000A
+NEXT2SCANBUTTON			  Near	 CODE:0540
+NEXTAUTOR			  Near	 CODE:0884
+NEXTAUTOR2			  Near	 CODE:08A9
+NEXTCLEAR			  Near	 CODE:06C4
+NEXTDELAYAUTOR			  Near	 CODE:08C4
+NEXTDELAYRANDOMR		  Near	 CODE:09AC
+NEXTDIAMAGROTATELEFT		  Near	 CODE:05F3
+NEXTDIG				  Near	 CODE:0620
+NEXTHANDR			  Near	 CODE:084F
+NEXTINIT1			  Near	 CODE:05E5
+NEXTINIT2			  Near	 CODE:05F3
+NEXTINIT3			  Near	 CODE:0601
+NEXTMATIND			  Near	 CODE:076E
+NEXTRANDOM			  Near	 CODE:08D7
+NEXTRANDOMR			  Near	 CODE:092E
+NEXTRANDOMR2			  Near	 CODE:099E
+NEXTRES				  Near	 CODE:067E
+NEXTRESROTATELEFT		  Near	 CODE:05D4
+NEXTROW				  Near	 CODE:0773
+NEXTSCANBUTTON			  Near	 CODE:0535
+NEXTTOLROTATELEFT		  Near	 CODE:05E5
+NEXTTOLROTATERIGHT		  Near	 CODE:0604
+NMAX				  Number 0032
+NOMBCD				  Byte	 DATA:0009
+NOMD_POS			  Near	 CODE:06B8
+NOMHEX				  Byte	 DATA:0005
+NOMHEX_BOL_NOMRANDOM		  Near	 CODE:096E
+NOMHEX_MEN_NOMRANDOM		  Near	 CODE:093C
+NOMRANDOM			  Byte	 DATA:0007
+ONESEC				  Number 0010
+OUTDIGINF			  Near	 CODE:0610
+OUTIMAGE			  Near	 CODE:0753
+OUTPORT				  Number 000E
+PORTOUT				  Near	 CODE:07F3
+RANDOM				  Near	 CODE:08D6
+RANDOMCONST1			  Word	 DATA:000B
+RANDOMCONST2			  Word	 DATA:000D
+RANDOMCONST3			  Word	 DATA:000F
+RANDOMR				  Near	 CODE:08FF
+REPEAT1LOOP			  Near	 CODE:07C4
+REPEATLOOP			  Near	 CODE:07D5
+REPEATTOLROTATELEFT		  Near	 CODE:079F
+REPEATTOLROTATERIGHT		  Near	 CODE:07B0
+RES				  Near	 CODE:0658
+RESBCD				  Byte	 DATA:000A
+RESHEH				  Byte	 DATA:0006
+RESROTATE			  Byte	 DATA:0011
+RESROTATELEFT			  Near	 CODE:06ED
+RESROTATEPORT			  Number 000B
+RESROTATERIGHT			  Near	 CODE:0742
+Turbo Assembler	 Version 3.1	    19/04/05 18:53:59	    Page 20
+Symbol Table
+
+
+
+ROMSIZE				  Number 1000
+SCANBUTTON			  Near	 CODE:051E
+SCANTIME			  Near	 CODE:054A
+START				  Near	 CODE:09BE
+STARTPROG			  Near	 CODE:09D5
+STKTOP				  Word	 STK:0032
+SUBRES				  Near	 CODE:066E
+TOLLEFT				  Near	 CODE:079B
+TOLRIGHT			  Near	 CODE:07AC
+TOLROTATE			  Byte	 DATA:0013
+TOLROTATELEFT			  Near	 CODE:06FE
+TOLROTATEPORT			  Number 000D
+TOLROTATERIGHT			  Near	 CODE:070F
+VD1				  Near	 CODE:050A
+VD2				  Near	 CODE:050E
+VIBRDESTR			  Near	 CODE:050A
+WAITRDY				  Near	 CODE:0559
+_ADD_1_NOM			  Near	 CODE:089D
+_AUTOR				  Number 0002
+_BACKPD				  Number 0010
+_BACKRES			  Number 0040
+_CLEARARRPV			  Number 0000
+_DATRESETDIAMAG			  Number 0004
+_DATRESETRES			  Number 0002
+_DATRESETTOL			  Number 0008
+_HANDR				  Number 0001
+_NEXTAUTOR			  Number 0001
+_NEXTPD				  Number 0008
+_NEXTRANDOMR			  Number 0002
+_NEXTRES			  Number 0020
+_RANDOMR			  Number 0004
+_START				  Number 0080
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+DATA				  16  0014  AT 0040
+STK				  16  0032  AT 0300
+

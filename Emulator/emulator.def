@@ -1,0 +1,11 @@
+LIBRARY      "emulator"
+
+EXPORTS
+	VirtToReal
+	LoadProgram
+	StepInstruction
+	RunToBreakPoint
+	ToggleBreakpoint
+	InitEmulator
+	SetInstrCounter
+  KillInstrCounter

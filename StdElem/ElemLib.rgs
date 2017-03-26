@@ -1,0 +1,25 @@
+HKCR
+{
+	StdElem.ElemLib.1 = s 'ElemLib Class'
+	{
+		CLSID = s '{6B4C02AF-DC58-4935-B438-552DEBB72761}'
+	}
+	StdElem.ElemLib = s 'ElemLib Class'
+	{
+		CLSID = s '{6B4C02AF-DC58-4935-B438-552DEBB72761}'
+		CurVer = s 'StdElem.ElemLib.1'
+	}
+	NoRemove CLSID
+	{
+		ForceRemove {6B4C02AF-DC58-4935-B438-552DEBB72761} = s 'ElemLib Class'
+		{
+			ProgID = s 'StdElem.ElemLib.1'
+			VersionIndependentProgID = s 'StdElem.ElemLib'
+			ForceRemove 'Programmable'
+			InprocServer32 = s '%MODULE%'
+			{
+			}
+			'TypeLib' = s '{D30F470C-C4B7-4014-8F92-F4BECEF07E06}'
+		}
+	}
+}

@@ -1,0 +1,535 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Russian resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
+#ifdef _WIN32
+LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
+#pragma code_page(1251)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// REGISTRY
+//
+
+IDR_ELEMLIB             REGISTRY                "ElemLib.rgs"
+IDR_ELEMENT             REGISTRY                "Element.rgs"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Menu
+//
+
+IDR_LED_MENU MENU 
+BEGIN
+    POPUP "Светодиод"
+    BEGIN
+        MENUITEM "Зажигается &единицей",        ID_ACTIVE_HIGH
+        MENUITEM "Зажигается &нулём",           ID_ACTIVE_LOW
+        MENUITEM "Цвет",                        ID_SELECT_COLOR
+    END
+END
+
+IDR_OUTPUT_PORT_MENU MENU 
+BEGIN
+    POPUP "Порт вывода"
+    BEGIN
+        MENUITEM "&Адрес",                      ID_ADDRESS
+        MENUITEM "Повернуть",                   ID_ROTATE
+    END
+END
+
+IDR_LABEL_MENU MENU 
+BEGIN
+    POPUP "Метка"
+    BEGIN
+        MENUITEM "&Текст метки",                ID_LABEL_TEXT
+    END
+END
+
+IDR_INPUT_PORT_MENU MENU 
+BEGIN
+    POPUP "Порт ввода"
+    BEGIN
+        MENUITEM "&Адрес",                      ID_ADDRESS
+    END
+END
+
+IDR_BUTTON_MENU MENU 
+BEGIN
+    POPUP "Кнопка"
+    BEGIN
+        MENUITEM "Н&адпись",                    ID_LABEL_TEXT
+        MENUITEM SEPARATOR
+        MENUITEM "Норм. &незамкнута",           ID_NORMAL_OPENED
+        MENUITEM "Норм. &замкнута",             ID_NORMAL_CLOSED
+        MENUITEM SEPARATOR
+        MENUITEM "С &фиксацией",                ID_FIXABLE
+        MENUITEM "С дребезгом",                 ID_DREBEZG
+    END
+END
+
+IDR_IND_MENU MENU 
+BEGIN
+    POPUP "Индикатор"
+    BEGIN
+        MENUITEM "Зажигается &единицей",        ID_ACTIVE_HIGH
+        MENUITEM "Зажигается &нулём",           ID_ACTIVE_LOW
+    END
+END
+
+IDR_KBD_MENU MENU 
+BEGIN
+    POPUP "Клавиатура"
+    BEGIN
+        MENUITEM "С дребезгом",                 ID_DREBEZG
+        MENUITEM "Надписи",                     ID_KBD_CAPTIONS
+        MENUITEM "Размерность",                 ID_KBD_SIZE
+        MENUITEM "С &фиксацией",                ID_FIXABLE
+    END
+END
+
+IDR_ADC_MENU MENU 
+BEGIN
+    POPUP "АЦП"
+    BEGIN
+        MENUITEM "Время преобразования",        ID_DELAY
+        MENUITEM "Пределы",                     ID_LIMITS
+        MENUITEM "16 бит",                      ID_HI_PRECISION
+    END
+END
+
+IDR_BEEP_MENU MENU 
+BEGIN
+    POPUP "Генератор звука"
+    BEGIN
+        MENUITEM "Частота",                     ID_BEEP_FREQ
+    END
+END
+
+IDR_MATRIX_MENU MENU 
+BEGIN
+    POPUP "Матрица"
+    BEGIN
+        MENUITEM "Размерность",                 ID_MATRIX_SIZE
+        MENUITEM "Зажигается &единицей",        ID_ACTIVE_HIGH
+        MENUITEM "Зажигается &нулём",           ID_ACTIVE_LOW
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_ADDRESS_DLG DIALOG  0, 0, 112, 21
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Адрес (hex)"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_ADDRESS,4,4,28,12,ES_UPPERCASE
+    DEFPUSHBUTTON   "OK",IDOK,40,4,31,12
+    PUSHBUTTON      "Отмена",IDCANCEL,76,4,31,12
+END
+
+IDD_TEXT_DLG DIALOG  0, 0, 124, 90
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
+    WS_SYSMENU
+CAPTION "Текст метки"
+FONT 8, "MS Sans Serif"
+BEGIN
+    EDITTEXT        IDC_TEXT,4,4,116,64,ES_MULTILINE | ES_AUTOVSCROLL | 
+                    ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    DEFPUSHBUTTON   "OK",IDOK,8,72,36,12
+    PUSHBUTTON      "Отмена",IDCANCEL,72,72,40,12
+END
+
+IDD_KBD_CAPTIONS_DLG DIALOG  0, 0, 134, 71
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Надписи"
+FONT 8, "MS Sans Serif"
+BEGIN
+    COMBOBOX        IDC_X,98,3,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_Y,31,3,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    EDITTEXT        IDC_CAPTION,41,20,36,13
+    DEFPUSHBUTTON   "Следующая",ID_NEXT,3,37,126,14
+    PUSHBUTTON      "OK",IDOK,3,55,45,14
+    PUSHBUTTON      "Отмена",IDCANCEL,84,55,45,14
+    RTEXT           "Строка:",IDC_STATIC,3,3,26,12,SS_CENTERIMAGE
+    RTEXT           "Столбец:",IDC_STATIC,67,3,29,12,SS_CENTERIMAGE
+    RTEXT           "Надпись:",IDC_STATIC,3,20,33,12,SS_CENTERIMAGE
+END
+
+IDD_KBD_SIZE_DLG DIALOG  0, 0, 138, 38
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Размерность"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,4,20,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,84,20,50,14
+    COMBOBOX        IDC_X,103,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_Y,30,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    RTEXT           "Столбцов:",IDC_STATIC,67,2,35,12,SS_CENTERIMAGE
+    RTEXT           "Строк:",IDC_STATIC,4,2,24,12,SS_CENTERIMAGE
+END
+
+IDD_ADC_DELAY_DLG DIALOG  0, 0, 143, 36
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Время преобразования АЦП"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,4,18,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,89,18,50,14
+    RTEXT           "Время преобразования:",IDC_STATIC,4,2,85,12,
+                    SS_CENTERIMAGE
+    EDITTEXT        IDC_DELAY,92,2,34,12,ES_NUMBER
+    RTEXT           "мс.",IDC_STATIC,126,2,13,12,SS_CENTERIMAGE
+END
+
+IDD_ADC_LIMITS_DLG DIALOG  0, 0, 123, 52
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Пределы АЦП"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,4,34,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,69,34,50,14
+    RTEXT           "Верхний предел",IDC_STATIC,4,2,57,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_HILIMIT,66,2,44,12
+    RTEXT           "В.",IDC_STATIC,110,2,9,12,SS_CENTERIMAGE
+    RTEXT           "Нижний предел",IDC_STATIC,4,17,57,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_LOLIMIT,66,17,44,12
+    RTEXT           "В.",IDC_STATIC,110,17,9,12,SS_CENTERIMAGE
+END
+
+IDD_BEEP_FREQ_DLG DIALOG  0, 0, 115, 47
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Частота генератора"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,7,26,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,58,26,50,14
+    LTEXT           "Частота",IDC_STATIC,7,7,31,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_FREQ,44,7,43,13,ES_AUTOHSCROLL | ES_NUMBER
+    LTEXT           "Гц",IDC_STATIC,96,7,12,12,SS_CENTERIMAGE
+END
+
+IDD_MATRIX_SIZE_DLG DIALOG  0, 0, 138, 38
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Размерность"
+FONT 8, "MS Sans Serif"
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,4,20,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,84,20,50,14
+    COMBOBOX        IDC_X,103,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    COMBOBOX        IDC_Y,30,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
+                    WS_TABSTOP
+    RTEXT           "Столбцов:",IDC_STATIC,67,2,35,12,SS_CENTERIMAGE
+    RTEXT           "Строк:",IDC_STATIC,4,2,24,12,SS_CENTERIMAGE
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_ADDRESS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 105
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 14
+    END
+
+    IDD_TEXT_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 117
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 83
+    END
+
+    IDD_KBD_CAPTIONS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 129
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 68
+    END
+
+    IDD_KBD_SIZE_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 134
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 34
+    END
+
+    IDD_ADC_DELAY_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 139
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 32
+    END
+
+    IDD_ADC_LIMITS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 119
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 48
+    END
+
+    IDD_BEEP_FREQ_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 108
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 40
+    END
+
+    IDD_MATRIX_SIZE_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 4
+        RIGHTMARGIN, 134
+        TOPMARGIN, 2
+        BOTTOMMARGIN, 34
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_KBD_SIZE_DLG DLGINIT
+BEGIN
+    IDC_X, 0x403, 2, 0
+0x0031, 
+    IDC_X, 0x403, 2, 0
+0x0032, 
+    IDC_X, 0x403, 2, 0
+0x0033, 
+    IDC_X, 0x403, 2, 0
+0x0034, 
+    IDC_X, 0x403, 2, 0
+0x0035, 
+    IDC_X, 0x403, 2, 0
+0x0036, 
+    IDC_X, 0x403, 2, 0
+0x0037, 
+    IDC_X, 0x403, 2, 0
+0x0038, 
+    IDC_Y, 0x403, 2, 0
+0x0031, 
+    IDC_Y, 0x403, 2, 0
+0x0032, 
+    IDC_Y, 0x403, 2, 0
+0x0033, 
+    IDC_Y, 0x403, 2, 0
+0x0034, 
+    IDC_Y, 0x403, 2, 0
+0x0035, 
+    IDC_Y, 0x403, 2, 0
+0x0036, 
+    IDC_Y, 0x403, 2, 0
+0x0037, 
+    IDC_Y, 0x403, 2, 0
+0x0038, 
+    0
+END
+
+IDD_MATRIX_SIZE_DLG DLGINIT
+BEGIN
+    IDC_X, 0x403, 2, 0
+0x0035, 
+    IDC_X, 0x403, 2, 0
+0x0036, 
+    IDC_X, 0x403, 2, 0
+0x0037, 
+    IDC_X, 0x403, 2, 0
+0x0038, 
+    IDC_Y, 0x403, 2, 0
+0x0037, 
+    IDC_Y, 0x403, 2, 0
+0x0038, 
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_NUMBERS             BITMAP                  "res\\Numbers.bmp"
+IDB_CHARS               BITMAP                  "res\\chars.bmp"
+IDB_BUTTON_ELEMENT      BITMAP                  "res\\button.bmp"
+IDB_INDICATOR_ELEMENT   BITMAP                  "res\\indicator.bmp"
+IDB_INPUT_PORT          BITMAP                  "res\\input_port.bmp"
+IDB_KBD_ELEMENT         BITMAP                  "res\\kbd.bmp"
+IDB_LABEL               BITMAP                  "res\\label.bmp"
+IDB_LED_ELEMENT         BITMAP                  "res\\led.bmp"
+IDB_MATRIX_ELEMENT      BITMAP                  "res\\matrix.bmp"
+IDB_OUT_PORT            BITMAP                  "res\\out_port.bmp"
+IDB_ADC_ELEMENT         BITMAP                  "res\\adc.bmp"
+IDB_BEEP_ELEMENT        BITMAP                  "res\\beep.bmp"
+IDB_INDIC_DYN_ELEMENT   BITMAP                  "res\\indicato.bmp"
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 1,0,0,1
+ PRODUCTVERSION 1,0,0,1
+ FILEFLAGSMASK 0x3fL
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904B0"
+        BEGIN
+            VALUE "FileDescription", "StdElem Module"
+            VALUE "FileVersion", "1, 0, 0, 1"
+            VALUE "InternalName", "StdElem"
+            VALUE "LegalCopyright", "Copyright 2002"
+            VALUE "OriginalFilename", "StdElem.DLL"
+            VALUE "ProductName", "StdElem Module"
+            VALUE "ProductVersion", "1, 0, 0, 1"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// String Table
+//
+
+STRINGTABLE 
+BEGIN
+    ID_HI_PRECISION         "16-ти битный режим\n16 бит"
+    ID_MENUITEM32771        "Зажигать светодиод низким уровнем"
+    ID_ADDRESS              "Задать новый адрес"
+    ID_LABEL_TEXT           "Изменить текст"
+    ID_NORMAL_OPENED        "Контакты нормально замкнуты"
+    ID_FIXABLE              "Влючить/отключить режим фиксации"
+    ID_DREBEZG              "Включить/отключить дребезг кнопки"
+    ID_KBD_CAPTIONS         "Надписи на кнопках\nНадписи"
+    ID_KBD_SIZE             "Изменить размерность клавиатуры\nРазмерность клавиатуры"
+    ID_DELAY                "Установить время преобразования\nВремя преобразования"
+    ID_LIMITS               "Изменить мин. и макс. напряжения АЦП\nПределы АЦП"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_ACTIVE_HIGH          "Зажигать высоким уровнем"
+    ID_ACTIVE_LOW           "Зажигать низким уровнем"
+END
+
+STRINGTABLE 
+BEGIN
+    ID_BEEP_FREQ            "Частота генератора"
+    ID_MATRIX_SIZE          "Изменить размерность индикатора\nРазмерность индикатора"
+    ID_ROTATE               "Повернуть элемент\nПовернуть"
+    ID_SELECT_COLOR         "Изменить цвет\nЦвет"
+END
+
+STRINGTABLE 
+BEGIN
+    IDS_PROJNAME            "StdElem"
+END
+
+#endif    // Russian resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "1 TYPELIB ""StdElem.tlb""\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+1 TYPELIB "StdElem.tlb"
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

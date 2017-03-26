@@ -1,0 +1,7 @@
+[ARCH]=00000000,Osc.arh
+[SOURCE]=00000001,Osc.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(161,28,983,551)D:\WORK\VC\Demis2k\Osc\Osc.asm
+[WND.arh]=(238,111,985,596)D:\WORK\VC\Demis2k\Osc\Osc.arh

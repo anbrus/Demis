@@ -1,0 +1,3 @@
+[ARCH]=Clock.arh
+[SOURCE]=Clock.asm
+[ROMSIZE]=4

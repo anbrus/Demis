@@ -1,0 +1,59 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: StdElem - Win32 Debug--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating temporary file "C:\Temp\RSP90.tmp" with contents
+[
+/nologo /MDd /W3 /Gm /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_WINDLL" /D "_AFXDLL" /D "_MBCS" /D "_USRDLL" /Fp"Debug/StdElem.pch" /Yu"stdafx.h" /Fo"Debug/" /Fd"Debug/" /FD /GZ /c 
+"E:\WORK\VC\Demis2k\StdElem\StdElem.cpp"
+]
+Creating command line "cl.exe @C:\Temp\RSP90.tmp" 
+Creating temporary file "C:\Temp\RSP91.tmp" with contents
+[
+/nologo /subsystem:windows /dll /incremental:yes /pdb:"..\Debug/StdElem.pdb" /debug /machine:I386 /def:".\StdElem.def" /out:"..\Debug/StdElem.dll" /implib:"..\Debug/StdElem.lib" /pdbtype:sept 
+.\Debug\ADCElement.obj
+.\Debug\AddressDlg.obj
+.\Debug\BeepElement.obj
+.\Debug\Button.obj
+.\Debug\Element.obj
+.\Debug\ElementWnd.obj
+.\Debug\ElemInterf.obj
+.\Debug\ElemLib.obj
+.\Debug\Indicator.obj
+.\Debug\InputPort.obj
+.\Debug\KbdElement.obj
+.\Debug\Label.obj
+.\Debug\LedElement.obj
+.\Debug\MatrixElem.obj
+.\Debug\OutputPort.obj
+.\Debug\StdAfx.obj
+.\Debug\StdElem.obj
+.\Debug\TextDlg.obj
+.\Debug\StdElem.res
+]
+Creating command line "link.exe @C:\Temp\RSP91.tmp"
+Creating temporary file "C:\Temp\RSP92.bat" with contents
+[
+@echo off
+regsvr32 /s /c "\WORK\VC\Demis2k\Debug\StdElem.dll"
+echo regsvr32 exec. time > ".\..\Debug\regsvr32.trg"
+]
+Creating command line "C:\Temp\RSP92.bat"
+Compiling...
+StdElem.cpp
+Linking...
+   Creating library ..\Debug/StdElem.lib and object ..\Debug/StdElem.exp
+<h3>Output Window</h3>
+Performing registration
+
+
+
+<h3>Results</h3>
+StdElem.dll - 0 error(s), 0 warning(s)
+</pre>
+</body>
+</html>

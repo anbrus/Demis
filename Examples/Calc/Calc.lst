@@ -1,0 +1,1629 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:18:17
+Calc.asm						     Page 1 - 1
+
+
+				; Головной модуль
+
+				Name ArithmeticCaculator
+
+				;Описание констант
+ = 000A				Point          EQU  10           ; кнопка  '.'
+ = 000B				SignChg        EQU  11           ; кнопка '+/-'
+
+				; Действие         Код
+ = 000C				Addition       EQU  12           ; кнопка  '+'
+ = 000D				Subtraction    EQU  13           ; кнопка  '-'
+ = 000E				Multiplication EQU  14           ; кнопка  '*'
+ = 000F				Division       EQU  15           ; кнопка  '/'
+ = 0010				Calculation    EQU  16           ; кнопка  '='
+
+ = 0011				Clr            EQU  17           ; кнопка  'C'
+ = 0012				ClrE           EQU  18           ; кнопка  'CE'
+ = 0013				Bksp           EQU  19           ; кнопка 'BKSP'
+ = 0014				MemClr         EQU  20           ; кнопка  'MC'
+ = 0015				MemRd          EQU  21           ; кнопка  'MR'
+ = 0016				MemSet         EQU  22           ; кнопка 'X->M'
+ = 0017				MemAdd         EQU  23           ; кнопка  'M+'
+
+				; Описание данных
+ 0000				Data Segment use16 at 0BA00H
+ 0000  0005 [			    Rez db 5 dup (?)             ; вещественные числа:
+        00
+       ]
+ 0005  0005 [			    Arg db 5 dup (?)             ; 1-ый байт - порядок
+        00
+       ]
+ 000A  0005 [			    Mem db 5 dup (?)             ; со знаком; байты 2-5
+        00
+       ]
+				                                 ; - мантисса со знаком
+
+ 000F 00			    Operation db ?               ; операция
+
+ 0010 00			    Error db ?                   ; флаг ошибок
+
+ 0011  000D [			    StrDisplay db 13 dup (?)            ; строка ввода/вывода
+        00
+       ]
+				                                 ; данных на дисплей:
+				                                 ; 8 разрядов отделенных
+				                                 ; точкой, знак, число
+				                                 ; введеных разрядов,
+				                                 ; флаг наличия точки,
+				                                 ; флаг того, что строку
+				                                 ; надо вводить заново
+
+ 001E 00			    ActiveButtonCode db ?        ; код нажатой клавиши
+ 001F  000D [			    OutputMap db 13 dup (?)      ; массив образов
+        00
+       ]
+
+ 002C  0004 [			    MulRez dw 4 dup (?)          ; вспомогательная
+        0000
+       ]
+				                                 ; переменная
+ 0034				Data EndS
+
+				; Описание стека
+ 0000				Stack Segment use16 at 0BA80H
+ 0000  0064 [			     dw 100 dup (?)              ; 100 слов (с запасом)
+        0000
+       ]
+ 00C8				     StkTop label Word           ; вершина стека
+ 00C8				Stack EndS
+
+				; Описание выполняемых действий
+ 0000				Code Segment use16
+				Assume cs:Code,ds:Data,es:Data
+
+				; Инициализация карты образов
+ 0000				InitOutputMap Proc near
+ 0000  C6 06 001F R 3F		         mov OutputMap[0],3Fh    ; образы цифр
+ 0005  C6 06 0020 R 0C		         mov OutputMap[1],0Ch    ; от 0 до 9
+ 000A  C6 06 0021 R 76		         mov OutputMap[2],76h
+ 000F  C6 06 0022 R 5E		         mov OutputMap[3],05Eh
+ 0014  C6 06 0023 R 4D		         mov OutputMap[4],4Dh
+ 0019  C6 06 0024 R 5B		         mov OutputMap[5],5Bh
+ 001E  C6 06 0025 R 7B		         mov OutputMap[6],7Bh
+ 0023  C6 06 0026 R 0E		         mov OutputMap[7],0Eh
+ 0028  C6 06 0027 R 7F		         mov OutputMap[8],7Fh
+ 002D  C6 06 0028 R 5F		         mov OutputMap[9],5Fh
+
+ 0032  C6 06 0029 R 80		         mov OutputMap[10],80h   ; образ точки
+ 0037  C6 06 002A R 40		         mov OutputMap[11],40h   ; образ знака "-"
+ 003C  C6 06 002B R 00		         mov OutputMap[12],0h    ; образ пустого места
+ 0041  C3			         ret
+ 0042				InitOutputMap EndP
+
+				; Очистка строки ввода/вывода данных на дисплей
+ 0042				StrClear Proc near
+ 0042  50			         push ax
+ 0043  57			         push di
+
+ 0044  8D 3E 0011 R		         lea di,StrDisplay
+
+ 0048  32 C0			         xor al,al               ; младший разряд -
+ 004A  AA			         stosb                   ; нулевой
+
+ 004B  B0 0C			         mov al,12               ; остальные
+ 004D  B9 0009			         mov cx,9                ; отображаемые
+ 0050  AA			   SCcyc:stosb                   ; разряды
+ 0051  E2 FD			         loop SCcyc              ; пусты
+
+ 0053  32 C0			         xor al,al
+ 0055  AA			         stosb                   ; введено 0 разрядов
+ 0056  AA			         stosb                   ; точки нет
+
+ 0057  B0 FF			         mov al,0FFh             ; строку надо вводить
+ 0059  AA			         stosb                   ; заново
+
+ 005A  5F			         pop di
+ 005B  58			         pop ax
+ 005C  C3			         ret
+ 005D				StrClear EndP
+
+				; Обнуление вещественного числа;
+				; параметры: в di - смещение числа
+ 005D				FloatClear Proc near
+ 005D  53			         push bx
+
+ 005E  33 DB			         xor bx,bx
+ 0060  C6 01 00			   FCcyc:mov byte ptr [di+bx],0  ; обнулить
+ 0063  43			         inc bx                  ; все
+ 0064  83 FB 05			         cmp bx,5                ; 5 байт
+ 0067  75 F7			         jne FCcyc
+
+ 0069  5B			         pop bx
+ 006A  C3			         ret
+ 006B				FloatClear EndP
+
+				; Смена знака мантиссы вещественного числа,
+				; параметры: в регистре di - смещение числа
+ 006B				FloatNeg Proc near
+ 006B  50			         push ax
+ 006C  52			         push dx
+
+ 006D  B8 FFFF			         mov ax,0FFFFh
+ 0070  BA FFFF			         mov dx,0FFFFh
+
+ 0073  2B 45 01			         sub ax,[di+1]
+ 0076  2B 55 03			         sub dx,[di+3]
+
+ 0079  83 C0 01			         add ax,1
+ 007C  83 D2 00			         adc dx,0
+
+ 007F  89 45 01			         mov [di+1],ax
+ 0082  89 55 03			         mov [di+3],dx
+
+ 0085  5A			         pop dx
+ 0086  58			         pop ax
+ 0087  C3			         ret
+ 0088				FloatNeg EndP
+
+				include io.asm
+			      C ; Модуль, содержащий все необходимые
+			      C ; процедуры для интерфейсной части
+			      C 
+			      C ; Сдвиг строки ввода/вывода на 1 разряд вправо
+ 0088			      C RotateStringRight Proc near
+ 0088  50		      C          push ax
+ 0089  53		      C          push bx
+			      C 
+ 008A  33 DB		      C          xor bx,bx
+ 008C  8A A7 0012 R	      C   RSRcyc:mov ah,StrDisplay[bx+1]
+ 0090  88 A7 0011 R	      C          mov StrDisplay[bx],ah
+ 0094  43		      C          inc bx
+ 0095  83 FB 08		      C          cmp bx,8
+ 0098  75 F2		      C          jne RSRcyc
+ 009A  C6 06 0019 R 0C	      C          mov StrDisplay[8],12
+			      C 
+ 009F  5B		      C          pop bx
+ 00A0  58		      C          pop ax
+ 00A1  C3		      C          ret
+ 00A2			      C RotateStringRight EndP
+			      C 
+			      C ; Сдвиг строки ввода/вывода на 1 разряд влево
+ 00A2			      C RotateStringLeft Proc near
+ 00A2  50		      C          push ax
+ 00A3  53		      C          push bx
+			      C 
+ 00A4  BB 0008		      C          mov bx,8
+ 00A7  8A A7 0010 R	      C   RSLcyc:mov ah,StrDisplay[bx-1]
+ 00AB  88 A7 0011 R	      C          mov StrDisplay[bx],ah
+ 00AF  4B		      C          dec bx
+ 00B0  75 F5		      C          jnz RSLcyc
+ 00B2  C6 06 0011 R 0C	      C          mov StrDisplay[0],12
+			      C 
+ 00B7  5B		      C          pop bx
+ 00B8  58		      C          pop ax
+ 00B9  C3		      C          ret
+ 00BA			      C RotateStringLeft EndP
+			      C 
+			      C ; ПРОГРАММНЫЕ ИСПОЛНИТЕЛИ
+			      C 
+			      C ; Опрос клавиатуры
+ 00BA			      C KbdRead Proc near
+ 00BA  BA 0003		      C     KRm1:mov dx,3                ; опрос портов ввода
+ 00BD  FE CA		      C    KRCyc:dec dl                  ; 2-0 и выход из цикла
+ 00BF  EC		      C          in al,dx                ; только после нажатия
+ 00C0  3C 00		      C          cmp al,0                ; какой-либо кнопки из
+ 00C2  75 07		      C          jne KRexit              ; соединенных с портами
+ 00C4  80 FA 00		      C          cmp dl,0
+ 00C7  75 F4		      C          jnz KRCyc
+ 00C9  EB EF		      C          jmp KRm1
+ 00CB  50		      C   KRexit:push ax
+			      C 
+ 00CC  EC		      C     KRm2:in al,dx                ; ввод по отжатию
+ 00CD  0A C0		      C          or al,al                ; клавиши
+ 00CF  75 FB		      C          jnz KRm2
+			      C 
+ 00D1  58		      C          pop ax                  ; теперь в dl-номер
+			      C                                  ; активного порта, а
+			      C                                  ; в al-его содержимое
+			      C 
+			      C                                  ; определение номера
+			      C                                  ; активного входа
+ 00D2  32 C9		      C          xor cl,cl               ; активного порта
+ 00D4  FE C1		      C     KRm3:inc cl
+ 00D6  D0 E8		      C          shr al,1                ; двигать до тех пор,
+ 00D8  75 FA		      C          jnz KRm3                ; пока 1 не уйдет
+ 00DA  FE C9		      C          dec cl
+			      C 
+ 00DC  8A C2		      C          mov al,dl               ; расчет кода
+ 00DE  D0 E0		      C          shl al,1                ; клавиши
+ 00E0  D0 E0		      C          shl al,1
+ 00E2  D0 E0		      C          shl al,1
+ 00E4  02 C1		      C          add al,cl
+			      C 
+ 00E6  A2 001E R	      C          mov ActiveButtonCode,al
+			      C 
+ 00E9  C3		      C          ret
+ 00EA			      C KbdRead EndP
+			      C 
+			      C ; Ввод очередной цифры числа
+ 00EA			      C DigInput Proc near
+ 00EA  80 3E 0010 R 00	      C          cmp Error,0
+ 00EF  75 38		      C          jne DIend
+			      C 
+ 00F1  A0 001E R	      C          mov al,ActiveButtonCode
+			      C 
+ 00F4  3C 00		      C          cmp al,0                ; проверка, а
+ 00F6  72 31		      C          jb DIend                ; действительно ли
+ 00F8  3C 09		      C          cmp al,9                ; нажата цифровая
+ 00FA  77 2D		      C          ja DIend                ; клавиша
+			      C 
+ 00FC  80 3E 001D R FF	      C          cmp StrDisplay[12],0FFh        ; а может быть строку
+ 0101  75 08		      C          jne DIm1                ; надо вводить заново ?
+ 0103  E8 FF3C		      C          call StrClear
+ 0106  C6 06 001D R 00	      C          mov StrDisplay[12],0
+			      C 
+ 010B  80 3E 001B R 08	      C     DIm1:cmp StrDisplay[10],8           ; уже ввели 8 цифр
+ 0110  74 17		      C          je  DIend               ; {больше некуда}
+			      C 
+ 0112  80 3E 001B R 00	      C          cmp StrDisplay[10],0           ; строка пустая?
+ 0117  75 06		      C          jne DIm2
+ 0119  3C 00		      C          cmp al,0                ; и нажата кнопка "0" ?
+ 011B  74 0C		      C          je DIend                ; да, и ничего вводить
+			      C                                  ; не надо
+ 011D  75 03		      C          jne DIm3                ; нет, и сдвигать раз-
+			      C                                  ; ряды строки не надо
+			      C 
+ 011F  E8 FF80		      C     DIm2:call RotateStringLeft   ; сдвиг ранее введенных
+			      C                                  ; разрядов
+			      C 
+ 0122  A2 0011 R	      C     DIm3:mov StrDisplay[0],al           ; запись символа-цифры
+ 0125  FE 06 001B R	      C          inc StrDisplay[10]             ; в младший разряд
+			      C 
+ 0129  C3		      C    DIend:ret
+ 012A			      C DigInput EndP
+			      C 
+			      C ; Ввод точки
+ 012A			      C PointInput Proc near
+ 012A  80 3E 0010 R 00	      C          cmp Error,0
+ 012F  75 33		      C          jne PIend
+			      C 
+ 0131  A0 001E R	      C          mov al,ActiveButtonCode
+			      C 
+ 0134  3C 0A		      C          cmp al,Point            ; нажата клавиша "." ?
+ 0136  75 2C		      C          jne PIend               ; нет, тогда выходим
+			      C 
+ 0138  80 3E 001D R FF	      C          cmp StrDisplay[12],0FFh        ; а может быть строку
+ 013D  75 08		      C          jne PIm1                ; надо вводить заново ?
+ 013F  E8 FF00		      C          call StrClear
+ 0142  C6 06 001D R 00	      C          mov StrDisplay[12],0
+			      C 
+ 0147  80 3E 001C R FF	      C     PIm1:cmp StrDisplay[11],0FFh        ; если точку уже вводи-
+ 014C  74 16		      C          je PIend                ; ли, то этот ввод точки
+			      C                                  ; игнорируется
+			      C 
+ 014E  80 3E 001B R 00	      C          cmp StrDisplay[10],0           ; строка пустая?
+ 0153  75 04		      C          jne PIm2                ; нет, и переход
+ 0155  FE 06 001B R	      C          inc StrDisplay[10]             ; да, тогда байт перед
+			      C                                  ; точкой - нулевой
+			      C 
+ 0159  E8 FF46		      C     PIm2:call RotateStringLeft   ; сдвиг ранее введенных
+			      C                                  ; разрядов
+			      C 
+ 015C  A2 0011 R	      C          mov StrDisplay[0],al           ; запись точки в
+			      C                                  ; младший разряд
+ 015F  C6 06 001C R FF	      C          mov StrDisplay[11],0FFh        ; установка флага на-
+			      C                                  ; личия точки в строке
+ 0164  C3		      C    PIend:ret
+ 0165			      C PointInput EndP
+			      C 
+			      C ; Смена знака
+ 0165			      C SignChange Proc near
+ 0165  80 3E 0010 R 00	      C          cmp Error,0
+ 016A  75 1A		      C          jne SCend
+			      C 
+ 016C  80 3E 001E R 0B	      C          cmp ActiveButtonCode,SignChg
+ 0171  75 13		      C          jne SCend
+			      C 
+ 0173  80 3E 001A R 0C	      C          cmp StrDisplay[9],12           ; смена знака
+ 0178  75 07		      C          jne SCSP
+ 017A  C6 06 001A R 0B	      C          mov StrDisplay[9],11           ; знак "-"
+ 017F  EB 05		      C          jmp SCend
+ 0181  C6 06 001A R 0C	      C     SCSP:mov StrDisplay[9],12           ; знак "+"
+			      C 
+ 0186  C3		      C    SCend:ret
+ 0187			      C SignChange EndP
+			      C 
+			      C ; Сложение того что на дисплее с тем,
+			      C ; что будет введено позднее
+ 0187			      C AddRezArg Proc near
+ 0187  80 3E 0010 R 00	      C          cmp Error,0
+ 018C  75 18		      C          jne ARAend
+			      C 
+ 018E  80 3E 001E R 0C	      C          cmp ActiveButtonCode,Addition
+ 0193  75 11		      C          jne ARAend
+			      C 
+ 0195  C6 06 000F R 01	      C          mov Operation,1         ; запомнить операцию '+'
+			      C 
+ 019A  8D 3E 0000 R	      C          lea di,Rez              ; сохранить строку
+			      C                                  ; ввода/вывода в
+			      C                                  ; переменной Rez -
+			      C                                  ; 1-ое слагаемое
+			      C 
+ 019E  E8 02B3		      C          call ConvertStringToFloat
+ 01A1  C6 06 001D R FF	      C          mov StrDisplay[12],0FFh
+			      C 
+ 01A6  C3		      C   ARAend:ret
+ 01A7			      C AddRezArg EndP
+			      C 
+			      C ; Вычитание из того что на дисплее того,
+			      C ; что будет введено позднее
+ 01A7			      C SubRezArg Proc near
+ 01A7  80 3E 0010 R 00	      C          cmp Error,0
+ 01AC  75 18		      C          jne SRAend
+			      C 
+ 01AE  80 3E 001E R 0D	      C          cmp ActiveButtonCode,Subtraction
+ 01B3  75 11		      C          jne SRAend
+			      C 
+ 01B5  C6 06 000F R 02	      C          mov Operation,2         ; запомнить операцию '-'
+			      C 
+ 01BA  8D 3E 0000 R	      C          lea di,Rez              ; сохранить строку
+			      C                                  ; ввода/вывода в
+			      C                                  ; переменной Rez -
+			      C                                  ; уменьшаемое
+			      C 
+ 01BE  E8 0293		      C          call ConvertStringToFloat
+ 01C1  C6 06 001D R FF	      C          mov StrDisplay[12],0FFh
+			      C 
+ 01C6  C3		      C   SRAend:ret
+ 01C7			      C SubRezArg EndP
+			      C 
+			      C ; Умножение того что на дисплее с тем,
+			      C ; что будет введено позднее
+ 01C7			      C MulRezArg Proc near
+ 01C7  80 3E 0010 R 00	      C          cmp Error,0
+ 01CC  75 18		      C          jne MRAend
+			      C 
+ 01CE  80 3E 001E R 0E	      C          cmp ActiveButtonCode,Multiplication
+ 01D3  75 11		      C          jne MRAend
+			      C 
+ 01D5  C6 06 000F R 03	      C          mov Operation,3         ; запомнить операцию '*'
+			      C 
+ 01DA  8D 3E 0000 R	      C          lea di,Rez              ; сохранить строку
+			      C                                  ; ввода/вывода в
+			      C                                  ; переменной Rez -
+			      C                                  ; 1-ый множитель
+			      C 
+ 01DE  E8 0273		      C          call ConvertStringToFloat
+ 01E1  C6 06 001D R FF	      C          mov StrDisplay[12],0FFh
+			      C 
+ 01E6  C3		      C   MRAend:ret
+ 01E7			      C MulRezArg EndP
+			      C 
+			      C ; Деление того что на дисплее на то,
+			      C ; что будет введено позднее
+ 01E7			      C DivRezArg Proc near
+ 01E7  80 3E 0010 R 00	      C          cmp Error,0
+ 01EC  75 18		      C          jne DRAend
+			      C 
+ 01EE  80 3E 001E R 0F	      C          cmp ActiveButtonCode,Division
+ 01F3  75 11		      C          jne DRAend
+			      C 
+ 01F5  C6 06 000F R 04	      C          mov Operation,4         ; запомнить операцию '/'
+			      C 
+ 01FA  8D 3E 0000 R	      C          lea di,Rez              ; сохранить строку
+			      C                                  ; ввода/вывода в
+			      C                                  ; переменной Rez -
+			      C                                  ; делимое
+			      C 
+ 01FE  E8 0253		      C          call ConvertStringToFloat
+ 0201  C6 06 001D R FF	      C          mov StrDisplay[12],0FFh
+			      C 
+ 0206  C3		      C   DRAend:ret
+ 0207			      C DivRezArg EndP
+			      C 
+			      C ; Выполнение действий
+ 0207			      C Calculate Proc near
+ 0207  80 3E 0010 R 00	      C          cmp Error,0
+ 020C  75 6F		      C          jne Calcend
+			      C 
+ 020E  80 3E 001E R 10	      C          cmp ActiveButtonCode,Calculation
+ 0213  75 68		      C          jne Calcend
+			      C 
+ 0215  80 3E 000F R 00	      C          cmp Operation,0         ; если просто нажимать
+ 021A  74 61		      C          je Calcend              ; '=', то ничего не
+			      C                                  ; будет
+			      C 
+ 021C  8D 3E 0005 R	      C          lea di,Arg              ; 2-ой аргумент операции
+			      C 
+ 0220  E8 0231		      C          call ConvertStringToFloat
+ 0223  8D 36 0000 R	      C          lea si,Rez
+ 0227  87 FE		      C          xchg di,si
+			      C 
+ 0229  80 3E 000F R 01	      C          cmp Operation,1
+ 022E  75 05		      C          jne Calcm1
+			      C 
+ 0230  E8 03BB		      C          call AddFunc            ; сложение
+ 0233  EB 29		      C          jmp Calcm4
+			      C 
+ 0235  80 3E 000F R 02	      C   Calcm1:cmp Operation,2
+ 023A  75 05		      C          jne Calcm2
+			      C 
+ 023C  E8 03E2		      C          call SubFunc            ; вычитание
+ 023F  EB 1D		      C          jmp Calcm4
+			      C 
+ 0241  80 3E 000F R 03	      C   Calcm2:cmp Operation,3
+ 0246  75 05		      C          jne Calcm3
+			      C 
+ 0248  E8 0472		      C          call MulFunc            ; умножение
+ 024B  EB 11		      C          jmp Calcm4
+			      C 
+ 024D  80 3E 000F R 04	      C   Calcm3:cmp Operation,4
+ 0252  75 29		      C          jne Calcend
+			      C 
+ 0254  80 3E 001B R 00	      C          cmp StrDisplay[10],0           ; если строка ввода
+ 0259  74 0A		      C          je CalcEr               ; пуста, то деление
+			      C                                  ; на нуль
+			      C 
+ 025B  E8 04BC		      C          call DivFunc            ; деление
+			      C 
+ 025E  E8 037B		      C   Calcm4:call OverflowChecking   ; контроль переполнения
+ 0261  3C FF		      C          cmp al,0FFh
+ 0263  75 07		      C          jne Calcm5
+			      C 
+ 0265  C6 06 0010 R 0F	      C   Calcer:mov Error,0Fh           ; ошибка
+ 026A  EB 11		      C          jmp Calcend
+			      C 
+ 026C  8D 36 0000 R	      C   Calcm5:lea si,Rez              ; преобразование полу-
+			      C                                  ; ченного результата
+			      C                                  ; для дальнейшего
+			      C                                  ; отображения
+			      C 
+ 0270  E8 0274		      C          call ConvertFloatToString
+ 0273  C6 06 001D R FF	      C          mov StrDisplay[12],0FFh
+			      C 
+ 0278  C6 06 000F R 00	      C          mov Operation,0
+			      C 
+ 027D  C3		      C  Calcend:ret
+ 027E			      C Calculate EndP
+			      C 
+			      C ; Очистка переменных
+ 027E			      C Clear Proc near
+ 027E  80 3E 001E R 11	      C          cmp ActiveButtonCode,Clr
+ 0283  75 22		      C          jne Cend
+			      C 
+ 0285  8D 3E 0000 R	      C          lea di,Rez              ; обнуление 1-ого
+ 0289  E8 FDD1		      C          call FloatClear         ; аргумента
+ 028C  8D 3E 0005 R	      C          lea di,Arg              ; обнуление 2-ого
+ 0290  E8 FDCA		      C          call FloatClear         ; агрумента
+			      C 
+ 0293  C6 06 000F R 00	      C          mov Operation,0         ; операции нет
+			      C 
+ 0298  E8 FDA7		      C          call StrClear           ; очистка строки
+			      C                                  ; ввода/вывода
+			      C 
+ 029B  80 3E 0010 R 0F	      C          cmp Error,0Fh           ; если это не ошибка
+ 02A0  75 05		      C          jne Cend                ; памяти, то и
+ 02A2  C6 06 0010 R 00	      C          mov Error,0             ; ошибки больше нет
+			      C 
+ 02A7  C3		      C     Cend:ret
+ 02A8			      C Clear EndP
+			      C 
+			      C ; Очистка строки ввода вывода
+ 02A8			      C CE Proc near
+ 02A8  80 3E 0010 R 00	      C          cmp Error,0
+ 02AD  75 0A		      C          jne CEend
+			      C 
+ 02AF  80 3E 001E R 12	      C          cmp ActiveButtonCode,ClrE
+ 02B4  75 03		      C          jne CEend
+			      C 
+ 02B6  E8 FD89		      C          call StrClear           ; очистка строки
+ 02B9  C3		      C    CEend:ret
+ 02BA			      C CE EndP
+			      C 
+			      C ; Откат
+ 02BA			      C Undo Proc near
+ 02BA  80 3E 0010 R 00	      C          cmp Error,0
+ 02BF  75 33		      C          jne Uend
+			      C 
+ 02C1  80 3E 001E R 13	      C          cmp ActiveButtonCode,Bksp
+ 02C6  75 2C		      C          jne Uend
+			      C 
+ 02C8  80 3E 001B R 00	      C          cmp StrDisplay[10],0           ; если строка пуста,
+ 02CD  74 25		      C          je Uend                 ; то отменять нечего
+			      C 
+ 02CF  B9 0001		      C          mov cx,1
+ 02D2  80 3E 0011 R 0A	      C          cmp StrDisplay[0],10           ; если в младшем байте
+			      C                                  ; не точка, то
+ 02D7  75 08		      C          jne Um1 ;               ; цикл удаления младшего
+			      C                                  ; байта,
+ 02D9  B9 0002		      C          mov cx,2                ; иначе цикл удаления
+ 02DC  C6 06 001C R 00	      C          mov StrDisplay[11],0           ; точки и следующего
+			      C                                  ; за ней байта
+			      C 
+ 02E1  E8 FDA4		      C      Um1:call RotateStringRight  ; цикл удаления байта
+ 02E4  E2 FB		      C          loop Um1
+ 02E6  FE 0E 001B R	      C          dec StrDisplay[10]
+			      C 
+ 02EA  80 3E 001B R 00	      C          cmp StrDisplay[10],0           ; если на дисплее уже
+ 02EF  75 03		      C          jne Uend                ; ничего не осталось,
+ 02F1  E8 FD4E		      C          call StrClear           ; то строку ввода/вывода
+			      C                                  ; надо почистить
+			      C 
+ 02F4  C3		      C     Uend:ret
+ 02F5			      C Undo EndP
+			      C 
+			      C ; Очистка памяти
+ 02F5			      C MemoryClear Proc near
+ 02F5  80 3E 001E R 14	      C          cmp ActiveButtonCode,MemClr
+ 02FA  75 13		      C          jne MCend
+			      C 
+ 02FC  8D 3E 000A R	      C          lea di,Mem
+ 0300  E8 FD5A		      C          call FloatClear
+			      C 
+ 0303  80 3E 0010 R F0	      C          cmp Error,0F0h
+ 0308  75 05		      C          jne MCend               ; переполнения памяти
+ 030A  C6 06 0010 R 00	      C          mov Error,0             ; после ее очистки нет
+			      C 
+ 030F  C3		      C    MCend:ret
+ 0310			      C MemoryClear EndP
+			      C 
+			      C ; Вывод содержимого памяти на дисплей
+ 0310			      C MemoryRead Proc near
+ 0310  80 3E 0010 R 00	      C          cmp Error,0
+ 0315  75 13		      C          jne MRend
+			      C 
+ 0317  80 3E 001E R 15	      C          cmp ActiveButtonCode,MemRd
+ 031C  75 0C		      C          jne MRend
+			      C 
+ 031E  8D 36 000A R	      C          lea si,Mem              ; преобразование содер-
+			      C                                  ; жимого памяти для
+			      C                                  ; дальнейшего отображения
+			      C 
+ 0322  E8 01C2		      C          call ConvertFloatToString
+ 0325  C6 06 001D R FF	      C          mov StrDisplay[12],0FFh
+			      C 
+ 032A  C3		      C    MRend:ret
+ 032B			      C MemoryRead EndP
+			      C 
+			      C ; Сохранение в памяти
+ 032B			      C MemorySet Proc near
+ 032B  80 3E 0010 R 00	      C          cmp Error,0
+ 0330  75 13		      C          jne MSend
+			      C 
+ 0332  80 3E 001E R 16	      C          cmp ActiveButtonCode,MemSet
+ 0337  75 0C		      C          jne MSend
+			      C 
+ 0339  8D 3E 000A R	      C          lea di,Mem              ; пробразование строки
+			      C                                  ; ввода/вывода, отобра-
+			      C                                  ; женной на дисплее во
+			      C                                  ; внутренний формат
+			      C                                  ; для хранения в памяти
+			      C 
+ 033D  E8 0114		      C          call ConvertStringToFloat
+ 0340  C6 06 001D R FF	      C          mov StrDisplay[12],0FFh
+			      C 
+ 0345  C3		      C    MSend:ret
+ 0346			      C MemorySet EndP
+			      C 
+			      C ; Сложение с памятью
+ 0346			      C MemoryAdd Proc near
+ 0346  80 3E 0010 R 00	      C          cmp Error,0
+ 034B  75 23		      C          jne MAend
+			      C 
+ 034D  80 3E 001E R 17	      C          cmp ActiveButtonCode,MemAdd
+ 0352  75 1C		      C          jne MAend
+			      C 
+ 0354  8D 3E 0005 R	      C          lea di,Arg              ; второе слагаемое
+ 0358  E8 00F9		      C          call ConvertStringToFloat
+ 035B  8D 36 000A R	      C          lea si,Mem              ; 1-ое слагаемое -
+ 035F  87 FE		      C          xchg di,si              ; память
+			      C 
+ 0361  E8 028A		      C          call AddFunc            ; сложение с памятью
+ 0364  E8 0275		      C          call OverflowChecking   ; контроль переполнения
+ 0367  3C FF		      C          cmp al,0FFh
+ 0369  75 05		      C          jne MAend
+ 036B  C6 06 0010 R F0	      C          mov Error,0F0h          ; установка флага
+			      C                                  ; переполнения памяти
+ 0370  C3		      C    MAend:ret
+ 0371			      C MemoryAdd EndP
+			      C 
+			      C ; Вывод на дисплей сообщения Error
+ 0371			      C ErrMsgOutput Proc near
+ 0371  80 3E 0010 R 00	      C          cmp Error,0
+ 0376  74 1A		      C          je EMOend
+			      C 
+ 0378  32 C0		      C          xor al,al
+ 037A  E6 08		      C          out 8,al                ; погасить
+ 037C  E6 07		      C          out 7,al                ; индикаторы
+ 037E  E6 06		      C          out 6,al                ; с номерами 8-5
+ 0380  E6 05		      C          out 5,al
+			      C 
+ 0382  B0 73		      C          mov al,73h              ; очертания символа E
+ 0384  E6 04		      C          out 4,al                ; в порт вывода №4
+ 0386  B0 60		      C          mov al,60h              ; очертания символа r
+ 0388  E6 03		      C          out 3,al                ; в порты вывода №3,
+ 038A  E6 02		      C          out 2,al                ; №2
+ 038C  E6 00		      C          out 0,al                ; №0
+ 038E  B0 78		      C          mov al,78h              ; очертания символа o
+ 0390  E6 01		      C          out 1,al                ; в порт №1
+			      C 
+ 0392  C3		      C   EMOend:ret
+ 0393			      C ErrMsgOutput EndP
+			      C 
+			      C ; Отображение строки вывода
+ 0393			      C StrOutput Proc near
+ 0393  80 3E 0010 R 00	      C          cmp Error,0
+ 0398  75 24		      C          jne SOend
+			      C 
+ 039A  33 D2		      C     SOst:xor dx,dx               ; вывод строки
+ 039C  BB 001F R	      C          mov bx,offset OutputMap
+ 039F  8D 36 0011 R	      C          lea si,StrDisplay
+ 03A3  56		      C          push si
+ 03A4  AC		      C    SOCyc:lodsb
+ 03A5  D7		      C          xlat
+ 03A6  3C 80		      C          cmp al,80h              ; если текущий байт -
+ 03A8  75 06		      C          jne SOm1                ; точка, то ее надо
+ 03AA  8A E0		      C          mov ah,al               ; приORить к следую-
+ 03AC  AC		      C          lodsb                   ; щему байту
+ 03AD  D7		      C          xlat
+ 03AE  0A C4		      C          or al,ah
+ 03B0  EE		      C     SOm1:out dx,al
+ 03B1  42		      C          inc dx
+ 03B2  83 FA 08		      C          cmp dx,8
+ 03B5  75 ED		      C          jne SOCyc
+			      C 
+ 03B7  5E		      C          pop si                  ; адрес начала строки
+ 03B8  83 C6 09		      C          add si,9                ; байт знака
+ 03BB  AC		      C          lodsb
+ 03BC  D7		      C          xlat                    ; преобразование
+ 03BD  EE		      C          out dx,al               ; вывод знака
+			      C 
+ 03BE  C3		      C    SOend:ret
+ 03BF			      C StrOutput EndP
+			      C 
+				include convs.asm
+			      C ; Модуль содержит процедуры преобразования
+			      C ; строки ввода/вывода данных на дисплей в
+			      C ; вещественное число в соответствии с выбранным
+			      C ; форматом строки ввода/вывода и вещественных
+			      C ; чисел и процедуры преобразования вещественных
+			      C ; чисел в строку ввода/вывода
+			      C 
+			      C ; Умножение двойного слова на слово; параметры:
+			      C ; в регистре di - смещение dd, а в cx - значение dw
+ 03BF			      C MulDDwithDW Proc near
+ 03BF  50		      C          push ax
+ 03C0  52		      C          push dx
+			      C 
+ 03C1  8B 45 02		      C          mov ax,[di+2]
+ 03C4  F7 E1		      C          mul cx
+ 03C6  89 45 02		      C          mov [di+2],ax
+ 03C9  8B 05		      C          mov ax,[di]
+ 03CB  F7 E1		      C          mul cx
+ 03CD  89 05		      C          mov [di],ax
+ 03CF  01 55 02		      C          add [di+2],dx
+			      C 
+ 03D2  5A		      C          pop dx
+ 03D3  58		      C          pop ax
+ 03D4  C3		      C          ret
+ 03D5			      C MulDDwithDW EndP
+			      C 
+			      C ; Вычисление мантиссы вещественного числа;
+			      C ; регистр di задает ячейку памяти, в
+			      C ; которую нужно положить мантиссу
+ 03D5			      C CalculateMantissa Proc near
+ 03D5  50		      C          push ax
+ 03D6  53		      C          push bx
+ 03D7  51		      C          push cx
+			      C 
+ 03D8  32 E4		      C          xor ah,ah
+ 03DA  B9 000A		      C          mov cx,10
+			      C 
+ 03DD  8A 1E 001B R	      C          mov bl,StrDisplay[10]          ; смещение старшего из
+			      C                                  ; введенных разрядов =
+			      C                                  ; числу введенных цифр
+ 03E1  80 3E 001C R FF	      C          cmp StrDisplay[11],0FFh        ; если есть точка, и
+ 03E6  74 02		      C          je CMcyc                ; число цифр - 1, если
+ 03E8  FE CB		      C          dec bl                  ; точки нет
+			      C 
+ 03EA  8A 87 0011 R	      C    CMcyc:mov al,StrDisplay[bx]          ; для всех введенных
+ 03EE  FE CB		      C          dec bl                  ; цифр, начиная со
+			      C                                  ; старшей
+			      C 
+ 03F0  3C 0A		      C          cmp al,10               ; точка?
+ 03F2  75 07		      C          jne CMm1                ; нет
+			      C 
+ 03F4  80 FB FF		      C          cmp bl,-1               ; пропуск точки
+ 03F7  74 10		      C          je CMend                ; в конце строки
+			      C 
+ 03F9  75 EF		      C          jne CMcyc               ; пропуск точки
+			      C                                  ; в середине строки
+			      C 
+ 03FB  E8 FFC1		      C     CMm1:call MulDDwithDW        ; накопление
+ 03FE  01 05		      C          add [di],ax             ; мантиссы
+ 0400  83 55 02 00	      C          adc word ptr [di+2],0
+			      C 
+ 0404  80 FB FF		      C          cmp bl,-1               ; зацикливание, если
+ 0407  75 E1		      C          jnz CMcyc               ; обработаны не все
+			      C                                  ; заполненные разряды
+ 0409  59		      C    CMend:pop cx
+ 040A  5B		      C          pop bx
+ 040B  58		      C          pop ax
+ 040C  C3		      C          ret
+ 040D			      C CalculateMantissa EndP
+			      C 
+			      C ; Расчет порядка вещественного числа;
+			      C ; регистр di задает ячейку памяти, в
+			      C ; которую нужно положить порядок
+ 040D			      C CalculateOrder Proc near
+ 040D  50		      C          push ax
+ 040E  53		      C          push bx
+ 040F  51		      C          push cx
+			      C 
+ 0410  32 FF		      C          xor bh,bh
+ 0412  8A 1E 001B R	      C          mov bl,StrDisplay[10]          ; смещение старшего из
+			      C                                  ; введенных разрядов =
+			      C                                  ; числу введенных цифр,
+			      C                                  ; если есть точка
+			      C 
+ 0416  80 3E 001C R 00	      C          cmp StrDisplay[11],0           ; точка есть?
+ 041B  75 04		      C          jne COm1                ; есть, и переход
+ 041D  88 1D		      C          mov [di],bl             ; если же точки нет, то
+ 041F  EB 2F		      C          jmp COend               ; порядок = число цифр
+			      C 
+ 0421  33 C9		      C     COm1:xor cx,cx
+ 0423  8A 87 0011 R	      C          mov al,StrDisplay[bx]
+ 0427  3C 00		      C          cmp al,0                ; целой части нет?
+ 0429  75 18		      C          jne COm2                ; есть, и переход
+			      C 
+ 042B  FE CB		      C          dec bl                  ; пропуск точки
+			      C 
+ 042D  FE CB		      C   COcyc1:dec bl                  ; расчет отрицатель-
+ 042F  49		      C          dec cx                  ; ного порядка
+ 0430  8A 87 0011 R	      C          mov al,StrDisplay[bx]
+			      C 
+ 0434  80 FB FF		      C          cmp bl,-1               ; если строка вообще
+			      C                                  ; не имеет цифр
+ 0437  74 17		      C          je COend                ; больших 0, то выход
+			      C 
+ 0439  3C 00		      C          cmp al,0
+ 043B  74 F0		      C          je COcyc1
+			      C 
+ 043D  FE C1		      C          inc cl
+ 043F  88 0D		      C          mov [di],cl
+ 0441  EB 0D		      C          jmp COend
+			      C 
+ 0443  FE CB		      C     COm2:dec bl                  ; расчет
+ 0445  41		      C          inc cx                  ; положительного
+ 0446  8A 87 0011 R	      C          mov al,StrDisplay[bx]          ; порядка
+ 044A  3C 0A		      C          cmp al,10
+ 044C  75 F5		      C          jne COm2
+ 044E  88 0D		      C          mov [di],cl
+			      C 
+ 0450  59		      C    COend:pop cx
+ 0451  5B		      C          pop bx
+ 0452  58		      C          pop ax
+ 0453  C3		      C          ret
+ 0454			      C CalculateOrder EndP
+			      C 
+			      C ; Преобразование строки ввода/вывода
+			      C ; в вещественное число; параметры:
+			      C ; в регистре di - смещение числа
+ 0454			      C ConvertStringToFloat Proc near
+ 0454  E8 FC06		      C          call FloatClear
+ 0457  80 3E 001B R 00	      C          cmp StrDisplay[10],0           ; если строка пуста,
+ 045C  74 15		      C          je CSFend               ; то вещественное
+			      C                                  ; число - нулевое
+			      C 
+ 045E  47		      C          inc di                  ; вычисление
+ 045F  E8 FF73		      C          call CalculateMantissa  ; мантиссы
+ 0462  4F		      C          dec di
+			      C 
+ 0463  E8 011B		      C          call MantNorm           ; ее нормализация
+			      C 
+ 0466  E8 FFA4		      C          call CalculateOrder     ; расчет порядка
+			      C 
+ 0469  80 3E 001A R 0B	      C          cmp StrDisplay[9],11           ; если в строке есть
+ 046E  75 03		      C          jne CSFend              ; знак "-", то
+ 0470  E8 FBF8		      C          call FloatNeg           ; обращение знака числа
+			      C 
+ 0473  C3		      C   CSFend:ret
+ 0474			      C ConvertStringToFloat EndP
+			      C 
+			      C ; Преобразование мантиссы; параметры:
+			      C ; регистр si задает ячейку, из которой
+			      C ; надо брать мантиссу
+ 0474			      C MantissaConvert Proc near
+ 0474  50		      C          push ax
+ 0475  51		      C          push cx
+ 0476  52		      C          push dx
+			      C 
+ 0477  B9 000A		      C          mov cx,10
+ 047A  8B 44 02		      C   MCMcyc:mov ax,[si+2]           ; выдвижение DEC цифр
+ 047D  33 D2		      C          xor dx,dx               ; мантиссы по одной,
+ 047F  F7 F1		      C          div cx                  ; начиная с младшей,
+ 0481  89 44 02		      C          mov [si+2],ax           ; путем деления ее
+ 0484  8B 04		      C          mov ax,[si]             ; на 10
+ 0486  F7 F1		      C          div cx
+ 0488  89 04		      C          mov [si],ax
+			      C 
+ 048A  E8 FBFB		      C          call RotateStringRight  ; сдвиг разрядов строки
+ 048D  88 16 0018 R	      C          mov StrDisplay[7],dl           ; накопление строки
+ 0491  FE 06 001B R	      C          inc StrDisplay[10]
+			      C 
+ 0495  83 7C 02 00	      C          cmp word ptr [si+2],0   ; цикл деления длится
+ 0499  75 DF		      C          jne MCMcyc              ; до тех пор, пока
+ 049B  83 3C 00		      C          cmp word ptr [si],0     ; мантисса не кончится
+ 049E  75 DA		      C          jne MCMcyc              ; {не обнулится}
+			      C 
+ 04A0  5A		      C          pop dx
+ 04A1  59		      C          pop cx
+ 04A2  58		      C          pop ax
+ 04A3  C3		      C          ret
+ 04A4			      C MantissaConvert EndP
+			      C 
+			      C ; Преобразование порядка {расстановка точки};
+			      C ; параметры: регистр si задает ячейку, из которой
+			      C ; следует взять порядок
+ 04A4			      C OrderConvert Proc near
+ 04A4  50		      C          push ax
+ 04A5  53		      C          push bx
+ 04A6  51		      C          push cx
+			      C 
+ 04A7  C6 06 001C R FF	      C          mov StrDisplay[11],0FFh        ; установка флага
+			      C                                  ; наличия точки
+			      C 
+ 04AC  80 3C 01		      C          cmp byte ptr [si],1     ; оценка порядка
+ 04AF  7C 19		      C          jl OCm1                 ; если порядок < 1
+			      C                                  ; {нет целой части}
+			      C 
+ 04B1  BB 0007		      C          mov bx,7                ; расстановка точки,
+ 04B4  33 C9		      C          xor cx,cx               ; если есть целая часть
+ 04B6  03 0C		      C          add cx,[si]
+ 04B8  8A 87 0011 R	      C  OCMcyc1:mov al,StrDisplay[bx]          ; цикл сдвига старших
+ 04BC  88 87 0012 R	      C          mov StrDisplay[bx+1],al        ; разрядов влево
+ 04C0  4B		      C          dec bx
+ 04C1  E2 F5		      C          loop OCMcyc1
+ 04C3  C6 87 0012 R 0A	      C          mov StrDisplay[bx+1],10        ; запись на место
+			      C                                  ; младшего из старших
+			      C                                  ; разрядов точки
+ 04C8  EB 19		      C          jmp OCend
+			      C 
+ 04CA  B9 0001		      C     OCm1:mov cx,1                ; расстановка точки
+ 04CD  2A 0C		      C          sub cl,[si]             ; если нет целой части
+ 04CF  C6 06 0019 R 00	      C          mov StrDisplay[8],0
+ 04D4  E8 FBB1		      C  OCMcyc2:call RotateStringRight
+ 04D7  C6 06 0019 R 00	      C          mov StrDisplay[8],0
+ 04DC  E2 F6		      C          loop OCMcyc2
+ 04DE  C6 06 0018 R 0A	      C          mov StrDisplay[7],10           ; запись точки
+			      C 
+ 04E3  59		      C    OCend:pop cx
+ 04E4  5B		      C          pop bx
+ 04E5  58		      C          pop ax
+ 04E6  C3		      C          ret
+ 04E7			      C OrderConvert EndP
+			      C 
+			      C ; Преобразование вещественного числа
+			      C ; в строку ввода/вывода; параметры:
+			      C ; в регистре si - смещение числа
+ 04E7			      C ConvertFloatToString Proc near
+ 04E7  FF 74 03		      C          push [si+3]             ; сохранение
+ 04EA  FF 74 01		      C          push [si+1]             ; мантиссы
+ 04ED  FF 34		      C          push [si]               ; и порядка
+ 04EF  57		      C          push di
+			      C 
+ 04F0  E8 FB4F		      C          call StrClear           ; очистка строки вывода
+			      C 
+ 04F3  83 7C 03 00	      C          cmp word ptr [si+3],0   ; если мантисса преоб-
+ 04F7  75 06		      C          jne CFSst               ; разуемого числа = 0,
+ 04F9  83 7C 01 00	      C          cmp word ptr [si+1],0   ; то и строка пуста
+ 04FD  74 3D		      C          je CFSend
+			      C 
+ 04FF  46		      C    CFSst:inc si                  ; переход к обработке
+			      C                                  ; мантиссы, при этом
+ 0500  C6 06 001A R 0C	      C          mov StrDisplay[9],12           ; считается, что
+			      C                                  ; она положительна
+			      C 
+ 0505  80 7C 03 7F	      C          cmp byte ptr [si+3],7Fh
+ 0509  72 0B		      C          jb CFSm1
+ 050B  C6 06 001A R 0B	      C          mov StrDisplay[9],11           ; если же она все-таки
+ 0510  8B FE		      C          mov di,si               ; отрицательная, то это
+ 0512  4F		      C          dec di                  ; надо учесть, а ее
+ 0513  E8 FB55		      C          call FloatNeg           ; сделать положительной
+			      C 
+ 0516  E8 FF5B		      C    CFSm1:call MantissaConvert    ; преобразование
+ 0519  4E		      C          dec si                  ; мантиссы
+ 051A  E8 FF87		      C          call OrderConvert       ; и порядка
+			      C 
+ 051D  80 3E 0011 R 00	      C    CFSZD:cmp StrDisplay[0],0            ; удаление незначащих
+ 0522  75 09		      C          jne CFSPD               ; нулей в конце мантиссы
+ 0524  E8 FB61		      C          call RotateStringRight  ; мантиссы
+ 0527  FE 0E 001B R	      C          dec StrDisplay[10]
+ 052B  EB F0		      C          jmp CFSZD
+			      C 
+ 052D  80 3E 0011 R 0A	      C    CFSPD:cmp StrDisplay[0],10           ; если в конце строки
+ 0532  75 08		      C          jne CFSend              ; точка, то ее удаление
+ 0534  E8 FB51		      C          call RotateStringRight  ; и сброс флага
+ 0537  C6 06 001C R 00	      C          mov StrDisplay[11],0           ; наличия точки
+			      C 
+ 053C  5F		      C   CFSend:pop di
+ 053D  8F 04		      C          pop [si]
+ 053F  8F 44 01		      C          pop [si+1]
+ 0542  8F 44 03		      C          pop [si+3]
+ 0545  C3		      C          ret
+ 0546			      C ConvertFloatToString EndP
+			      C 
+				include math.asm
+			      C ; Модуль содержит основные и вспомо-
+			      C ; гательные математические процедуры
+			      C 
+			      C ; Деление двойного слова на слово; в регистре di -
+			      C ; смещение dd, а в cx - значение dw; частное
+			      C ; помещается на место делимого, остаток теряется
+ 0546			      C DivDDtoDW Proc near
+ 0546  50		      C          push ax
+ 0547  52		      C          push dx
+			      C 
+ 0548  33 D2		      C          xor dx,dx               ; расширение старшего
+ 054A  8B 45 02		      C          mov ax,[di+2]           ; слова dd и его
+ 054D  F7 F1		      C          div cx                  ; деление на dw
+ 054F  89 45 02		      C          mov [di+2],ax
+ 0552  8B 05		      C          mov ax,[di]             ; деление младшего
+ 0554  F7 F1		      C          div cx                  ; слова dd и остака
+			      C                                  ; от деления старшего
+			      C                                  ; слова на dw
+ 0556  89 05		      C          mov [di],ax
+			      C 
+ 0558  5A		      C          pop dx
+ 0559  58		      C          pop ax
+ 055A  C3		      C          ret
+ 055B			      C DivDDtoDW EndP
+			      C 
+			      C ; Денормализация мантиссы, параметры:
+			      C ; в di смещение вещественного числа,
+			      C ; а в cx - разность порядков
+ 055B			      C MDeNorm Proc near
+ 055B  50		      C          push ax
+			      C 
+ 055C  32 C0		      C          xor al,al
+ 055E  80 7D 04 7F	      C          cmp byte ptr [di+4],7Fh ; работаю только с
+ 0562  72 05		      C          jb DeNst                ; положительными
+ 0564  E8 FB04		      C          call FloatNeg           ; мантиссами
+ 0567  B0 FF		      C          mov al,0FFh
+			      C 
+ 0569  47		      C    DeNst:inc di                  ; переход к мантиссе
+ 056A  51		      C  MDeNcyc:push cx
+			      C 
+ 056B  B9 000A		      C          mov cx,10               ; цикл деления мантиссы
+ 056E  E8 FFD5		      C          call DivDDtoDW          ; на 10 и увеличения
+ 0571  FE 45 FF		      C          inc byte ptr [di-1]     ; порядка на 1
+			      C 
+ 0574  59		      C          pop cx
+ 0575  E2 F3		      C          loop MDeNcyc
+ 0577  4F		      C          dec di
+			      C 
+ 0578  3C FF		      C          cmp al,0FFh             ; если мантисса изна-
+ 057A  75 03		      C          jne DeNend              ; чально была отрица-
+ 057C  E8 FAEC		      C          call FloatNeg           ; тельна, то она и
+			      C                                  ; после денормализации
+			      C                                  ; должна быть отрица-
+			      C                                  ; тельна
+ 057F  58		      C   DeNend:pop ax
+ 0580  C3		      C          ret
+ 0581			      C MDeNorm EndP
+			      C 
+			      C ; Нормализация мантиссы, параметры:
+			      C ; в di смещение вещественного числа
+ 0581			      C MantNorm Proc near
+ 0581  50		      C          push ax
+ 0582  51		      C          push cx
+			      C 
+ 0583  33 C0		      C          xor ax,ax
+ 0585  80 7D 04 7F	      C          cmp byte ptr [di+4],7Fh ; работаю только с
+ 0589  72 05		      C          jb MantNst              ; положительными
+ 058B  E8 FADD		      C          call FloatNeg           ; мантиссами
+ 058E  B0 FF		      C          mov al,0FFh
+			      C 
+ 0590  47		      C  MantNst:inc di                  ; переход к мантиссе
+ 0591  FF 75 02		      C          push [di+2]             ; ее сохранение
+ 0594  FF 35		      C          push [di]
+			      C 
+ 0596  B9 000A		      C          mov cx,10
+ 0599  E8 FFAA		      C    MNcyc:call DivDDtoDW          ; подсчет числа
+ 059C  FE C4		      C          inc ah                  ; десятичных цифр
+ 059E  83 7D 02 00	      C          cmp word ptr [di+2],0   ; в мантиссе путем
+ 05A2  75 F5		      C          jne MNcyc               ; деления ее на 10
+ 05A4  83 3D 00		      C          cmp word ptr [di],0     ; до тех пор, пока
+ 05A7  75 F0		      C          jne MNcyc               ; она не обнулится
+			      C 
+ 05A9  8F 05		      C          pop [di]                ; восстановление
+ 05AB  8F 45 02		      C          pop [di+2]              ; мантиссы
+			      C 
+ 05AE  80 FC 08		      C          cmp ah,8                ; нормализованная
+ 05B1  74 1E		      C          je MantNm3              ; мантисса содержит
+ 05B3  72 0F		      C          jb MantNm2              ; 8 DEC цифр
+			      C 
+ 05B5  E8 FF8E		      C  MantNm1:call DivDDtoDW          ; если мантисса содер-
+ 05B8  FE 45 FF		      C          inc byte ptr [di-1]     ; жит больше DEC цифр,
+ 05BB  FE CC		      C          dec ah                  ; то ее надо делить на
+ 05BD  80 FC 08		      C          cmp ah,8                ; 10 и инкрементировать
+ 05C0  75 F3		      C          jne MantNm1             ; порядок
+ 05C2  EB 0D		      C          jmp MantNm3
+			      C 
+ 05C4  E8 FDF8		      C  MantNm2:call MulDDwithDW        ; если же мантисса со-
+ 05C7  FE 4D FF		      C          dec byte ptr [di-1]     ; держит меньше DEC
+ 05CA  FE C4		      C          inc ah                  ; цифр чем 8, то ее
+ 05CC  80 FC 08		      C          cmp ah,8                ; надо множить на 10 и
+ 05CF  75 F3		      C          jne MantNm2             ; декрементить порядок
+			      C 
+ 05D1  4F		      C  MantNm3:dec di
+ 05D2  3C FF		      C          cmp al,0FFh             ; если мантисса изна-
+ 05D4  75 03		      C          jne MNend               ; чально была отрица-
+ 05D6  E8 FA92		      C          call FloatNeg           ; тельна, то она и
+			      C                                  ; после нормализации
+			      C                                  ; должна быть отрица-
+			      C                                  ; тельной
+ 05D9  59		      C    MNend:pop cx
+ 05DA  58		      C          pop ax
+ 05DB  C3		      C          ret
+ 05DC			      C MantNorm EndP
+			      C 
+			      C ; Проверка переполнения и антипереполения
+			      C ; вещественного числа; параметры:
+			      C ; в di смещение вещественного числа,
+			      C ; в регистре al возвращается флаг переполнения:
+			      C ; al = 0 - все нормально, al = FFh - переполнение
+ 05DC			      C OverflowChecking Proc near
+ 05DC  80 3D 09		      C          cmp byte ptr [di],9     ; проверка
+ 05DF  7C 04		      C          jl OvChm1               ; переполнения
+ 05E1  B0 FF		      C          mov al,0FFh
+ 05E3  EB 08		      C          jmp OvChend
+			      C 
+ 05E5  80 3D F9		      C   OvChm1:cmp byte ptr [di],-7    ; проверка
+ 05E8  7F 03		      C          jg OvChend              ; антипереполнения
+ 05EA  E8 FA70		      C          call FloatClear         ; возврат машинного
+			      C                                  ; нуля
+ 05ED  C3		      C  OvChend:ret
+ 05EE			      C OverflowChecking EndP
+			      C 
+			      C ; Сложение двух вещественных чисел; параметры:
+			      C ; в di - смещение 1-ого слагаемого и суммы,
+			      C ; а в si - смещение 2-ого аргумента
+ 05EE			      C AddFunc Proc near
+ 05EE  50		      C          push ax
+ 05EF  51		      C          push cx
+ 05F0  52		      C          push dx
+ 05F1  57		      C          push di
+ 05F2  56		      C          push si
+			      C 
+ 05F3  8A 05		      C          mov al,[di]             ; сравнение
+ 05F5  3A 04		      C          cmp al,[si]             ; порядков
+ 05F7  74 0D		      C          je Ast
+ 05F9  7C 02		      C          jl ADcyc
+ 05FB  87 FE		      C          xchg di,si
+			      C 
+ 05FD  32 ED		      C    ADcyc:xor ch,ch               ; выравнивание
+ 05FF  8A 0C		      C          mov cl,[si]             ; порядков
+ 0601  2A 0D		      C          sub cl,[di]
+ 0603  E8 FF55		      C          call MDeNorm
+			      C 
+ 0606  5E		      C      Ast:pop si
+ 0607  5F		      C          pop di
+			      C 
+ 0608  8B 45 01		      C          mov ax,[di+1]            ; пословное
+ 060B  8B 55 03		      C          mov dx,[di+3]            ; сложение
+ 060E  03 44 01		      C          add ax,[si+1]            ; мантисс
+ 0611  13 54 03		      C          adc dx,[si+3]
+ 0614  89 45 01		      C          mov [di+1],ax
+ 0617  89 55 03		      C          mov [di+3],dx
+			      C 
+ 061A  E8 FF64		      C          call MantNorm           ; нормализация
+			      C                                  ; мантиссы
+ 061D  5A		      C          pop dx
+ 061E  59		      C          pop cx
+ 061F  58		      C          pop ax
+ 0620  C3		      C          ret
+ 0621			      C AddFunc EndP
+			      C 
+			      C ; Вычитание двух вещественных чисел; параметры:
+			      C ; в di - смещение уменьшаемого и разности,
+			      C ; а в si - смещение вычитаемого
+ 0621			      C SubFunc Proc near
+ 0621  50		      C          push ax
+ 0622  51		      C          push cx
+ 0623  52		      C          push dx
+ 0624  57		      C          push di
+ 0625  56		      C          push si
+			      C 
+ 0626  8A 05		      C          mov al,[di]             ; сравнение
+ 0628  3A 04		      C          cmp al,[si]             ; порядков
+ 062A  74 0D		      C          je Sst
+ 062C  7C 02		      C          jl SDcyc
+ 062E  87 FE		      C          xchg di,si
+			      C 
+ 0630  32 ED		      C    SDcyc:xor ch,ch               ; выравнивание
+ 0632  8A 0C		      C          mov cl,[si]             ; порядков
+ 0634  2A 0D		      C          sub cl,[di]
+ 0636  E8 FF22		      C          call MDeNorm
+			      C 
+ 0639  5E		      C      Sst:pop si
+ 063A  5F		      C          pop di
+			      C 
+ 063B  8B 45 01		      C          mov ax,[di+1]            ; пословное
+ 063E  8B 55 03		      C          mov dx,[di+3]            ; вычитание
+ 0641  2B 44 01		      C          sub ax,[si+1]            ; мантисс
+ 0644  1B 54 03		      C          sbb dx,[si+3]
+ 0647  89 45 01		      C          mov [di+1],ax
+ 064A  89 55 03		      C          mov [di+3],dx
+			      C 
+ 064D  E8 FF31		      C          call MantNorm           ; нормализация
+			      C                                  ; мантиссы
+ 0650  5A		      C          pop dx
+ 0651  59		      C          pop cx
+ 0652  58		      C          pop ax
+ 0653  C3		      C          ret
+ 0654			      C SubFunc EndP
+			      C 
+			      C ; Деление квадрослова на слово; параметры:
+			      C ; в регистре - di смещение dq, а в cx - значение dw
+ 0654			      C DivDQToDW Proc near
+ 0654  50		      C          push ax
+ 0655  53		      C          push bx
+ 0656  52		      C          push dx
+			      C 
+ 0657  33 D2		      C          xor dx,dx
+ 0659  BB 0008		      C          mov bx,8
+			      C 
+ 065C  4B		      C     Dcyc:dec bx                  ; все делается
+ 065D  4B		      C          dec bx                  ; аналогично
+			      C                                  ; процедуре
+ 065E  8B 01		      C          mov ax,[di+bx]          ; DivDDToDw
+ 0660  F7 F1		      C          div cx
+ 0662  89 01		      C          mov [di+bx],ax
+			      C 
+ 0664  83 FB 00		      C          cmp bx,0
+ 0667  75 F3		      C          jne Dcyc
+			      C 
+ 0669  5A		      C          pop dx
+ 066A  5B		      C          pop bx
+ 066B  58		      C          pop ax
+ 066C  C3		      C          ret
+ 066D			      C DivDQToDW EndP
+			      C 
+			      C ; Умножение двойного слова на двойного слово;
+			      C ; параметры: в di - смещение аргумента1,
+			      C ; в si - аргумента2; результат в переменной MulRez
+ 066D			      C MulDDWithDD Proc near
+ 066D  50		      C          push ax
+ 066E  52		      C          push dx
+			      C 
+ 066F  C7 06 002C R 0000      C          mov word ptr [MulRez],0
+ 0675  C7 06 002E R 0000      C          mov word ptr [MulRez+2],0
+ 067B  C7 06 0030 R 0000      C          mov word ptr [MulRez+4],0
+ 0681  C7 06 0032 R 0000      C          mov word ptr [MulRez+6],0
+			      C 
+ 0687  8B 05		      C          mov ax,[di]             ; умножение
+ 0689  F7 24		      C          mul word ptr [si]       ; младших слов
+ 068B  A3 002C R	      C          mov MulRez,ax
+ 068E  89 16 002E R	      C          mov MulRez+2,dx
+			      C 
+ 0692  8B 05		      C          mov ax,[di]             ; умножение
+ 0694  F7 64 02		      C          mul word ptr [si+2]     ; средних
+ 0697  01 06 002E R	      C          add MulRez+2,ax         ; слов
+ 069B  11 16 0030 R	      C          adc MulRez+4,dx
+			      C 
+ 069F  8B 45 02		      C          mov ax,[di+2]
+ 06A2  F7 24		      C          mul word ptr [si]
+ 06A4  01 06 002E R	      C          add MulRez+2,ax
+ 06A8  11 16 0030 R	      C          adc MulRez+4,dx
+			      C 
+ 06AC  8B 45 02		      C          mov ax,[di+2]           ; умножение
+ 06AF  F7 64 02		      C          mul word ptr [si+2]     ; старших слов
+ 06B2  01 06 0030 R	      C          add MulRez+4,ax
+ 06B6  11 16 0032 R	      C          adc MulRez+6,dx
+			      C 
+ 06BA  5A		      C          pop dx
+ 06BB  58		      C          pop ax
+ 06BC  C3		      C          ret
+ 06BD			      C MulDDWithDD EndP
+			      C 
+			      C ; Умножение двух вещественных чисел; параметры:
+			      C ; в di - смещение 1-ого множителя и произведения,
+			      C ; а в si - смещение 2-ого множителя
+ 06BD			      C MulFunc Proc near
+ 06BD  50		      C          push ax
+ 06BE  53		      C          push bx
+ 06BF  51		      C          push cx
+			      C 
+ 06C0  33 DB		      C          xor bx,bx
+			      C 
+ 06C2  80 7D 04 7F	      C          cmp byte ptr [di+4],7Fh ; работаю
+ 06C6  72 05		      C          jb MFm1                 ; только с
+ 06C8  E8 F9A0		      C          call FloatNeg           ; положительными
+ 06CB  B3 01		      C          mov bl,1                ; мантиссами
+			      C 
+ 06CD  80 7C 04 7F	      C     MFm1:cmp byte ptr [si+4],7Fh
+ 06D1  72 09		      C          jb MFst
+ 06D3  87 F7		      C          xchg si,di
+ 06D5  E8 F993		      C          call FloatNeg
+ 06D8  87 F7		      C          xchg si,di
+ 06DA  B7 01		      C          mov bh,1
+			      C 
+ 06DC  8A 05		      C     MFst:mov al,[di]             ; сложение
+ 06DE  02 04		      C          add al,[si]             ; порядков
+ 06E0  88 05		      C          mov [di],al
+			      C 
+ 06E2  46		      C          inc si                  ; переход к
+ 06E3  47		      C          inc di                  ; мантиссам
+			      C 
+ 06E4  E8 FF86		      C          call MulDDWithDD        ; собственно умножение
+			      C 
+ 06E7  57		      C          push di                 ; коррекция произведе-
+ 06E8  B9 2710		      C          mov cx,10000            ; ния мантисс путем
+ 06EB  8D 3E 002C R	      C          lea di,MulRez           ; деления ее на 10Е7,
+ 06EF  E8 FF62		      C          call DivDQToDW          ; а т.к. делить надо
+ 06F2  B9 03E8		      C          mov cx,1000             ; было на 10Е8, то
+ 06F5  E8 FF5C		      C          call DivDQToDW          ; декремент порядка
+ 06F8  5F		      C          pop di                  ; полученного вешест-
+ 06F9  FE 4D FF		      C          dec byte ptr [di-1]     ; венного числа
+			      C 
+ 06FC  A1 002C R	      C          mov ax,MulRez           ; пословное
+ 06FF  89 05		      C          mov [di],ax             ; запоминание
+ 0701  A1 002E R	      C          mov ax,MulRez+2         ; результата
+ 0704  89 45 02		      C          mov [di+2],ax
+			      C 
+ 0707  4E		      C          dec si
+ 0708  4F		      C          dec di
+			      C 
+ 0709  E8 FE75		      C          call MantNorm           ; нормализация мантиссы
+			      C 
+ 070C  02 DF		      C          add bl,bh               ; определение знака
+ 070E  80 FB 01		      C          cmp bl,1                ; произведения
+ 0711  75 03		      C          jne MFend               ; вещественных
+ 0713  E8 F955		      C          call FloatNeg           ; чисел
+			      C 
+ 0716  59		      C    MFend:pop cx
+ 0717  5B		      C          pop bx
+ 0718  58		      C          pop ax
+ 0719  C3		      C          ret
+ 071A			      C MulFunc EndP
+			      C 
+			      C ; Деление двух вещественных чисел; параметры:
+			      C ; в di - смещение делимого и частного,
+			      C ; а в si - смещение делителя
+ 071A			      C DivFunc Proc near
+ 071A  50		      C          push ax
+ 071B  53		      C          push bx
+ 071C  51		      C          push cx
+			      C 
+ 071D  33 DB		      C          xor bx,bx
+			      C 
+ 071F  80 7D 04 7F	      C          cmp byte ptr [di+4],7Fh ; работаю
+ 0723  72 05		      C          jb DFnextS              ; только с
+ 0725  E8 F943		      C          call FloatNeg           ; положительными
+ 0728  B3 01		      C          mov bl,1                ; мантиссами
+			      C 
+ 072A  80 7C 04 7F	      C  DFnextS:cmp byte ptr [si+4],7Fh
+ 072E  72 09		      C          jb DFst
+ 0730  87 F7		      C          xchg si,di
+ 0732  E8 F936		      C          call FloatNeg
+ 0735  87 F7		      C          xchg si,di
+ 0737  B7 01		      C          mov bh,1
+			      C 
+ 0739  8A 05		      C     DFst:mov al,[di]             ; вычитание
+ 073B  2A 04		      C          sub al,[si]             ; порядков
+ 073D  88 05		      C          mov [di],al
+			      C 
+ 073F  46		      C          inc si                  ; переход к
+ 0740  47		      C          inc di                  ; мантиссам
+			      C 
+ 0741  FF 34		      C          push [si]
+ 0743  FF 74 02		      C          push [si+2]
+ 0746  50		      C          push ax
+ 0747  B8 05F5		      C          mov ax, 05F5h
+ 074A  89 44 02		      C          mov [si+2],ax           ; коррекция мантиссы
+ 074D  B8 E100		      C          mov ax, 0E100h
+ 0750  89 04		      C          mov [si],ax             ; делимого путем
+ 0752  58		      C          pop ax
+ 0753  E8 FF17		      C          call MulDDWithDD        ; умножения ее на 10Е8
+ 0756  8F 44 02		      C          pop [si+2]
+ 0759  8F 04		      C          pop [si]
+			      C 
+ 075B  B9 0020		      C          mov cx,32               ; деление мантисс по
+			      C                                  ; алгоритму с восста-
+			      C                                  ; новление остатка
+			      C                                  
+ 075E  D1 26 002C R	      C   DFDcyc:shl word ptr MulRez,1   ; сдвиг влево частного
+ 0762  D1 16 002E R	      C          rcl word ptr MulRez+2,1 ; и остатка
+ 0766  D1 16 0030 R	      C          rcl word ptr MulRez+4,1
+ 076A  D1 16 0032 R	      C          rcl word ptr MulRez+6,1
+ 076E  9C		      C          pushf                   ; сохранение переноса
+			      C 
+ 076F  A1 0030 R	      C          mov ax,MulRez+4         ; вычитание из 
+ 0772  2B 04		      C          sub ax,[si]             ; остатка делителя
+ 0774  A3 0030 R	      C          mov MulRez+4,ax
+ 0777  A1 0032 R	      C          mov ax,MulRez+6
+ 077A  1B 44 02		      C          sbb ax,[si+2]
+ 077D  A3 0032 R	      C          mov MulRez+6,ax
+			      C 
+ 0780  72 0D		      C          jc DFm2                 ; если разность < 0
+ 0782  9D		      C          popf
+			      C 
+ 0783  83 06 002C R 01	      C     DFm1:add word ptr MulRez,1   ; разряд
+ 0788  83 16 002E R 00	      C          adc word ptr MulRez+2,0 ; частного = 1
+ 078D  EB 14		      C          jmp Dloop
+			      C 
+ 078F  9D		      C     DFm2:popf
+ 0790  72 F1		      C          jc DFm1                 ; проверка переноса от
+			      C                                  ; сдвига остатка
+			      C 
+ 0792  A1 0030 R	      C          mov ax,MulRez+4         ; восстановление
+ 0795  03 04		      C          add ax,[si]             ; остатка
+ 0797  A3 0030 R	      C          mov MulRez+4,ax
+ 079A  A1 0032 R	      C          mov ax,MulRez+6
+ 079D  13 44 02		      C          adc ax,[si+2]
+ 07A0  A3 0032 R	      C          mov MulRez+6,ax
+			      C 
+ 07A3  E2 B9		      C    Dloop:loop DFDcyc
+			      C 
+ 07A5  A1 002C R	      C          mov ax,MulRez           ; пословное
+ 07A8  89 05		      C          mov [di],ax             ; запоминание
+ 07AA  A1 002E R	      C          mov ax,MulRez+2         ; результата
+ 07AD  89 45 02		      C          mov [di+2],ax
+			      C 
+ 07B0  4E		      C          dec si
+ 07B1  4F		      C          dec di
+			      C 
+ 07B2  E8 FDCC		      C          call MantNorm           ; нормализация мантиссы
+			      C 
+ 07B5  02 DF		      C          add bl,bh               ; определение знака
+ 07B7  80 FB 01		      C          cmp bl,1                ; частного двух
+ 07BA  75 03		      C          jne DFend               ; вещественных
+ 07BC  E8 F8AC		      C          call FloatNeg           ; чисел
+			      C 
+ 07BF  59		      C    DFend:pop cx
+ 07C0  5B		      C          pop bx
+ 07C1  58		      C          pop ax
+ 07C2  C3		      C          ret
+ 07C3			      C DivFunc EndP
+			      C 
+
+ 07C3  B8 ---- R		   Begin:mov ax,Data             ; инициализация
+ 07C6  8E D8			         mov ds,ax               ; сегментных
+ 07C8  8E C0			         mov es,ax               ; регистров и
+ 07CA  B8 ---- R		         mov ax,Stack
+ 07CD  8E D0			         mov ss,ax
+ 07CF  BC 00C8 R		         mov sp,offset StkTop    ; указателя стека
+
+ 07D2  B9 0040			         mov cx,64
+ 07D5  BF 0000			         mov di,0
+ 07D8  B0 00			         mov al,0
+ 07DA				ClearData:
+ 07DA  AA			         stosb
+ 07DB  E2 FD			         loop ClearData
+
+ 07DD  E8 F820			         call InitOutputMap      ; инициализация мас-
+				                                 ; сива образов
+ 07E0  C6 06 001E R 11		         mov ActiveButtonCode,17
+ 07E5  E8 FA96			         call Clear              ; очистка переменных
+
+ 07E8  C6 06 001E R 14		         mov ActiveButtonCode,20
+ 07ED  E8 FB05			         call MemoryClear        ; очистка памяти
+
+ 07F0  E8 FB7E			    WCyc:call ErrMsgOutput       ; вывод сообщения об
+				                                 ; ошибках
+ 07F3  E8 FB9D			         call StrOutput          ; отображение строки
+				                                 ; ввода/вывода
+
+ 07F6  E8 F8C1			         call KbdRead            ; опрос клавиатуры
+ 07F9  E8 F8EE			         call DigInput           ; ввод цифры
+ 07FC  E8 F92B			         call PointInput         ; ввод точки
+ 07FF  E8 F963			         call SignChange         ; смена знака
+
+ 0802  E8 F982			         call AddRezArg          ; ввод
+ 0805  E8 F99F			         call SubRezArg          ; операции
+ 0808  E8 F9BC			         call MulRezArg
+ 080B  E8 F9D9			         call DivRezArg
+
+ 080E  E8 F9F6			         call Calculate          ; вычисление
+
+ 0811  E8 FA6A			         call Clear              ; глобальная очистка
+ 0814  E8 FA91			         call CE                 ; очистка строки ввода
+ 0817  E8 FAA0			         call Undo               ; откат
+
+ 081A  E8 FAD8			         call MemoryClear        ; очистка памяти
+ 081D  E8 FAF0			         call MemoryRead         ; отображение содержи-
+				                                 ; мого памяти
+ 0820  E8 FB08			         call MemorySet          ; запоминание в память
+ 0823  E8 FB20			         call MemoryAdd          ; сложение с памятью
+
+ 0826  EB C8			         jmp WCyc                ; замыкание програм-
+				                                 ; много кольца
+
+				         assume cs:nothing
+
+				         org 0FF0h               ; задание стартовой
+ 0FF0  EA ---- 07C3 R		   Start:jmp Far Ptr Begin       ; точки, управление
+				                                 ; передается на
+				                                 ; команду jump
+ 0FF5				Code EndS
+
+				End Start
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:18:17
+Calc.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 0034	  Abs	  Private 
+Stack  . . . . . . . . . . . . .	16 Bit	 00C8	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+AddFunc  . . . . . . . . . . . .	P Near	 05EE	  Code	Length= 0033 Public
+  ADcyc  . . . . . . . . . . . .	L Near	 05FD	  Code	
+  Ast  . . . . . . . . . . . . .	L Near	 0606	  Code	
+AddRezArg  . . . . . . . . . . .	P Near	 0187	  Code	Length= 0020 Public
+  ARAend . . . . . . . . . . . .	L Near	 01A6	  Code	
+CE . . . . . . . . . . . . . . .	P Near	 02A8	  Code	Length= 0012 Public
+  CEend  . . . . . . . . . . . .	L Near	 02B9	  Code	
+CalculateMantissa  . . . . . . .	P Near	 03D5	  Code	Length= 0038 Public
+  CMcyc  . . . . . . . . . . . .	L Near	 03EA	  Code	
+  CMm1 . . . . . . . . . . . . .	L Near	 03FB	  Code	
+  CMend  . . . . . . . . . . . .	L Near	 0409	  Code	
+CalculateOrder . . . . . . . . .	P Near	 040D	  Code	Length= 0047 Public
+  COm1 . . . . . . . . . . . . .	L Near	 0421	  Code	
+  COcyc1 . . . . . . . . . . . .	L Near	 042D	  Code	
+  COm2 . . . . . . . . . . . . .	L Near	 0443	  Code	
+  COend  . . . . . . . . . . . .	L Near	 0450	  Code	
+Calculate  . . . . . . . . . . .	P Near	 0207	  Code	Length= 0077 Public
+  Calcm1 . . . . . . . . . . . .	L Near	 0235	  Code	
+  Calcm2 . . . . . . . . . . . .	L Near	 0241	  Code	
+  Calcm3 . . . . . . . . . . . .	L Near	 024D	  Code	
+  Calcm4 . . . . . . . . . . . .	L Near	 025E	  Code	
+  Calcer . . . . . . . . . . . .	L Near	 0265	  Code	
+  Calcm5 . . . . . . . . . . . .	L Near	 026C	  Code	
+  Calcend  . . . . . . . . . . .	L Near	 027D	  Code	
+Clear  . . . . . . . . . . . . .	P Near	 027E	  Code	Length= 002A Public
+  Cend . . . . . . . . . . . . .	L Near	 02A7	  Code	
+ConvertFloatToString . . . . . .	P Near	 04E7	  Code	Length= 005F Public
+  CFSst  . . . . . . . . . . . .	L Near	 04FF	  Code	
+  CFSm1  . . . . . . . . . . . .	L Near	 0516	  Code	
+  CFSZD  . . . . . . . . . . . .	L Near	 051D	  Code	
+  CFSPD  . . . . . . . . . . . .	L Near	 052D	  Code	
+  CFSend . . . . . . . . . . . .	L Near	 053C	  Code	
+ConvertStringToFloat . . . . . .	P Near	 0454	  Code	Length= 0020 Public
+  CSFend . . . . . . . . . . . .	L Near	 0473	  Code	
+DigInput . . . . . . . . . . . .	P Near	 00EA	  Code	Length= 0040 Public
+  DIm1 . . . . . . . . . . . . .	L Near	 010B	  Code	
+  DIm2 . . . . . . . . . . . . .	L Near	 011F	  Code	
+  DIm3 . . . . . . . . . . . . .	L Near	 0122	  Code	
+  DIend  . . . . . . . . . . . .	L Near	 0129	  Code	
+DivDDtoDW  . . . . . . . . . . .	P Near	 0546	  Code	Length= 0015 Public
+DivDQToDW  . . . . . . . . . . .	P Near	 0654	  Code	Length= 0019 Public
+  Dcyc . . . . . . . . . . . . .	L Near	 065C	  Code	
+DivFunc  . . . . . . . . . . . .	P Near	 071A	  Code	Length= 00A9 Public
+  DFnextS  . . . . . . . . . . .	L Near	 072A	  Code	
+  DFst . . . . . . . . . . . . .	L Near	 0739	  Code	
+  DFDcyc . . . . . . . . . . . .	L Near	 075E	  Code	
+  DFm1 . . . . . . . . . . . . .	L Near	 0783	  Code	
+  DFm2 . . . . . . . . . . . . .	L Near	 078F	  Code	
+  Dloop  . . . . . . . . . . . .	L Near	 07A3	  Code	
+  DFend  . . . . . . . . . . . .	L Near	 07BF	  Code	
+DivRezArg  . . . . . . . . . . .	P Near	 01E7	  Code	Length= 0020 Public
+  DRAend . . . . . . . . . . . .	L Near	 0206	  Code	
+ErrMsgOutput . . . . . . . . . .	P Near	 0371	  Code	Length= 0022 Public
+  EMOend . . . . . . . . . . . .	L Near	 0392	  Code	
+FloatClear . . . . . . . . . . .	P Near	 005D	  Code	Length= 000E Public
+  FCcyc  . . . . . . . . . . . .	L Near	 0060	  Code	
+FloatNeg . . . . . . . . . . . .	P Near	 006B	  Code	Length= 001D Public
+InitOutputMap  . . . . . . . . .	P Near	 0000	  Code	Length= 0042 Public
+KbdRead  . . . . . . . . . . . .	P Near	 00BA	  Code	Length= 0030 Public
+  KRm1 . . . . . . . . . . . . .	L Near	 00BA	  Code	
+  KRCyc  . . . . . . . . . . . .	L Near	 00BD	  Code	
+  KRexit . . . . . . . . . . . .	L Near	 00CB	  Code	
+  KRm2 . . . . . . . . . . . . .	L Near	 00CC	  Code	
+  KRm3 . . . . . . . . . . . . .	L Near	 00D4	  Code	
+MDeNorm  . . . . . . . . . . . .	P Near	 055B	  Code	Length= 0026 Public
+  DeNst  . . . . . . . . . . . .	L Near	 0569	  Code	
+  MDeNcyc  . . . . . . . . . . .	L Near	 056A	  Code	
+  DeNend . . . . . . . . . . . .	L Near	 057F	  Code	
+MantNorm . . . . . . . . . . . .	P Near	 0581	  Code	Length= 005B Public
+  MantNst  . . . . . . . . . . .	L Near	 0590	  Code	
+  MNcyc  . . . . . . . . . . . .	L Near	 0599	  Code	
+  MantNm1  . . . . . . . . . . .	L Near	 05B5	  Code	
+  MantNm2  . . . . . . . . . . .	L Near	 05C4	  Code	
+  MantNm3  . . . . . . . . . . .	L Near	 05D1	  Code	
+  MNend  . . . . . . . . . . . .	L Near	 05D9	  Code	
+MantissaConvert  . . . . . . . .	P Near	 0474	  Code	Length= 0030 Public
+  MCMcyc . . . . . . . . . . . .	L Near	 047A	  Code	
+MemoryAdd  . . . . . . . . . . .	P Near	 0346	  Code	Length= 002B Public
+  MAend  . . . . . . . . . . . .	L Near	 0370	  Code	
+MemoryClear  . . . . . . . . . .	P Near	 02F5	  Code	Length= 001B Public
+  MCend  . . . . . . . . . . . .	L Near	 030F	  Code	
+MemoryRead . . . . . . . . . . .	P Near	 0310	  Code	Length= 001B Public
+  MRend  . . . . . . . . . . . .	L Near	 032A	  Code	
+MemorySet  . . . . . . . . . . .	P Near	 032B	  Code	Length= 001B Public
+  MSend  . . . . . . . . . . . .	L Near	 0345	  Code	
+MulDDWithDD  . . . . . . . . . .	P Near	 066D	  Code	Length= 0050 Public
+MulDDwithDW  . . . . . . . . . .	P Near	 03BF	  Code	Length= 0016 Public
+MulFunc  . . . . . . . . . . . .	P Near	 06BD	  Code	Length= 005D Public
+  MFm1 . . . . . . . . . . . . .	L Near	 06CD	  Code	
+  MFst . . . . . . . . . . . . .	L Near	 06DC	  Code	
+  MFend  . . . . . . . . . . . .	L Near	 0716	  Code	
+MulRezArg  . . . . . . . . . . .	P Near	 01C7	  Code	Length= 0020 Public
+  MRAend . . . . . . . . . . . .	L Near	 01E6	  Code	
+OrderConvert . . . . . . . . . .	P Near	 04A4	  Code	Length= 0043 Public
+  OCMcyc1  . . . . . . . . . . .	L Near	 04B8	  Code	
+  OCm1 . . . . . . . . . . . . .	L Near	 04CA	  Code	
+  OCMcyc2  . . . . . . . . . . .	L Near	 04D4	  Code	
+  OCend  . . . . . . . . . . . .	L Near	 04E3	  Code	
+OverflowChecking . . . . . . . .	P Near	 05DC	  Code	Length= 0012 Public
+  OvChm1 . . . . . . . . . . . .	L Near	 05E5	  Code	
+  OvChend  . . . . . . . . . . .	L Near	 05ED	  Code	
+PointInput . . . . . . . . . . .	P Near	 012A	  Code	Length= 003B Public
+  PIm1 . . . . . . . . . . . . .	L Near	 0147	  Code	
+  PIm2 . . . . . . . . . . . . .	L Near	 0159	  Code	
+  PIend  . . . . . . . . . . . .	L Near	 0164	  Code	
+RotateStringLeft . . . . . . . .	P Near	 00A2	  Code	Length= 0018 Public
+  RSLcyc . . . . . . . . . . . .	L Near	 00A7	  Code	
+RotateStringRight  . . . . . . .	P Near	 0088	  Code	Length= 001A Public
+  RSRcyc . . . . . . . . . . . .	L Near	 008C	  Code	
+SignChange . . . . . . . . . . .	P Near	 0165	  Code	Length= 0022 Public
+  SCSP . . . . . . . . . . . . .	L Near	 0181	  Code	
+  SCend  . . . . . . . . . . . .	L Near	 0186	  Code	
+StrClear . . . . . . . . . . . .	P Near	 0042	  Code	Length= 001B Public
+  SCcyc  . . . . . . . . . . . .	L Near	 0050	  Code	
+StrOutput  . . . . . . . . . . .	P Near	 0393	  Code	Length= 002C Public
+  SOst . . . . . . . . . . . . .	L Near	 039A	  Code	
+  SOCyc  . . . . . . . . . . . .	L Near	 03A4	  Code	
+  SOm1 . . . . . . . . . . . . .	L Near	 03B0	  Code	
+  SOend  . . . . . . . . . . . .	L Near	 03BE	  Code	
+SubFunc  . . . . . . . . . . . .	P Near	 0621	  Code	Length= 0033 Public
+  SDcyc  . . . . . . . . . . . .	L Near	 0630	  Code	
+  Sst  . . . . . . . . . . . . .	L Near	 0639	  Code	
+SubRezArg  . . . . . . . . . . .	P Near	 01A7	  Code	Length= 0020 Public
+  SRAend . . . . . . . . . . . .	L Near	 01C6	  Code	
+Undo . . . . . . . . . . . . . .	P Near	 02BA	  Code	Length= 003B Public
+  Um1  . . . . . . . . . . . . .	L Near	 02E1	  Code	
+  Uend . . . . . . . . . . . . .	L Near	 02F4	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ActiveButtonCode . . . . . . . .	Byte	 001E	  Data	
+Addition . . . . . . . . . . . .	Number	 000Ch	 
+Arg  . . . . . . . . . . . . . .	Byte	 0005	  Data	
+Begin  . . . . . . . . . . . . .	L Near	 07C3	  Code	
+Bksp . . . . . . . . . . . . . .	Number	 0013h	 
+Calculation  . . . . . . . . . .	Number	 0010h	 
+ClearData  . . . . . . . . . . .	L Near	 07DA	  Code	
+ClrE . . . . . . . . . . . . . .	Number	 0012h	 
+Clr  . . . . . . . . . . . . . .	Number	 0011h	 
+Division . . . . . . . . . . . .	Number	 000Fh	 
+Error  . . . . . . . . . . . . .	Byte	 0010	  Data	
+MemAdd . . . . . . . . . . . . .	Number	 0017h	 
+MemClr . . . . . . . . . . . . .	Number	 0014h	 
+MemRd  . . . . . . . . . . . . .	Number	 0015h	 
+MemSet . . . . . . . . . . . . .	Number	 0016h	 
+Mem  . . . . . . . . . . . . . .	Byte	 000A	  Data	
+MulRez . . . . . . . . . . . . .	Word	 002C	  Data	
+Multiplication . . . . . . . . .	Number	 000Eh	 
+Operation  . . . . . . . . . . .	Byte	 000F	  Data	
+OutputMap  . . . . . . . . . . .	Byte	 001F	  Data	
+Point  . . . . . . . . . . . . .	Number	 000Ah	 
+Rez  . . . . . . . . . . . . . .	Byte	 0000	  Data	
+SignChg  . . . . . . . . . . . .	Number	 000Bh	 
+Start  . . . . . . . . . . . . .	L Near	 0FF0	  Code	
+StkTop . . . . . . . . . . . . .	Word	 00C8	  Stack	
+StrDisplay . . . . . . . . . . .	Byte	 0011	  Data	
+Subtraction  . . . . . . . . . .	Number	 000Dh	 
+WCyc . . . . . . . . . . . . . .	L Near	 07F0	  Code	
+
+	   0 Warnings
+	   0 Errors

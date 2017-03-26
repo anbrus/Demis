@@ -1,0 +1,7 @@
+[ARCH]=00000000,road.arh
+[SOURCE]=00000001,road.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(44,44,844,508)E:\WORK\VC\Demis2k\Road\road.arh
+[WND.asm]=(88,88,888,552)E:\WORK\VC\Demis2k\Road\road.asm

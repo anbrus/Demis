@@ -1,0 +1,42 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=Demis.chm
+Contents file=Table of Contents.hhc
+Default Window=Default
+Default topic=HTML\About.htm
+Display compile progress=No
+Full-text search=Yes
+Index file="D:\1\Demis2k\Help\Index.hhk"
+Language=0x419 Русский
+Title=Design Microsystems
+
+[WINDOWS]
+Default="Design Microsystems","Table of Contents.hhc","Index.hhk","HTML\About.htm","HTML\About.htm",,,,,0x2520,,0x300e,[0,0,640,480],0x30000,,,,,,0
+
+
+[FILES]
+HTML\About.htm
+HTML\Graph_Editor.htm
+HTML\Arch_Elements.htm
+HTML\Debugger.htm
+HTML\Project_Settings.htm
+HTML\Project.htm
+HTML\Text_Editor.htm
+HTML\Developing_Program.htm
+HTML\Working_With_Demis.htm
+
+[ALIAS]
+HIDR_ARCHTYPE=HTML\Graph_Editor.htm
+HIDR_ASSMTYPE=HTML\Text_Editor.htm
+HIDR_DASMVIEW=HTML\Debugger.htm
+HIDR_DEBUGTYPE=HTML\Debugger.htm
+HIDR_DUMPVIEW=HTML\Debugger.htm
+HIDR_PRJTYPE_ADD=HTML\Project_Settings.htm
+HIDR_PRJTYPE=HTML\Project.htm
+HIDR_REGSVIEW=HTML\Debugger.htm
+
+[MAP]
+#include Demis.hm
+
+[INFOTYPES]
+

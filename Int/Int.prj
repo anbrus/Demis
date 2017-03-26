@@ -1,0 +1,5 @@
+[SOURCE]=Int.asm
+[ARCH]=Int.arh
+[ROMSIZE]=4
+[WND.asm]=(139,31,781,365)E:\WORK\VC\Demis2k\Int\Int.asm
+[WND.arh]=(113,61,755,395)E:\WORK\VC\Demis2k\Int\Int.arh

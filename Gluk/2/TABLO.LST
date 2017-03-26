@@ -1,0 +1,1281 @@
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 1
+tablo.asm
+
+
+
+      1					 .386
+      2					 ;Задайте объём	ПЗУ в байтах
+      3					 RomSize    EQUEQU   4*1024
+**Error** tablo.asm(3) Illegal instruction
+      4
+      5		  =0001			 CGame=1
+      6		  =0002			 CPere=2
+      7		  =0000			 CPrIg=0
+      8
+      9		  =0000			 kbZero=0
+     10		  =000A			 kbSpace=0ah
+     11		  =0026			 kbBrSp=26h
+     12		  =0027			 kbClr=27h
+     13		  =0028			 kbAdd=28h
+     14		  =0029			 kbSub=29h
+     15		  =002A			 kbCK=2ah
+     16		  =002B			 kbCP=2bh
+     17		  =002C			 kbCD=2ch
+     18		  =002F			 kbStop=2fh
+     19
+     20	    0000			 Data	    SEGMENT  AT	0h use16
+     21					 ;Здесь	размещаются описания переменных
+     22	    0000  ??			 Mode	    db ?		      ;	1 игра,	2 перерыв, 0 предигровой отчет
+     23	    0001  ??			 Stop db ? ; 1 остановка
+     24
+     25	    0002  04*(??)		 TimeGame   db 4 dup (?)      ;	время игры
+     26	    0006  02*(??)		 Period	    db 2 dup(?)		     ;номер периода
+     27	    0008  04*(??)		 Kom1  db 4 dup	(?)
+     28	    000C  04*(??)		 Kom2  db 4 dup	(?)	 ;названия команд
+     29	    0010  02*(??)		 GolKom1 db 2 dup (?)
+     30	    0012  02*(??)		 GolKom2 db 2 dup (?) ;счет
+     31
+     32	    0014			 BeginPlay label   ;динна записи 15
+     33
+     34	    0014			 PlayKom1 label
+     35	    0014  ??			 Play1Fl db ?			  ;0
+     36	    0015  08*(??)		 Play1 db 8 dup(?)		  ;1
+     37	    001D  02*(??)		 NPlay1	db 2 dup(?)		  ;9
+     38	    001F  04*(??)		 TimeGol1   db 4 dup (?)	  ;11
+     39
+     40	    0023  ??			 PlayB11Fl db ?
+     41	    0024  08*(??)		 PlayB11 db 8 dup(?)
+     42	    002C  02*(??)		 NPlayB11 db 2 dup(?)
+     43	    002E  04*(??)		 TimeB11 db 4 dup (?)
+     44
+     45	    0032  ??			 PlayB12Fl db ?
+     46	    0033  08*(??)		 PlayB12 db 8 dup(?)	  ;игроки отбывающие штраф
+     47	    003B  02*(??)		 NPlayB12 db 2 dup(?)
+     48	    003D  04*(??)		 TimeB12   db 4	dup (?)	     ;время отбывания штрафа
+     49
+     50	    0041			 PlayKom2 label
+     51	    0041  ??			 Play2Fl db ?
+     52	    0042  08*(??)		 Play2 db 8 dup(?)	;игроки	забившие голы
+     53	    004A  02*(??)		 NPlay2	db 2 dup(?)
+     54	    004C  04*(??)		 TimeGol2   db 4 dup (?)      ;время забития гола
+     55
+     56	    0050  ??			 PlayB21Fl db ?
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 2
+tablo.asm
+
+
+
+     57	    0051  08*(??)		 PlayB21 db 8 dup(?)
+     58	    0059  02*(??)		 NPlayB21 db 2 dup(?)
+     59	    005B  04*(??)		 TimeB21 db 4 dup (?)
+     60
+     61	    005F  ??			 PlayB22Fl db ?
+     62	    0060  08*(??)		 PlayB22 db 8 dup(?)	  ;
+     63	    0068  02*(??)		 NPlayB22 db 2 dup(?)
+     64	    006A  04*(??)		 TimeB22   db 4	dup (?)	     ;
+     65
+     66
+     67	    006E  ????			 LenPeriod dw  ?
+     68	    0070  ????			 LenPerir dw  ?
+     69	    0072  ????			 LenPrIgr dw  ?
+     70
+     71	    0074  ??			 IncDec	db ?
+     72	    0075  ??			 IncDecCmp db ?
+     73	    0076  ??			 IncDecCmp60 db	?
+     74	    0077  ??			 IncDecMov db ?
+     75	    0078  ??			 IncDecMov60 db	?
+     76
+     77	    0079  ??			 CaseKom db ?	  ;первая 0, вторая 1, время игры 2, параметры игры 3	    CK
+     78	    007A  ??			 CasePlay db ?	  ;название 0, забивший	1, штрафной1 2,	штрафной2 3, счет 4 CP
+     79	    007B  ??			 CaseDom db ?	  ;номер 0, время 1, фамилия 2				    CD
+     80
+     81	    007C  06*(??)		 KbdImg	db 6 dup(?)
+     82	    0082  ??			 NextChar db ?
+     83	    0083  ??			 KbdPress db ?
+     84
+     85	    0084  ????			 AdrWW dw ? ;адрес области ввода
+     86	    0086  ????			 LenWW dw ? ;длинна области ввода
+     87	    0088  ????			 AdrSc dw ? ;Адрес счета
+     88	    008A  ??			 Nomber	db ?; цифра 1, символы 0
+     89	    008B			 Data	    ENDS
+     90
+     91					 ;Задайте необходимый адрес стека
+     92	    0000			 Stk	    SEGMENT  AT	500h use16
+     93					 ;Задайте необходимый размер стека
+     94	    0000  0A*(????)			    dw	  10 dup (?)
+     95	    0014			 StkTop	    Label Word
+     96	    0014			 Stk	    ENDS
+     97
+     98
+     99
+    100	    0000			 Code	    SEGMENT use16
+    101					 ;Здесь	размещаются описания констант
+    102
+    103						    ASSUME cs:Code,ds:Data,es:Data
+    104	    0000  3F 0C	76 5E 4D 5B 7B+	 ImgNum	    db	  03Fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh    ;Образы 16-тиричных символов
+    105		  0E
+    106	    0008  7F 5F				    db	  07Fh,05Fh    ;от 0 до	9
+    107					 ;алфавит
+    108	    000A  3E 41	41 41 3E 00 00+	 ImgAlf	    db 03Eh, 041h, 041h, 041h, 03Eh, 000h, 000h, 000h	 ;0
+    109		  00
+    110	    0012  00 00	42 7F 40 00 00+		    db 000h, 000h, 042h, 07Fh, 040h, 000h, 000h, 000h	 ;1
+    111		  00
+    112	    001A  62 51	49 49 46 00 00+		    db 062h, 051h, 049h, 049h, 046h, 000h, 000h, 000h	 ;2
+    113		  00
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 3
+tablo.asm
+
+
+
+    114	    0022  22 41	49 49 36 00 00+		    db 022h, 041h, 049h, 049h, 036h, 000h, 000h, 000h	 ;3
+    115		  00
+    116	    002A  1C 13	10 10 7F 00 00+		    db 01Ch, 013h, 010h, 010h, 07Fh, 000h, 000h, 000h	 ;4
+    117		  00
+    118	    0032  27 45	45 45 39 00 00+		    db 027h, 045h, 045h, 045h, 039h, 000h, 000h, 000h	 ;5
+    119		  00
+    120	    003A  3E 49	49 49 32 00 00+		    db 03Eh, 049h, 049h, 049h, 032h, 000h, 000h, 000h	 ;6
+    121		  00
+    122	    0042  01 01	79 05 03 00 00+		    db 001h, 001h, 079h, 005h, 003h, 000h, 000h, 000h	 ;7
+    123		  00
+    124	    004A  3A 45	45 45 3A 00 00+		    db 03Ah, 045h, 045h, 045h, 03Ah, 000h, 000h, 000h	 ;8
+    125		  00
+    126	    0052  26 49	49 49 3E 00 00+		    db 026h, 049h, 049h, 049h, 03Eh, 000h, 000h, 000h	 ;9
+    127		  00
+    128	    005A  00 00	00 00 00 00 00+		    db 000h, 000h, 000h, 000h, 000h, 000h, 000h, 000h	 ;Space
+    129		  00
+    130	    0062  7E 11	11 11 7E 00 00+		    db 07Eh, 011h, 011h, 011h, 07Eh, 000h, 000h, 000h ;A1
+    131		  00
+    132	    006A  7F 45	45 45 3A 00 00+		    db 07Fh, 045h, 045h, 045h, 03Ah, 000h, 000h, 000h ;B2
+    133		  00
+    134	    0072  3E 41	41 41 22 00 00+		    db 03Eh, 041h, 041h, 041h, 022h, 000h, 000h, 000h ;C3
+    135		  00
+    136	    007A  7F 41	41 41 3E 00 00+		    db 07Fh, 041h, 041h, 041h, 03Eh, 000h, 000h, 000h ;D4
+    137		  00
+    138	    0082  7F 49	49 49 63 00 00+		    db 07Fh, 049h, 049h, 049h, 063h, 000h, 000h, 000h ;E5
+    139		  00
+    140	    008A  7F 09	09 09 03 00 00+		    db 07Fh, 009h, 009h, 009h, 003h, 000h, 000h, 000h ;F6
+    141		  00
+    142	    0092  3E 41	41 51 32 00 00+		    db 03Eh, 041h, 041h, 051h, 032h, 000h, 000h, 000h ;G7
+    143		  00
+    144	    009A  7F 08	08 08 7F 00 00+		    db 07Fh, 008h, 008h, 008h, 07Fh, 000h, 000h, 000h ;H8
+    145		  00
+    146	    00A2  00 00	41 7F 41 00 00+		    db 000h, 000h, 041h, 07Fh, 041h, 000h, 000h, 000h ;I9
+    147		  00
+    148	    00AA  00 20	41 3F 01 00 00+		    db 000h, 020h, 041h, 03Fh, 001h, 000h, 000h, 000h ;J10
+    149		  00
+    150	    00B2  7F 08	04 0A 71 00 00+		    db 07Fh, 008h, 004h, 00Ah, 071h, 000h, 000h, 000h ;K11
+    151		  00
+    152	    00BA  7F 40	40 40 60 00 00+		    db 07Fh, 040h, 040h, 040h, 060h, 000h, 000h, 000h ;L12
+    153		  00
+    154	    00C2  7F 04	08 04 7F 00 00+		    db 07Fh, 004h, 008h, 004h, 07Fh, 000h, 000h, 000h ;M13
+    155		  00
+    156	    00CA  7F 04	08 10 7F 00 00+		    db 07Fh, 004h, 008h, 010h, 07Fh, 000h, 000h, 000h ;N14
+    157		  00
+    158	    00D2  3E 41	41 41 3E 00 00+		    db 03Eh, 041h, 041h, 041h, 03Eh, 000h, 000h, 000h ;O15
+    159		  00
+    160	    00DA  7F 09	09 09 06 00 00+		    db 07Fh, 009h, 009h, 009h, 006h, 000h, 000h, 000h ;P16
+    161		  00
+    162	    00E2  3E 41	41 61 3E 40 00+		    db 03Eh, 041h, 041h, 061h, 03Eh, 040h, 000h, 000h ;Q17
+    163		  00
+    164	    00EA  7F 09	09 19 66 00 00+		    db 07Fh, 009h, 009h, 019h, 066h, 000h, 000h, 000h ;R18
+    165		  00
+    166	    00F2  46 49	49 49 31 00 00+		    db 046h, 049h, 049h, 049h, 031h, 000h, 000h, 000h ;S19
+    167		  00
+    168	    00FA  03 01	7F 01 03 00 00+		    db 003h, 001h, 07Fh, 001h, 003h, 000h, 000h, 000h ;T20
+    169		  00
+    170	    0102  3F 40	40 40 3F 00 00+		    db 03Fh, 040h, 040h, 040h, 03Fh, 000h, 000h, 000h ;U21
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 4
+tablo.asm
+
+
+
+    171		  00
+    172	    010A  1F 20	40 20 1F 00 00+		    db 01Fh, 020h, 040h, 020h, 01Fh, 000h, 000h, 000h ;V22
+    173		  00
+    174	    0112  3F 40	30 40 3F 00 00+		    db 03Fh, 040h, 030h, 040h, 03Fh, 000h, 000h, 000h ;W23
+    175		  00
+    176	    011A  63 14	08 14 63 00 00+		    db 063h, 014h, 008h, 014h, 063h, 000h, 000h, 000h ;X24
+    177		  00
+    178	    0122  03 04	78 04 03 00 00+		    db 003h, 004h, 078h, 004h, 003h, 000h, 000h, 000h ;Y25
+    179		  00
+    180	    012A  63 51	49 45 63 00 00+		    db 063h, 051h, 049h, 045h, 063h, 000h, 000h, 000h ;Z26
+    181		  00
+    182	    0132  08 08	08 08 08 00 00+		    db 008h, 008h, 008h, 008h, 008h, 000h, 000h, 000h ;-27
+    183		  00
+    184
+    185	    013A			 VibrDestr proc	  ;гашение дребезга
+    186	    013A  8A E0			 vd1:	    mov	ah,al
+    187	    013C  B7 00				    mov	bh,0
+    188	    013E  EC			 vd2:	    in al,dx
+    189	    013F  3A E0				    cmp	ah,al
+    190	    0141  75 F7				    jne	  vd1
+    191	    0143  FE C7				    inc	bh
+    192	    0145  80 FF	32			    cmp	bh,50
+    193	    0148  75 F4				    jne	vd2
+    194	    014A  8A C4				    mov	al,ah
+    195
+    196	    014C  C3				    ret
+    197	    014D			 VibrDestr endp
+    198	    014D			 KbdInput proc	  ; четение образа клавиатуры
+    199	    014D  BA 1013			    mov	dx,1013h
+    200	    0150  BE 007Cr			    lea	si,KbdImg
+    201	    0153  B9 0006			    mov	cx,length kbdimg
+    202	    0156  B3 01				    mov	bl,01h
+    203	    0158  8A C3			 ki4:	    mov	al,bl
+    204	    015A  EE				    out	dx,al
+    205
+    206	    015B  EC				    in al,dx
+    207	    015C  3C 00				    cmp	al,0
+    208	    015E  74 0F				    je ki1
+    209	    0160  E8 FFD7			    call VibrDestr
+    210	    0163  88 04				    mov	[si],al
+    211	    0165  EC			 ki2:	    in al,dx
+    212	    0166  3C 00				    cmp	al,0
+    213	    0168  75 FB				    jne	ki2
+    214	    016A  E8 FFCD			    call vibrdestr
+    215	    016D  EB 02				    jmp	ki3
+    216	    016F  88 04			 ki1:	    mov	[si],al
+    217	    0171  46			 ki3:	    inc	si
+    218	    0172  D0 C3				    rol	bl,1
+    219	    0174  E2 E2				    loop ki4
+    220	    0176  B0 80				    mov	al,10000000b
+    221	    0178  EE				    out	dx,al
+    222	    0179  C3				    ret
+    223	    017A			 KbdInput endp
+    224	    017A			 KbdPreob proc	  ;преобразование образа в код клавиши
+    225	    017A  C6 06	0083r 00		    mov	KbdPress,0
+    226	    017F  BB 007Cr			    lea	bx,kbdimg
+    227	    0182  33 D2				    xor	dx,dx
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 5
+tablo.asm
+
+
+
+    228	    0184  B9 0006			    mov	cx,length kbdimg
+    229	    0187  8A 07			 KP2:	    mov	al,[bx]
+    230	    0189  3C 00				    cmp	al,0
+    231	    018B  74 0F				    je KP1
+    232	    018D  C6 06	0083r 01		    mov	kbdpress,1
+    233	    0192  A8 01			 KP4:	    test al,1
+    234	    0194  75 0B				    jnz	KP3
+    235	    0196  D0 E8				    shr	al,1
+    236	    0198  FE C2				    inc	dl
+    237	    019A  EB F6				    jmp	kp4
+    238	    019C  43			 kp1:	    inc	bx
+    239	    019D  FE C6				    inc	dh
+    240	    019F  E2 E6				    loop kp2
+    241	    01A1  C0 E6	03		 KP3:	    shl	dh,3
+    242	    01A4  0A F2				    or dh,dl
+    243	    01A6  88 36	0082r			    mov	nextchar,dh
+    244	    01AA  C3				    ret
+    245	    01AB			 KbdPreob endp
+    246					 ; очистка выбранного поля
+    247	    01AB			 ClearPole proc	;bx - куда, cx - размерность, ax - чем
+    248	    01AB  88 07			 CP1:	    mov	[bx],al
+    249	    01AD  43				    inc	bx
+    250	    01AE  E2 FB				    loop CP1
+    251	    01B0  C3				    ret
+    252	    01B1			 ClearPole endp
+    253					 ; добавление символов
+    254	    01B1			 AddChar proc	   ;bx - куда, cx - размерность,
+    255	    01B1  49				    dec	cx
+    256	    01B2  8A 47	01		 AC1:	    mov	al,[bx+1]
+    257	    01B5  88 07				    mov	[bx],al
+    258	    01B7  43				    inc	bx
+    259	    01B8  E2 F8				    loop AC1
+    260	    01BA  A0 0082r			    mov	al,nextchar
+    261	    01BD  88 07				    mov	[bx],al
+    262	    01BF  C3				    ret
+    263	    01C0			 AddChar endp
+    264					 ; удаление символа
+    265	    01C0			 DelChar proc	   ;bx - куда, cx - размерность, al - что
+    266	    01C0  49				    dec	cx
+    267	    01C1  03 D9				    add	bx,cx
+    268	    01C3  8A 57	FF		 DC1:	    mov	dl,[bx-1]
+    269	    01C6  88 17				    mov	[bx],dl
+    270	    01C8  4B				    dec	bx
+    271	    01C9  E2 F8				    loop DC1
+    272	    01CB  88 07				    mov	[bx],al
+    273	    01CD  C3				    ret
+    274	    01CE			 DelChar endp
+    275					 ; выбор области ввода
+    276	    01CE			 CaseDomain proc
+    277
+    278
+    279	    01CE  80 3E	007Br 00		    cmp	casedom,0
+    280	    01D3  75 10				    jne	NoNomer
+    281	    01D5  C7 06	0086r 0002		    mov	lenWW,2
+    282	    01DB  C6 06	008Ar 01		    mov	Nomber,1
+    283	    01E0  BE 0009			    mov	si,9
+    284	    01E3  EB 25				    jmp	EndDom
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 6
+tablo.asm
+
+
+
+    285	    01E5  80 3E	007Br 01	 NoNomer:   cmp	casedom,1
+    286	    01EA  75 10				    jne	notimePl
+    287	    01EC  C7 06	0086r 0004		    mov	lenWW,4
+    288	    01F2  C6 06	008Ar 01		    mov	Nomber,1
+    289	    01F7  BE 000B			    mov	si,11
+    290	    01FA  EB 0E				    jmp	EndDom
+    291	    01FC  C7 06	0086r 0008	 noTimePl:  mov	lenWW,8
+    292	    0202  C6 06	008Ar 00		    mov	Nomber,0
+    293	    0207  BE 0001			    mov	si,1
+    294	    020A			 EndDom:
+    295	    020A  33 C0				    xor	ax,ax
+    296	    020C  A0 007Ar			    mov	al,caseplay
+    297	    020F  FE C8				    dec	al
+    298	    0211  B2 0F				    mov	dl,15
+    299	    0213  F6 E2				    mul	dl
+    300	    0215  03 F0				    add	si,ax
+    301
+    302
+    303	    0217  80 3E	0079r 00		    cmp	casekom,0
+    304	    021C  75 49				    jne	NoKom1
+    305
+    306	    021E  BB 0010r			    lea	BX,GolKom1
+    307	    0221  89 1E	0088r			    mov	AdrSc,bx
+    308	    0225  80 3E	007Ar 00		    cmp	caseplay,0
+    309	    022A  75 15				    jne	k1noname
+    310	    022C  BB 0008r			    lea	bx,kom1
+    311	    022F  89 1E	0084r			    mov	AdrWW,bx
+    312	    0233  C7 06	0086r 0004		    mov	LenWW,4
+    313	    0239  C6 06	008Ar 00		    mov	Nomber,0
+    314	    023E  E9 0095			    jmp	EndCD
+    315	    0241  80 3E	007Ar 04	 k1noname:  cmp	caseplay,4
+    316	    0246  75 15				    jne	k1NoScet
+    317	    0248  BB 0010r			    lea	bx,GolKom1
+    318	    024B  89 1E	0084r			    mov	AdrWW,bx
+    319	    024F  C7 06	0086r 0002		    mov	LenWW,2
+    320	    0255  C6 06	008Ar 01		    mov	Nomber,1
+    321	    025A  EB 7A	90			    jmp	endCD
+    322	    025D  81 C6	0014r		 k1NoScet:    add si,offset PlayKom1
+    323	    0261  89 36	0084r			    mov	adrWW,si
+    324	    0265  EB 6F				    jmp	endCD
+    325	    0267  80 3E	0079r 01	 NoKom1:    cmp	casekom,1
+    326	    026C  75 49				    jne	NoKom2
+    327
+    328	    026E  BB 0012r			    lea	BX,GolKom2
+    329	    0271  89 1E	0088r			    mov	AdrSc,bx
+    330	    0275  80 3E	007Ar 00		    cmp	caseplay,0
+    331	    027A  75 14				    jne	k2noname
+    332	    027C  BB 000Cr			    lea	bx,kom2
+    333	    027F  89 1E	0084r			    mov	AdrWW,bx
+    334	    0283  C7 06	0086r 0004		    mov	LenWW,4
+    335	    0289  C6 06	008Ar 00		    mov	Nomber,0
+    336	    028E  EB 46				    jmp	EndCD
+    337	    0290  80 3E	007Ar 04	 k2noname:  cmp	caseplay,4
+    338	    0295  75 14				    jne	k2NoScet
+    339	    0297  BB 0012r			    lea	bx,GolKom2
+    340	    029A  89 1E	0084r			    mov	AdrWW,bx
+    341	    029E  C7 06	0086r 0002		    mov	LenWW,2
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 7
+tablo.asm
+
+
+
+    342	    02A4  C6 06	008Ar 01		    mov	Nomber,1
+    343	    02A9  EB 2B				    jmp	endCD
+    344	    02AB  81 C6	0041r		 k2NoScet:    add si,offset PlayKom2
+    345	    02AF  89 36	0084r			    mov	adrWW,si
+    346	    02B3  EB 21				    jmp	endCD
+    347
+    348
+    349	    02B5  EB 1F				    jmp	EndCD
+    350	    02B7  80 3E	0079r 02	 NoKom2:    cmp	casekom,2
+    351	    02BC  75 18				    jne	notime
+    352	    02BE  BB 0002r			    lea	bx,timeGame
+    353	    02C1  89 1E	0084r			    mov	adrww,bx
+    354	    02C5  C6 06	008Ar 01		    mov	nomber,1
+    355	    02CA  C7 06	0086r 0004		    mov	lenww,4
+    356	    02D0  89 1E	0088r			    mov	adrsc,bx
+    357	    02D4  EB 00				    jmp	EndCD
+    358	    02D6			 NoTime:
+    359
+    360	    02D6			 EndCD:
+    361	    02D6  C3				    ret
+    362	    02D7			 CaseDomain endp
+    363
+    364	    02D7			 WorkKb	proc	  ; обработка клавиши
+    365	    02D7  80 3E	0083r 01		    cmp	KbdPress,1
+    366	    02DC  0F 85	00E4			    jne	WKBEnd
+    367
+    368	    02E0  E8 FEEB			    call CaseDomain
+    369	    02E3  8B 1E	0084r			    mov	bx,AdrWW
+    370	    02E7  8B 0E	0086r			    mov	cx,LenWW
+    371	    02EB  B0 00				    mov	al,kbZero
+    372	    02ED  80 3E	008Ar 00		    cmp	Nomber,0
+    373	    02F2  75 02				    jne	OkNomber
+    374	    02F4  B0 0A				    mov	al,kbSpace
+    375	    02F6			 OkNomber:
+    376
+    377	    02F6  80 3E	0082r 26		    cmp	nextchar,kbBrSp
+    378	    02FB  73 16				    jae	SpecChar
+    379	    02FD  80 3E	008Ar 01		    cmp	Nomber,1
+    380	    0302  75 09				    jne	noNomber
+    381	    0304  80 3E	0082r 0A		    cmp	nextchar,10
+    382	    0309  0F 83	00B7			    jae	WKBEnd
+    383	    030D			 noNomber:
+    384
+    385	    030D  E8 FEA1			    call AddChar
+    386
+    387	    0310  E9 00B1			    jmp	WKBEnd
+    388	    0313  80 3E	0082r 2F	 SpecChar:  cmp	nextchar,kbStop
+    389	    0318  75 07				    jne	NoStop
+    390	    031A  F6 16	0001r			    not	stop
+    391	    031E  E9 00A3			    jmp	WKBEnd
+    392	    0321  80 3E	0082r 26	 NoStop:    cmp	nextchar,kbBrSp
+    393	    0326  75 06				    jne	noBrSp
+    394	    0328  E8 FE95			    call DelChar
+    395	    032B  E9 0096			    jmp	WKBEnd
+    396	    032E  80 3E	0082r 27	 NoBrSp:    cmp	nextchar,kbClr
+    397	    0333  75 06				    jne	noClr
+    398	    0335  E8 FE73			    call ClearPole
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 8
+tablo.asm
+
+
+
+    399	    0338  E9 0089			    jmp	WKBEnd
+    400	    033B  80 3E	0082r 2A	 noClr:	    cmp	nextchar,kbCK
+    401	    0340  75 13				    jne	noCK
+    402	    0342  FE 06	0079r			    inc	casekom
+    403	    0346  80 3E	0079r 04		    cmp	casekom,4
+    404	    034B  72 05				    jb okCK
+    405	    034D  C6 06	0079r 00		    mov	casekom,0
+    406	    0352  EB 70	90		 okCK:	    jmp	WKBEnd
+    407	    0355  80 3E	0082r 2C	 noCK:	    cmp	nextchar,kbCD
+    408	    035A  75 12				    jne	noCD
+    409	    035C  FE 06	007Br			    inc	casedom
+    410	    0360  80 3E	007Br 03		    cmp	casedom,3
+    411	    0365  72 05				    jb okCD
+    412	    0367  C6 06	007Br 00		    mov	casedom,0
+    413	    036C  EB 56			 okCD:	    jmp	WKBEnd
+    414	    036E  80 3E	0082r 2B	 noCD:	    cmp	nextchar,kbCP
+    415	    0373  75 12				    jne	noCP
+    416	    0375  FE 06	007Ar			    inc	caseplay
+    417	    0379  80 3E	007Ar 05		    cmp	caseplay,5
+    418	    037E  72 05				    jb okCP
+    419	    0380  C6 06	007Ar 00		    mov	caseplay,0
+    420	    0385  EB 3D			 okCP:	    jmp	WKBEnd
+    421	    0387  80 3E	0082r 28	 noCP:	    cmp	nextchar,kbAdd
+    422	    038C  75 13				    jne	noAdd
+    423	    038E  8B 1E	0088r			    mov	bx,adrSc
+    424	    0392  FE 07				    inc	byte ptr [bx]
+    425	    0394  80 3F	09			    cmp	byte ptr [bx],9
+    426	    0397  76 06				    jbe	okAdd
+    427	    0399  C6 07	00			    mov	byte ptr [bx],0
+    428	    039C  FE 47	01			    inc	byte ptr [bx+1]
+    429	    039F  EB 23			 okAdd:	    jmp	WKBEnd
+    430	    03A1  80 3E	0082r 29	 noAdd:	    cmp	nextchar,kbSub
+    431	    03A6  75 1C				    jne	noSub
+    432	    03A8  8B 1E	0088r			    mov	bx,adrSc
+    433	    03AC  FE 0F				    dec	byte ptr [bx]
+    434	    03AE  80 3F	00			    cmp	byte ptr [bx],0
+    435	    03B1  7D 0F				    jge	okSub
+    436	    03B3  C6 07	09			    mov	byte ptr [bx],9
+    437	    03B6  FE 4F	01			    dec	byte ptr [bx+1]
+    438	    03B9  83 3F	00			    cmp	word ptr [bx],0
+    439	    03BC  7D 04				    jge	okSub
+    440	    03BE  C7 07	0000			    mov	word ptr[bx],0
+    441	    03C2  EB 00			 okSub:	    jmp	WKBEnd
+    442	    03C4			 noSub:
+    443
+    444	    03C4			 WKBEnd:
+    445	    03C4  C3				    ret
+    446	    03C5			 WorkKb	endp
+    447
+    448	    03C5			 CMPFlag proc	  ; установка флагов
+    449	    03C5  B0 00				 mov al,0
+    450	    03C7  83 3E	001Dr 00		 cmp word ptr NPlay1,0
+    451	    03CC  74 02				 je CF1
+    452	    03CE  B0 01				 mov al,1
+    453	    03D0  A2 0014r		 CF1:	 mov Play1Fl,al
+    454	    03D3  B0 00				 mov al,0
+    455	    03D5  83 3E	004Ar 00		 cmp word ptr NPlay2,0
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 9
+tablo.asm
+
+
+
+    456	    03DA  74 02				 je CF2
+    457	    03DC  B0 01				 mov al,1
+    458	    03DE  A2 0041r		 CF2:	 mov Play2Fl,al
+    459	    03E1  B0 00				 mov al,0
+    460	    03E3  83 3E	002Cr 00		 cmp word ptr NPlayB11,0
+    461	    03E8  74 02				 je CF3
+    462	    03EA  B0 01				 mov al,1
+    463	    03EC  A2 0023r		 CF3:	 mov PlayB11Fl,al
+    464	    03EF  B0 00				 mov al,0
+    465	    03F1  83 3E	003Br 00		 cmp word ptr NPlayB12,0
+    466	    03F6  74 02				 je CF4
+    467	    03F8  B0 01				 mov al,1
+    468	    03FA  A2 0032r		 CF4:	 mov PlayB12Fl,al
+    469	    03FD  B0 00				 mov al,0
+    470	    03FF  83 3E	0059r 00		 cmp word ptr NPlayB21,0
+    471	    0404  74 02				 je CF5
+    472	    0406  B0 01				 mov al,1
+    473	    0408  A2 0050r		 CF5:	 mov PlayB21Fl,al
+    474	    040B  B0 00				 mov al,0
+    475	    040D  83 3E	0068r 00		 cmp word ptr NPlayB22,0
+    476	    0412  74 02				 je CF6
+    477	    0414  B0 01				 mov al,1
+    478	    0416  A2 005Fr		 CF6:	 mov PlayB22Fl,al
+    479
+    480	    0419  C3				 ret
+    481	    041A			 CMPFlag endp
+    482	    041A			 Clear proc ;очичтка данных
+    483	    041A  B0 0A				    mov	al,kbSpace
+    484	    041C  BB 0008r			    lea	bx,kom1
+    485	    041F  B9 0008			    mov	cx,8
+    486	    0422  E8 FD86			    call ClearPole
+    487	    0425  BB 0015r			    lea	bx,Play1
+    488	    0428  B9 0008			    mov	cx,8
+    489	    042B  E8 FD7D			    call ClearPole
+    490	    042E  BB 0042r			    lea	bx,Play2
+    491	    0431  B9 0008			    mov	cx,8
+    492	    0434  E8 FD74			    call ClearPole
+    493
+    494	    0437  BB 0024r			    lea	bx,PlayB11
+    495	    043A  B9 0008			    mov	cx,8
+    496	    043D  E8 FD6B			    call ClearPole
+    497	    0440  BB 0033r			    lea	bx,PlayB12
+    498	    0443  B9 0008			    mov	cx,8
+    499	    0446  E8 FD62			    call ClearPole
+    500	    0449  BB 0051r			    lea	bx,PlayB21
+    501	    044C  B9 0008			    mov	cx,8
+    502	    044F  E8 FD59			    call ClearPole
+    503	    0452  BB 0060r			    lea	bx,PlayB22
+    504	    0455  B9 0008			    mov	cx,8
+    505	    0458  E8 FD50			    call ClearPole
+    506
+    507	    045B  B8 0000			    mov	ax,0
+    508	    045E  BB 002Er			    lea	bx,TimeB11
+    509	    0461  B9 0004			    mov	cx,4
+    510	    0464  E8 FD44			    call ClearPole
+    511	    0467  BB 003Dr			    lea	bx,TimeB12
+    512	    046A  B9 0004			    mov	cx,4
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 10
+tablo.asm
+
+
+
+    513	    046D  E8 FD3B			    call ClearPole
+    514	    0470  BB 005Br			    lea	bx,TimeB21
+    515	    0473  B9 0004			    mov	cx,4
+    516	    0476  E8 FD32			    call ClearPole
+    517	    0479  BB 006Ar			    lea	bx,TimeB22
+    518	    047C  B9 0004			    mov	cx,4
+    519	    047F  E8 FD29			    call ClearPole
+    520
+    521	    0482  BB 002Cr			    lea	bx,NPlayB11
+    522	    0485  B9 0002			    mov	cx,2
+    523	    0488  E8 FD20			    call ClearPole
+    524	    048B  BB 003Br			    lea	bx,NPlayB12
+    525	    048E  B9 0002			    mov	cx,2
+    526	    0491  E8 FD17			    call ClearPole
+    527	    0494  BB 0059r			    lea	bx,NPlayB21
+    528	    0497  B9 0002			    mov	cx,2
+    529	    049A  E8 FD0E			    call ClearPole
+    530	    049D  BB 0068r			    lea	bx,NPlayB22
+    531	    04A0  B9 0002			    mov	cx,2
+    532	    04A3  E8 FD05			    call ClearPole
+    533
+    534	    04A6  BB 0010r			    lea	bx,GolKom1
+    535	    04A9  B9 0004			    mov	cx,4
+    536	    04AC  E8 FCFC			    call ClearPole
+    537	    04AF  BB 0002r			    lea	bx,TimeGame
+    538	    04B2  B9 0004			    mov	cx,4
+    539	    04B5  E8 FCF3			    call ClearPole
+    540
+    541	    04B8  C6 06	0006r 01		    mov	Period,1
+    542
+    543	    04BD  33 C0				    xor	ax,ax
+    544	    04BF  A2 0014r			    mov	Play1Fl,al
+    545	    04C2  A2 0041r			    mov	Play2Fl,al
+    546	    04C5  A2 0023r			    mov	PlayB11Fl,al
+    547	    04C8  A2 0032r			    mov	PlayB12Fl,al
+    548	    04CB  A2 0050r			    mov	PlayB21Fl,al
+    549	    04CE  A2 005Fr			    mov	PlayB22Fl,al
+    550
+    551
+    552	    04D1  C7 06	0008r 0001		    mov	word ptr kom1,0001h
+    553	    04D7  C7 06	000Cr 0709		    mov	word ptr kom2,0709h;
+    554
+    555	    04DD  C6 06	0041r 01		    mov	play2Fl,1
+    556	    04E2  C7 06	0042r 020A		    mov	word ptr play2,020ah
+    557	    04E8  C7 06	0044r 020A		    mov	word ptr play2+2,020ah
+    558	    04EE  C7 06	0046r 0202		    mov	word ptr play2+4,0202h
+    559	    04F4  C7 06	0048r 0202		    mov	word ptr play2+6,0202h
+    560	    04FA  C7 06	004Ar 0003		    mov	word ptr NPlay2,3
+    561
+    562	    0500  C6 06	0032r 01		    mov	playB12Fl,1
+    563	    0505  C7 06	0033r 0102		    mov	word ptr playb12,0102h;
+    564
+    565	    050B  C6 06	005Fr 01		    mov	playB22Fl,1
+    566	    0510  C7 06	0060r 0202		    mov	word ptr playb22,0202h
+    567
+    568
+    569	    0516  C3				    ret
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 11
+tablo.asm
+
+
+
+    570	    0517			 Clear endp
+    571
+    572
+    573
+    574
+    575					 OutChar macro ;SI откуда
+    576						    local LOTNext
+    577						    push cx
+    578						    push ax
+    579						    mov	cx,8
+    580						    mov	ah,1
+    581					 LOCNext:   mov	al,cs:[si]
+    582						    mov	dh,01
+    583						    out	dx,al
+    584						    mov	al,ah
+    585						    mov	dh,2
+    586						    out	dx,al
+    587						    shl	ah,1
+    588						    mov	al,0
+    589						    mov	dh,2
+    590						    out	dx,al
+    591						    inc	si
+    592						    loop LOCNext
+    593						    pop	ax
+    594						    pop	cx
+    595
+    596						     endm
+    597	    0517			 OutText proc ;BX - откуда выводить длинной 8, DX - куда выводить
+    598
+    599	    0517  BF 0001			    mov	di,1
+    600	    051A  B9 0008			    mov	cx,8
+    601	    051D  8A 07			 LOTNext:   mov	al,[bx]
+    602	    051F  32 E4				    xor	ah,ah
+    603	    0521  C1 E0	03			    shl	ax,3
+    604	    0524  BE 000Ar			    lea	si,ImgAlf
+    605	    0527  03 F0				    add	si,ax
+    606	    0529  8B C7				    mov	ax,di
+    607	    052B  B6 00				    mov	dh,0
+    608	    052D  EE				    out	dx,al
+    609						    OutChar
+1   610	    052E  51				    push cx
+1   611	    052F  50				    push ax
+1   612	    0530  B9 0008			    mov	cx,8
+1   613	    0533  B4 01				    mov	ah,1
+1   614	    0535  2E: 8A 04		 LOCNext:   mov	al,cs:[si]
+1   615	    0538  B6 01				    mov	dh,01
+1   616	    053A  EE				    out	dx,al
+1   617	    053B  8A C4				    mov	al,ah
+1   618	    053D  B6 02				    mov	dh,2
+1   619	    053F  EE				    out	dx,al
+1   620	    0540  D0 E4				    shl	ah,1
+1   621	    0542  B0 00				    mov	al,0
+1   622	    0544  B6 02				    mov	dh,2
+1   623	    0546  EE				    out	dx,al
+1   624	    0547  46				    inc	si
+1   625	    0548  E2 EB				    loop LOCNext
+1   626	    054A  58				    pop	ax
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 12
+tablo.asm
+
+
+
+1   627	    054B  59				    pop	cx
+1   628
+    629	    054C  D1 E7				    shl	di,1
+    630	    054E  43				    inc	bx
+    631	    054F  E2 CC				    loop LOTNext
+    632	    0551  B0 00				    mov	al,0
+    633	    0553  B6 00				    mov	dh,0
+    634	    0555  EE				    out	dx,al
+    635
+    636	    0556  C3				    ret
+    637	    0557			 Outtext endp
+    638	    0557			 IncTime proc ;	Bx что
+    639
+    640	    0557  8A 07				    mov	al,[bx]	    ;еденици секунд
+    641	    0559  02 06	0074r			    add	al,IncDec
+    642	    055D  88 07				    mov	[bx],al
+    643	    055F  3A 06	0075r			    cmp	al,IncDecCmp
+    644	    0563  72 47				    jb NEnd
+    645	    0565  A0 0077r			    mov	al,IncDecMov
+    646	    0568  88 07				    mov	[bx],al
+    647	    056A  8A 47	01			    mov	al,[bx+1]     ;десятки минут
+    648	    056D  02 06	0074r			    add	al,IncDec
+    649	    0571  88 47	01			    mov	[bx+1],al
+    650	    0574  3A 06	0076r			    cmp	al,IncDecCmp60
+    651	    0578  72 32				    jb NEnd
+    652	    057A  A0 0078r			    mov	al,incdecMov60
+    653	    057D  88 47	01			    mov	[bx+1],al
+    654	    0580  8A 47	02			    mov	al,[bx+2]     ;еденици минут
+    655	    0583  02 06	0074r			    add	al,IncDec
+    656	    0587  88 47	02			    mov	[bx+2],al
+    657	    058A  3A 06	0075r			    cmp	al,IncDecCmp
+    658	    058E  72 1C				    jb NEnd
+    659	    0590  A0 0077r			    mov	al,IncDecMov
+    660	    0593  88 47	02			    mov	[bx+2],al
+    661	    0596  8A 47	03			    mov	al,[bx+3]     ;десятки минут
+    662	    0599  02 06	0074r			    add	al,IncDec
+    663	    059D  88 47	03			    mov	[bx+3],al
+    664	    05A0  3A 06	0075r			    cmp	al,IncDecCmp
+    665	    05A4  72 06				    jb NEnd
+    666	    05A6  A0 0077r			    mov	al,IncDecMov
+    667	    05A9  88 47	03			    mov	[bx+3],al
+    668	    05AC  C3			 NEnd:	    ret
+    669	    05AD			 IncTime endp
+    670
+    671
+    672	    05AD			 OutTime proc ;bx - откуда, сx - какой длинны, dx - порт активация
+    673	    05AD  03 D9				    add	bx,cx
+    674	    05AF  4B				    dec	bx
+    675	    05B0  BF FFFE			    mov	di,1111111111111110b
+    676
+    677	    05B3  8B C7			 NextOT:    mov	ax,di
+    678	    05B5  EE				    out	dx,al
+    679	    05B6  8A 07				    mov	al,[bx]
+    680	    05B8  32 E4				    xor	ah,ah
+    681	    05BA  8B F0				    mov	si,ax
+    682	    05BC  2E: 8A 84 0000r		    mov	al,imgNum[si]
+    683	    05C1  E6 20				    out	20h,al
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 13
+tablo.asm
+
+
+
+    684	    05C3  4B				    dec	bx
+    685	    05C4  D1 C7				    rol	di,1
+    686	    05C6  B0 00				    mov	al,0
+    687	    05C8  E6 20				    out	20h,al
+    688	    05CA  E2 E7				    loop nextOT
+    689	    05CC  B0 FF				    mov	al,0FFh
+    690	    05CE  EE				    out	dx,al
+    691	    05CF  C3				    ret
+    692	    05D0			 OutTime endp
+    693	    05D0			 OutNum	proc ;bx - откуда, сx -	какой длинны, dx - порт	активация,Di с какой позиции
+    694	    05D0  03 D9				    add	bx,cx
+    695	    05D2  4B				    dec	bx
+    696
+    697	    05D3  8B C7			 NextON:    mov	ax,di
+    698	    05D5  EE				    out	dx,al
+    699	    05D6  8A 07				    mov	al,[bx]
+    700	    05D8  32 E4				    xor	ah,ah
+    701	    05DA  8B F0				    mov	si,ax
+    702	    05DC  2E: 8A 84 0000r		    mov	al,imgNum[si]
+    703	    05E1  E6 20				    out	20h,al
+    704	    05E3  4B				    dec	bx
+    705	    05E4  D1 C7				    rol	di,1
+    706	    05E6  B0 00				    mov	al,0
+    707	    05E8  E6 20				    out	20h,al
+    708	    05EA  E2 C7				    loop nextOT
+    709	    05EC  B0 FF				    mov	al,0FFh
+    710	    05EE  EE				    out	dx,al
+    711	    05EF  C3				    ret
+    712	    05F0			 OutNum	endp
+    713
+    714	    05F0			 OutSettings proc
+    715	    05F0  B0 00				    mov	al,0	      ;вывод стоп
+    716	    05F2  80 3E	0001r 01		    cmp	stop,1
+    717	    05F7  75 02				    jne	OSN1
+    718	    05F9  0C 01				    or al,00000001b
+    719	    05FB			 OSN1:
+    720	    05FB  80 3E	0079r 00		    cmp	casekom,0
+    721	    0600  75 04				    jne	OSNoK1
+    722	    0602  0C 02				    or al,00000010b
+    723	    0604  EB 18				    jmp	OSN2
+    724	    0606			 OSNoK1:
+    725	    0606  80 3E	0079r 01		    cmp	casekom,1
+    726	    060B  75 04				    jne	OSNoK2
+    727	    060D  0C 04				    or al,00000100b
+    728	    060F  EB 0D				    jmp	OSN2
+    729	    0611			 OSNoK2:
+    730	    0611  80 3E	0079r 02		    cmp	casekom,2
+    731	    0616  75 04				    jne	OSNoTime
+    732	    0618  0C 08				    or al,00001000b
+    733	    061A  EB 02				    jmp	OSN2
+    734	    061C			 OSNoTime:
+    735	    061C  0C 10				    or al,00010000b
+    736	    061E			 OSN2:
+    737	    061E  80 3E	007Br 00		    cmp	casedom,0
+    738	    0623  75 04				    jne	OSNoNom
+    739	    0625  0C 20				    or al,00100000b
+    740	    0627  EB 0D				    jmp	OSN3
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 14
+tablo.asm
+
+
+
+    741	    0629			 OSNoNom:
+    742	    0629  80 3E	007Br 01		    cmp	casedom,1
+    743	    062E  75 04				    jne	OSNoTime2
+    744	    0630  0C 40				    or al,01000000b
+    745	    0632  EB 02				    jmp	OSN3
+    746	    0634			 OSNoTime2:
+    747	    0634  0C 80				    or al,10000000b
+    748	    0636			 OSN3:
+    749	    0636  E6 12				    out	12h,al
+    750
+    751	    0638  B0 00				    mov	al,0
+    752	    063A  80 3E	007Ar 00		    cmp	caseplay,0
+    753	    063F  75 04				    jne	OSNoNam
+    754	    0641  0C 01				    or al,00000001b
+    755	    0643  EB 23				    jmp	OSN4
+    756	    0645			 OSNoNam:
+    757	    0645  80 3E	007Ar 01		    cmp	caseplay,1
+    758	    064A  75 04				    jne	OSNoP1
+    759	    064C  0C 02				    or al,00000010b
+    760	    064E  EB 18				    jmp	OSN4
+    761	    0650			 OSNoP1:
+    762	    0650  80 3E	007Ar 02		    cmp	caseplay,2
+    763	    0655  75 04				    jne	OSNoP2
+    764	    0657  0C 04				    or al,00000100b
+    765	    0659  EB 0D				    jmp	OSN4
+    766	    065B			 OSNoP2:
+    767	    065B  80 3E	007Ar 03		    cmp	caseplay,3
+    768	    0660  75 04				    jne	OSNoP3
+    769	    0662  0C 08				    or al,00001000b
+    770	    0664  EB 02				    jmp	OSN4
+    771	    0666			 OSNoP3:
+    772	    0666  0C 10				    or al,00010000b
+    773	    0668			 OSN4:
+    774	    0668  E6 11				    out	11h,al
+    775
+    776
+    777	    066A  C3				    ret
+    778	    066B			 OutSettings endp
+    779
+    780	    066B			 OutAll	proc
+    781	    066B  B9 0004			    mov	cx,4
+    782	    066E  BB 0002r			    lea	bx,timegame
+    783	    0671  BA 0023			    mov	dx,23h
+    784	    0674  E8 FF36			    call OutTime
+    785
+    786	    0677  80 3E	0014r 01		    cmp	Play1Fl,1
+    787	    067C  75 18				    jne	LOAN1
+    788	    067E  BB 0015r			    lea	bx,Play1
+    789	    0681  BA 0002			    mov	dx,2
+    790	    0684  E8 FE90			    call OutText
+    791	    0687  B9 0002			    mov	cx,2
+    792	    068A  BB 001Dr			    lea	bx,NPlay1
+    793	    068D  BA 0010			    mov	dx,10h
+    794	    0690  BF FFFE			    mov	di,0FFFEh
+    795	    0693  E8 FF3A			    call OutNum
+    796	    0696			 LOAN1:
+    797	    0696  80 3E	0041r 01		    cmp	Play2Fl,1
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 15
+tablo.asm
+
+
+
+    798	    069B  75 18				    jne	LOAN2
+    799	    069D  BB 0042r			    lea	bx,Play2
+    800	    06A0  BA 0003			    mov	dx,3
+    801	    06A3  E8 FE71			    call OutText
+    802	    06A6  B9 0002			    mov	cx,2
+    803	    06A9  BB 004Ar			    lea	bx,NPlay2
+    804	    06AC  BA 0010			    mov	dx,10h
+    805	    06AF  BF FFFB			    mov	di,0FFFBh
+    806	    06B2  E8 FF1B			    call OutNum
+    807	    06B5			 LOAN2:
+    808
+    809	    06B5  80 3E	0023r 01		    cmp	PlayB11Fl,1
+    810	    06BA  75 24				    jne	LOAN3
+    811	    06BC  BB 0024r			    lea	bx,PlayB11
+    812	    06BF  BA 0004			    mov	dx,4
+    813	    06C2  E8 FE52			    call OutText
+    814	    06C5  B9 0002			    mov	cx,2
+    815	    06C8  BB 002Cr			    lea	bx,NPlayB11
+    816	    06CB  BA 002F			    mov	dx,2fh
+    817	    06CE  BF FFFE			    mov	di,0FFFEh
+    818	    06D1  E8 FEFC			    call OutNum
+    819	    06D4  B9 0004			    mov	cx,4
+    820	    06D7  BB 002Er			    lea	bx,timeb11
+    821	    06DA  BA 002B			    mov	dx,2bh
+    822	    06DD  E8 FECD			    call OutTime
+    823	    06E0			 LOAN3:
+    824
+    825	    06E0  80 3E	0032r 01		    cmp	PlayB12Fl,1
+    826	    06E5  75 24				    jne	LOAN4
+    827	    06E7  BB 0033r			    lea	bx,PlayB12
+    828	    06EA  BA 0005			    mov	dx,5
+    829	    06ED  E8 FE27			    call OutText
+    830	    06F0  B9 0002			    mov	cx,2
+    831	    06F3  BB 003Br			    lea	bx,NPlayB12
+    832	    06F6  BA 002F			    mov	dx,2fh
+    833	    06F9  BF FFFB			    mov	di,0FFFBh
+    834	    06FC  E8 FED1			    call OutNum
+    835	    06FF  B9 0004			    mov	cx,4
+    836	    0702  BB 003Dr			    lea	bx,timeb12
+    837	    0705  BA 002C			    mov	dx,2ch
+    838	    0708  E8 FEA2			    call OutTime
+    839	    070B			 LOAN4:
+    840
+    841	    070B  80 3E	0050r 01		    cmp	PlayB21Fl,1
+    842	    0710  75 24				    jne	LOAN5
+    843	    0712  BB 0051r			    lea	bx,PlayB21
+    844	    0715  BA 0006			    mov	dx,6
+    845	    0718  E8 FDFC			    call OutText
+    846	    071B  B9 0002			    mov	cx,2
+    847	    071E  BB 0059r			    lea	bx,NPlayB21
+    848	    0721  BA 002F			    mov	dx,2fh
+    849	    0724  BF FFEF			    mov	di,0FFEFh
+    850	    0727  E8 FEA6			    call OutNum
+    851	    072A  B9 0004			    mov	cx,4
+    852	    072D  BB 005Br			    lea	bx,timeb21
+    853	    0730  BA 002D			    mov	dx,2dh
+    854	    0733  E8 FE77			    call OutTime
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 16
+tablo.asm
+
+
+
+    855	    0736			 LOAN5:
+    856
+    857	    0736  80 3E	005Fr 01		    cmp	PlayB22Fl,1
+    858	    073B  75 24				    jne	LOAN6
+    859	    073D  BB 0060r			    lea	bx,PlayB22
+    860	    0740  BA 0007			    mov	dx,7
+    861	    0743  E8 FDD1			    call OutText
+    862	    0746  B9 0002			    mov	cx,2
+    863	    0749  BB 0068r			    lea	bx,NPlayB22
+    864	    074C  BA 002F			    mov	dx,2fh
+    865	    074F  BF FFBF			    mov	di,0FFBFh
+    866	    0752  E8 FE7B			    call OutNum
+    867	    0755  B9 0004			    mov	cx,4
+    868	    0758  BB 006Ar			    lea	bx,timeb22
+    869	    075B  BA 002E			    mov	dx,2eh
+    870	    075E  E8 FE4C			    call OutTime
+    871	    0761			 LOAN6:
+    872	    0761  BB 0008r			    lea	bx,Kom1
+    873	    0764  BA 0001			    mov	dx,1
+    874	    0767  E8 FDAD			    call OutText
+    875	    076A  B9 0002			    mov	cx,2
+    876	    076D  BB 0010r			    lea	bx,GolKom1
+    877	    0770  BA 0010			    mov	dx,10h
+    878	    0773  BF FFEF			    mov	di,0FFEFh
+    879	    0776  E8 FE57			    call OutNum
+    880	    0779  B9 0002			    mov	cx,2
+    881	    077C  BB 0012r			    lea	bx,GolKom2
+    882	    077F  BA 0010			    mov	dx,10h
+    883	    0782  BF FFBF			    mov	di,0FFBFh
+    884	    0785  E8 FE48			    call OutNum
+    885
+    886	    0788  E8 FE65			    call OutSettings
+    887	    078B  C3				    ret
+    888	    078C			 OutAll	      endp
+    889
+    890	    078C			 PodGot	    proc
+    891	    078C  E8 FC8B			    call Clear
+    892
+    893	    078F  C7 06	006Er 0200		    mov	LenPeriod,0200h
+    894	    0795  C7 06	0070r 0105		    mov	LenPerir,0105h
+    895	    079B  C7 06	0072r 0600		    mov	lenPrIgr,0600h
+    896	    07A1  C6 06	0000r 00		    mov	mode,CPrIg
+    897	    07A6  C6 06	0001r 01		    mov	stop,1
+    898	    07AB  A1 0072r			    mov	ax,LenPrIgr
+    899	    07AE  A3 0004r			    mov	word ptr TimeGame+2,ax
+    900	    07B1  C6 06	007Br 00		    mov	casedom,0
+    901	    07B6  C6 06	007Ar 00		    mov	caseplay,0
+    902	    07BB  C6 06	0079r 00		    mov	casekom,0
+    903	    07C0  B0 FF				   mov al,0ffh
+    904	    07C2  E6 2B				   out 2bh,al
+    905	    07C4  E6 2C				   out 2ch,al
+    906	    07C6  E6 2D				   out 2dh,al
+    907	    07C8  E6 2E				   out 2eh,al
+    908	    07CA  E6 10				   out 10h,al
+    909	    07CC  E6 2F				   out 2fh,al
+    910	    07CE  C3				   ret
+    911	    07CF			 PodGot	endp
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 17
+tablo.asm
+
+
+
+    912					 ;__________________________
+    913
+    914	    07CF			 Input proc
+    915	    07CF  E8 F97B			    call KbdInput
+    916	    07D2  E8 F9A5			    call KbdPreob
+    917
+    918	    07D5  E8 FAFF			   call	WorkKb
+    919	    07D8  C3				    ret
+    920	    07D9			 Input endp
+    921
+    922	    07D9			 Output	proc
+    923	    07D9  E8 FBE9			    call CMPFlag
+    924	    07DC  E8 FE8C			    call OutAll
+    925	    07DF  C3				    ret
+    926	    07E0			 Output	endp
+    927
+    928	    07E0			 Timer proc
+    929	    07E0  80 3E	0001r 01		    cmp	stop,1
+    930	    07E5  74 1F				    je endTimer
+    931	    07E7  C6 06	0074r FF		    mov	IncDec,-1
+    932	    07EC  C6 06	0075r 09		    mov	IncDecCmp,9
+    933	    07F1  C6 06	0076r 09		    mov	IncDecCmp60,9
+    934	    07F6  C6 06	0077r 09		    mov	IncDecMov,9
+    935	    07FB  C6 06	0078r 05		    mov	IncDecMov60,05
+    936	    0800  BB 0002r			    lea	bx,TimeGame
+    937	    0803  E8 FD51			    call IncTime
+    938	    0806			 endTimer:
+    939	    0806  C3				    ret
+    940	    0807			 Timer endp
+    941					 ;__________________________
+    942
+    943	    0807			 Start:
+    944	    0807  B8 0000s			    mov	  ax,Data
+    945	    080A  8E D8				    mov	  ds,ax
+    946	    080C  8E C0				    mov	  es,ax
+    947	    080E  B8 0000s			    mov	  ax,Stk
+    948	    0811  8E D0				    mov	  ss,ax
+    949	    0813  BC 0014r			    lea	  sp,StkTop
+    950					 ;Здесь	размещается код	программы
+    951	    0816  E8 FF73			    call podgot
+    952
+    953	    0819  B0 00			 Next:	    mov	  al,0
+    954	    081B  E6 32				    out	  32h,al
+    955	    081D  B0 FF				    mov	  al,0FFh
+    956	    081F  E6 32				    out	  32h,al
+    957
+    958	    0821			 nonext:
+    959	    0821  E8 FFAB			    call Input
+    960	    0824  E8 FFB9			    call Timer
+    961	    0827  E8 FFAF			    call Output
+    962
+    963	    082A  E4 32				    in al,32h
+    964	    082C  A8 01				    test al,1
+    965	    082E  74 F1				    jz nonext
+    966
+    967	    0830  EB E7				    jmp	next
+    968
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 18
+tablo.asm
+
+
+
+    969					 ;В следующей строке необходимо	указать	смещение стартовой точки
+    970						    org	  RomSize-16
+**Error** tablo.asm(912) Illegal forward reference: ROMSIZE
+**Error** tablo.asm(912) Undefined symbol: ROMSIZE
+    971						    ASSUME cs:NOTHING
+    972	    FFF0  EA 00000807sr			    jmp	  Far Ptr Start
+    973	    FFF5			 Code	    ENDS
+    974					 END
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 19
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "26/11/05"
+??FILENAME			  Text	 "tablo	  "
+??TIME				  Text	 "14:45:14"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 TABLO
+@WORDSIZE			  Text	 2
+AC1				  Near	 CODE:01B2
+ADDCHAR				  Near	 CODE:01B1
+ADRSC				  Word	 DATA:0088
+ADRWW				  Word	 DATA:0084
+BEGINPLAY			  Word	 DATA:0014
+CASEDOM				  Byte	 DATA:007B
+CASEDOMAIN			  Near	 CODE:01CE
+CASEKOM				  Byte	 DATA:0079
+CASEPLAY			  Byte	 DATA:007A
+CF1				  Near	 CODE:03D0
+CF2				  Near	 CODE:03DE
+CF3				  Near	 CODE:03EC
+CF4				  Near	 CODE:03FA
+CF5				  Near	 CODE:0408
+CF6				  Near	 CODE:0416
+CGAME				  Number 0001
+CLEAR				  Near	 CODE:041A
+CLEARPOLE			  Near	 CODE:01AB
+CMPFLAG				  Near	 CODE:03C5
+CP1				  Near	 CODE:01AB
+CPERE				  Number 0002
+CPRIG				  Number 0000
+DC1				  Near	 CODE:01C3
+DELCHAR				  Near	 CODE:01C0
+ENDCD				  Near	 CODE:02D6
+ENDDOM				  Near	 CODE:020A
+ENDTIMER			  Near	 CODE:0806
+GOLKOM1				  Byte	 DATA:0010
+GOLKOM2				  Byte	 DATA:0012
+IMGALF				  Byte	 CODE:000A
+IMGNUM				  Byte	 CODE:0000
+INCDEC				  Byte	 DATA:0074
+INCDECCMP			  Byte	 DATA:0075
+INCDECCMP60			  Byte	 DATA:0076
+INCDECMOV			  Byte	 DATA:0077
+INCDECMOV60			  Byte	 DATA:0078
+INCTIME				  Near	 CODE:0557
+INPUT				  Near	 CODE:07CF
+K1NONAME			  Near	 CODE:0241
+K1NOSCET			  Near	 CODE:025D
+K2NONAME			  Near	 CODE:0290
+K2NOSCET			  Near	 CODE:02AB
+KBADD				  Number 0028
+KBBRSP				  Number 0026
+KBCD				  Number 002C
+KBCK				  Number 002A
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 20
+Symbol Table
+
+
+
+KBCLR				  Number 0027
+KBCP				  Number 002B
+KBDIMG				  Byte	 DATA:007C
+KBDINPUT			  Near	 CODE:014D
+KBDPREOB			  Near	 CODE:017A
+KBDPRESS			  Byte	 DATA:0083
+KBSPACE				  Number 000A
+KBSTOP				  Number 002F
+KBSUB				  Number 0029
+KBZERO				  Number 0000
+KI1				  Near	 CODE:016F
+KI2				  Near	 CODE:0165
+KI3				  Near	 CODE:0171
+KI4				  Near	 CODE:0158
+KOM1				  Byte	 DATA:0008
+KOM2				  Byte	 DATA:000C
+KP1				  Near	 CODE:019C
+KP2				  Near	 CODE:0187
+KP3				  Near	 CODE:01A1
+KP4				  Near	 CODE:0192
+LENPERIOD			  Word	 DATA:006E
+LENPERIR			  Word	 DATA:0070
+LENPRIGR			  Word	 DATA:0072
+LENWW				  Word	 DATA:0086
+LOAN1				  Near	 CODE:0696
+LOAN2				  Near	 CODE:06B5
+LOAN3				  Near	 CODE:06E0
+LOAN4				  Near	 CODE:070B
+LOAN5				  Near	 CODE:0736
+LOAN6				  Near	 CODE:0761
+LOCNEXT				  Near	 CODE:0535
+LOTNEXT				  Near	 CODE:051D
+MODE				  Byte	 DATA:0000
+NEND				  Near	 CODE:05AC
+NEXT				  Near	 CODE:0819
+NEXTCHAR			  Byte	 DATA:0082
+NEXTON				  Near	 CODE:05D3
+NEXTOT				  Near	 CODE:05B3
+NOADD				  Near	 CODE:03A1
+NOBRSP				  Near	 CODE:032E
+NOCD				  Near	 CODE:036E
+NOCK				  Near	 CODE:0355
+NOCLR				  Near	 CODE:033B
+NOCP				  Near	 CODE:0387
+NOKOM1				  Near	 CODE:0267
+NOKOM2				  Near	 CODE:02B7
+NOMBER				  Byte	 DATA:008A
+NONEXT				  Near	 CODE:0821
+NONOMBER			  Near	 CODE:030D
+NONOMER				  Near	 CODE:01E5
+NOSTOP				  Near	 CODE:0321
+NOSUB				  Near	 CODE:03C4
+NOTIME				  Near	 CODE:02D6
+NOTIMEPL			  Near	 CODE:01FC
+NPLAY1				  Byte	 DATA:001D
+NPLAY2				  Byte	 DATA:004A
+NPLAYB11			  Byte	 DATA:002C
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 21
+Symbol Table
+
+
+
+NPLAYB12			  Byte	 DATA:003B
+NPLAYB21			  Byte	 DATA:0059
+NPLAYB22			  Byte	 DATA:0068
+OKADD				  Near	 CODE:039F
+OKCD				  Near	 CODE:036C
+OKCK				  Near	 CODE:0352
+OKCP				  Near	 CODE:0385
+OKNOMBER			  Near	 CODE:02F6
+OKSUB				  Near	 CODE:03C2
+OSN1				  Near	 CODE:05FB
+OSN2				  Near	 CODE:061E
+OSN3				  Near	 CODE:0636
+OSN4				  Near	 CODE:0668
+OSNOK1				  Near	 CODE:0606
+OSNOK2				  Near	 CODE:0611
+OSNONAM				  Near	 CODE:0645
+OSNONOM				  Near	 CODE:0629
+OSNOP1				  Near	 CODE:0650
+OSNOP2				  Near	 CODE:065B
+OSNOP3				  Near	 CODE:0666
+OSNOTIME			  Near	 CODE:061C
+OSNOTIME2			  Near	 CODE:0634
+OUTALL				  Near	 CODE:066B
+OUTNUM				  Near	 CODE:05D0
+OUTPUT				  Near	 CODE:07D9
+OUTSETTINGS			  Near	 CODE:05F0
+OUTTEXT				  Near	 CODE:0517
+OUTTIME				  Near	 CODE:05AD
+PERIOD				  Byte	 DATA:0006
+PLAY1				  Byte	 DATA:0015
+PLAY1FL				  Byte	 DATA:0014
+PLAY2				  Byte	 DATA:0042
+PLAY2FL				  Byte	 DATA:0041
+PLAYB11				  Byte	 DATA:0024
+PLAYB11FL			  Byte	 DATA:0023
+PLAYB12				  Byte	 DATA:0033
+PLAYB12FL			  Byte	 DATA:0032
+PLAYB21				  Byte	 DATA:0051
+PLAYB21FL			  Byte	 DATA:0050
+PLAYB22				  Byte	 DATA:0060
+PLAYB22FL			  Byte	 DATA:005F
+PLAYKOM1			  Word	 DATA:0014
+PLAYKOM2			  Word	 DATA:0041
+PODGOT				  Near	 CODE:078C
+SPECCHAR			  Near	 CODE:0313
+START				  Near	 CODE:0807
+STKTOP				  Word	 STK:0014
+STOP				  Byte	 DATA:0001
+TIMEB11				  Byte	 DATA:002E
+TIMEB12				  Byte	 DATA:003D
+TIMEB21				  Byte	 DATA:005B
+TIMEB22				  Byte	 DATA:006A
+TIMEGAME			  Byte	 DATA:0002
+TIMEGOL1			  Byte	 DATA:001F
+TIMEGOL2			  Byte	 DATA:004C
+TIMER				  Near	 CODE:07E0
+VD1				  Near	 CODE:013A
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 22
+Symbol Table
+
+
+
+VD2				  Near	 CODE:013E
+VIBRDESTR			  Near	 CODE:013A
+WKBEND				  Near	 CODE:03C4
+WORKKB				  Near	 CODE:02D7
+
+Macro Name
+
+OUTCHAR
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  FFFFFFF5 Para   none
+DATA				  16  008B  AT 0000
+STK				  16  0014  AT 0500
+Turbo Assembler	 Version 3.1	    26/11/05 14:45:14	    Page 23
+Error Summary
+
+
+
+**Error** tablo.asm(3) Illegal instruction
+**Error** tablo.asm(912) Illegal forward reference: ROMSIZE
+**Error** tablo.asm(912) Undefined symbol: ROMSIZE
+

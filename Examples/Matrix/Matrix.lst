@@ -1,0 +1,50 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:29:59
+Matrix.asm						     Page 1 - 1
+
+
+				.386
+				;Задайте объём ПЗУ в байтах
+ = 1000				RomSize    EQU   4096
+
+ 0000				Code       SEGMENT use16
+				           ASSUME cs:Code,ds:Code,es:Code
+ 0000				Start:
+ 0000				InfLoop:
+ 0000  E4 00			           in    al,0
+ 0002  E6 00			           out   0,al
+ 0004  E4 01			           in    al,1
+ 0006  E6 01			           out   1,al
+ 0008  E4 02			           in    al,2
+ 000A  E6 02			           out   2,al
+				           
+ 000C  EB F2			           jmp   InfLoop
+
+				;В следующей строке необходимо указать смещение стартовой точки
+				           org   RomSize-16
+				           ASSUME cs:NOTHING
+ 0FF0  EA ---- 0000 R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+				END
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:29:59
+Matrix.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+InfLoop  . . . . . . . . . . . .	L Near	 0000	  Code	
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+Start  . . . . . . . . . . . . .	L Near	 0000	  Code	
+
+	   0 Warnings
+	   0 Errors

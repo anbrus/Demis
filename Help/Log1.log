@@ -1,0 +1,9 @@
+Microsoft HTML Help Compiler 4.74.8702
+
+Compiling d:\WORK\VC\Demis2k\Help\Demis.chm
+
+HHC5003: Error: Compilation failed while compiling Help\Index.hhk.
+
+
+The following files were not compiled:
+Help\Index.hhk

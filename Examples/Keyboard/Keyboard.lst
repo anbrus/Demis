@@ -1,0 +1,224 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:29:02
+Keyboard.asm						     Page 1 - 1
+
+
+ = 1000				RomSize    EQU   4096
+ = 0032				NMax       EQU   50
+ = 0000				KbdPort    EQU   0
+ = 0001				DispPort   EQU   1
+
+ 0000				Stk        SEGMENT AT 100h
+ 0000  000A [			           DW    10 DUP (?)
+        0000
+       ]
+ 0014				StkTop     LABEL WORD
+ 0014				Stk        ENDS
+
+ 0000				Data       SEGMENT AT 0
+ 0000  0004 [			KbdImage   DB    4 DUP(?)
+        00
+       ]
+ 0004 00			EmpKbd     DB    ?
+ 0005 00			KbdErr     DB    ?
+ 0006 00			NextDig    DB    ?
+ 0007				Data       ENDS
+
+ 0000				Code       SEGMENT
+				           ASSUME cs:Code,ds:Data,es:Code,ss:Stk
+
+				           ;Образы 16-тиричных символов: "0", "1", ... "F"
+ 0000 3F 0C 76 5E 4D 5B		SymImages  DB    03Fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh
+       7B 0E
+ 0008  7F 5F 6F 79 33 7C	           DB    07Fh,05Fh,06Fh,079h,033h,07Ch,073h,063h
+       73 63
+
+ 0010				VibrDestr  PROC  NEAR
+ 0010  8A E0			VD1:       mov   ah,al       ;Сохранение исходного состояния
+ 0012  B7 00			           mov   bh,0        ;Сброс счётчика повторений
+ 0014  EC			VD2:       in    al,dx       ;Ввод текущего состояния
+ 0015  38 C4			           cmp   ah,al       ;Текущее состояние=исходному?
+ 0017  75 F7			           jne   VD1         ;Переход, если нет
+ 0019  FE C7			           inc   bh          ;Инкремент счётчика повторений
+ 001B  80 FF 32			           cmp   bh,NMax     ;Конец дребезга?
+ 001E  75 F4			           jne   VD2         ;Переход, если нет
+ 0020  8A C4			           mov   al,ah       ;Восстановление местоположения данных
+ 0022  C3			           ret
+ 0023				VibrDestr  ENDP
+
+ 0023				KbdInput   PROC  NEAR
+ 0023  8D 36 0000 R		           lea   si,KbdImage         ;Загрузка адреса,
+ 0027  B9 0004			           mov   cx,LENGTH KbdImage  ;счётчика циклов
+ 002A  B3 FE			           mov   bl,0FEh             ;и номера исходной строки
+ 002C  8A C3			KI4:       mov   al,bl       ;Выбор строки
+				           ;and   al,3Fh     ;Объединение номера с
+				           ;or    al,MesBuff ;сообщением "Тип ввода"
+ 002E  E6 00			           out   KbdPort,al  ;Активация строки
+ 0030  E4 00			           in    al,KbdPort  ;Ввод строки
+ 0032  24 0F			           and   al,0Fh      ;Включено?
+ 0034  3C 0F			           cmp   al,0Fh
+ 0036  74 15			           jz    KI1         ;Переход, если нет
+ 0038  BA 0000			           mov   dx,KbdPort  ;Передача параметра
+ 003B  E8 FFD2			           call  VibrDestr   ;Гашение дребезга
+ 003E  88 04			           mov   [si],al     ;Запись строки
+ 0040  E4 00			KI2:       in    al,KbdPort  ;Ввод строки
+ 0042  24 0F			           and   al,0Fh      ;Выключено?
+ 0044  3C 0F			           cmp   al,0Fh
+ 0046  75 F8			           jnz   KI2         ;Переход, если нет
+ 0048  E8 FFC5			           call  VibrDestr   ;Гашение дребезга
+ 004B  EB 02			           jmp   SHORT KI3
+ 004D  88 04			KI1:       mov   [si],al     ;Запись строки
+ 004F  46			KI3:       inc   si          ;Модификация адреса
+ 0050  D0 C3			           rol   bl,1        ;и номера строки
+ 0052  E2 D8			           loop  KI4         ;Все строки? Переход, если нет
+ 0054  C3			           ret
+ 0055				KbdInput   ENDP
+
+ 0055				KbdInContr PROC  NEAR
+ 0055  8D 1E 0000 R		           lea   bx,KbdImage ;Загрузка адреса
+ 0059  B9 0004			           mov   cx,4        ;и счётчика строк
+ 005C  C6 06 0004 R 00		           mov   EmpKbd,0    ;Очистка флагов
+ 0061  C6 06 0005 R 00		           mov   KbdErr,0
+ 0066  B2 00			           mov   dl,0        ;и накопителя
+ 0068  8A 07			KIC2:      mov   al,[bx]     ;Чтение строки
+ 006A  B4 04			           mov   ah,4        ;Загрузка счётчика битов
+ 006C  D0 E8			KIC1:      shr   al,1        ;Выделение бита
+ 006E  F5			           cmc               ;Подсчёт бита
+ 006F  80 D2 00			           adc   dl,0
+ 0072  FE CC			           dec   ah          ;Все биты в строке?
+ 0074  75 F6			           jnz   KIC1        ;Переход, если нет
+ 0076  43			           inc   bx          ;Модификация адреса строки
+ 0077  E2 EF			           loop  KIC2        ;Все строки? Переход, если нет
+ 0079  80 FA 00			           cmp   dl,0        ;Накопитель=0?
+ 007C  74 0C			           jz    KIC3        ;Переход, если да
+ 007E  80 FA 01			           cmp   dl,1        ;Накопитель=1?
+ 0081  74 0C			           jz    KIC4        ;Переход, если да
+ 0083  C6 06 0005 R FF		           mov   KbdErr,0FFh ;Установка флага ошибки
+ 0088  EB 05			           jmp   SHORT KIC4
+ 008A  C6 06 0004 R FF		KIC3:      mov   EmpKbd,0FFh ;Установка флага пустой клавиатуры
+ 008F  C3			KIC4:      ret
+ 0090				KbdInContr ENDP
+
+ 0090				NxtDigTrf  PROC  NEAR
+ 0090  80 3E 0004 R FF		           cmp   EmpKbd,0FFh ;Пустая клавиатура?
+ 0095  74 2D			           jz    NDT1        ;Переход, если да
+ 0097  80 3E 0005 R FF		           cmp   KbdErr,0FFh ;Ошибка клавиатуры?
+ 009C  74 26			           jz    NDT1        ;Переход, если да
+ 009E  8D 1E 0000 R		           lea   bx,KbdImage ;Загрузка адреса
+ 00A2  BA 0000			           mov   dx,0        ;Очистка накопителей кода строки и столбца
+ 00A5  8A 07			NDT3:      mov   al,[bx]     ;Чтение строки
+ 00A7  24 0F			           and   al,0Fh      ;Выделение поля клавиатуры
+ 00A9  3C 0F			           cmp   al,0Fh      ;Строка активна?
+ 00AB  75 05			           jnz   NDT2        ;Переход, если да
+ 00AD  FE C6			           inc   dh          ;Инкремент кода строки
+ 00AF  43			           inc   bx          ;Модификация адреса
+ 00B0  EB F3			           jmp   SHORT NDT3
+ 00B2  D0 E8			NDT2:      shr   al,1        ;Выделение бита строки
+ 00B4  73 04			           jnc   NDT4        ;Бит активен? Переход, если да
+ 00B6  FE C2			           inc   dl          ;Инкремент кода столбца
+ 00B8  EB F8			           jmp   SHORT NDT2
+ 00BA  B1 02			NDT4:      mov   cl,2        ;Формировние двоичного кода цифры
+ 00BC  D2 E6			           shl   dh,cl
+ 00BE  0A F2			           or    dh,dl
+ 00C0  88 36 0006 R		           mov   NextDig,dh  ;Запись кода цифры
+ 00C4  C3			NDT1:      ret
+ 00C5				NxtDigTrf  ENDP
+
+ 00C5				NumOut     PROC  NEAR
+ 00C5  80 3E 0005 R FF		           cmp   KbdErr,0FFh
+ 00CA  74 17			           jz    NO1
+ 00CC  80 3E 0004 R FF		           cmp   EmpKbd,0FFh
+ 00D1  74 10			           jz    NO1
+ 00D3  32 E4			           xor   ah,ah
+ 00D5  A0 0006 R		           mov   al,NextDig
+ 00D8  8D 1E 0000 R		           lea   bx,SymImages
+ 00DC  03 D8			           add   bx,ax
+ 00DE  26: 8A 07		           mov   al,es:[bx]
+ 00E1  E6 01			           out   DispPort,al
+ 00E3  C3			NO1:       ret
+ 00E4				NumOut     ENDP
+
+ 00E4				Start:
+ 00E4  B8 ---- R		           mov   ax,Code
+ 00E7  8E C0			           mov   es,ax
+ 00E9  B8 ---- R		           mov   ax,Data
+ 00EC  8E D8			           mov   ds,ax
+ 00EE  B8 ---- R		           mov   ax,Stk
+ 00F1  8E D0			           mov   ss,ax
+ 00F3  8D 26 0014 R		           lea   sp,StkTop
+				           
+ 00F7  C6 06 0005 R 00		           mov   KbdErr,0
+				           
+ 00FC  E8 FF24			InfLoop:   call  KbdInput
+ 00FF  E8 FF53			           call  KbdInContr
+ 0102  E8 FF8B			           call  NxtDigTrf
+ 0105  E8 FFBD			           call  NumOut
+ 0108  EB F2			           jmp   InfLoop
+				           
+				           
+
+				;В следующей строке необходимо указать смещение стартовой точки
+				           org   RomSize-16
+				           assume cs:nothing
+ 0FF0  EA ---- 00E4 R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+				END
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:29:02
+Keyboard.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 0007	  Abs	  Private 
+Stk  . . . . . . . . . . . . . .	16 Bit	 0014	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+KbdInContr . . . . . . . . . . .	P Near	 0055	  Code	Length= 003B Public
+  KIC2 . . . . . . . . . . . . .	L Near	 0068	  Code	
+  KIC1 . . . . . . . . . . . . .	L Near	 006C	  Code	
+  KIC3 . . . . . . . . . . . . .	L Near	 008A	  Code	
+  KIC4 . . . . . . . . . . . . .	L Near	 008F	  Code	
+KbdInput . . . . . . . . . . . .	P Near	 0023	  Code	Length= 0032 Public
+  KI4  . . . . . . . . . . . . .	L Near	 002C	  Code	
+  KI2  . . . . . . . . . . . . .	L Near	 0040	  Code	
+  KI1  . . . . . . . . . . . . .	L Near	 004D	  Code	
+  KI3  . . . . . . . . . . . . .	L Near	 004F	  Code	
+NumOut . . . . . . . . . . . . .	P Near	 00C5	  Code	Length= 001F Public
+  NO1  . . . . . . . . . . . . .	L Near	 00E3	  Code	
+NxtDigTrf  . . . . . . . . . . .	P Near	 0090	  Code	Length= 0035 Public
+  NDT3 . . . . . . . . . . . . .	L Near	 00A5	  Code	
+  NDT2 . . . . . . . . . . . . .	L Near	 00B2	  Code	
+  NDT4 . . . . . . . . . . . . .	L Near	 00BA	  Code	
+  NDT1 . . . . . . . . . . . . .	L Near	 00C4	  Code	
+VibrDestr  . . . . . . . . . . .	P Near	 0010	  Code	Length= 0013 Public
+  VD1  . . . . . . . . . . . . .	L Near	 0010	  Code	
+  VD2  . . . . . . . . . . . . .	L Near	 0014	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+DispPort . . . . . . . . . . . .	Number	 0001h	 
+EmpKbd . . . . . . . . . . . . .	Byte	 0004	  Data	
+InfLoop  . . . . . . . . . . . .	L Near	 00FC	  Code	
+KbdErr . . . . . . . . . . . . .	Byte	 0005	  Data	
+KbdImage . . . . . . . . . . . .	Byte	 0000	  Data	
+KbdPort  . . . . . . . . . . . .	Number	 0000h	 
+NMax . . . . . . . . . . . . . .	Number	 0032h	 
+NextDig  . . . . . . . . . . . .	Byte	 0006	  Data	
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+Start  . . . . . . . . . . . . .	L Near	 00E4	  Code	
+StkTop . . . . . . . . . . . . .	Word	 0014	  Stk	
+SymImages  . . . . . . . . . . .	Byte	 0000	  Code	
+
+	   0 Warnings
+	   0 Errors

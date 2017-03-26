@@ -1,0 +1,169 @@
+Turbo Assembler	 Version 3.1	    14/10/01 09:00:04	    Page 1
+road.asm
+
+
+
+      1					 .386
+      2					 ;Задайте объём	ПЗУ в байтах
+      3		  =1000			 RomSize    EQU	  4096
+      4
+      5
+      6	    0000			 Code	    SEGMENT use16
+      7					 ;Здесь	размещаются описания констант
+      8
+      9						    ASSUME cs:Code,ds:code,es:code
+     10
+     11	    0000  ??			 a db ?
+     12	    0001  01 02	04 08 10 20 40+	 b db	    01h,02h,04h,08h,10h,20h,40h,80h
+     13		  80
+     14
+     15	    0009			 Start:
+     16	    0009  B8 0000s			    mov	  ax,code
+     17	    000C  8E D8				    mov	  ds,ax
+     18	    000E  8E C0				    mov	  es,ax
+     19
+     20					 ;Здесь	размещается код	программы
+     21	    0010  BD FFF0			    mov	bp,0FFF0h
+     22	    0013			 a2:
+     23	    0013  B1 08				    mov	 cl,8
+     24
+     25	    0015			 a1:
+     26
+     27	    0015  E4 00				    in al,0
+     28	    0017  A8 0A				    test al,10
+     29	    0019  74 04				    jz a9
+     30	    001B  81 ED	0F00			    sub	bp,0F00h
+     31	    001F			 a9:
+     32
+     33	    001F  E4 00				    in al,0
+     34	    0021  A8 01				    test al,1
+     35	    0023  74 04				    jz a10
+     36	    0025  81 C5	0F00			    add	bp,0F00h
+     37	    0029			 a10:
+     38	    0029  73 03				    jnc	a11
+     39	    002B  BD FFFF			    mov	bp,0FFFFh
+     40	    002E			 a11:
+     41
+     42	    002E  81 FD	0FFF			    cmp	bp,0FFFh
+     43	    0032  73 03				    jae	a12
+     44	    0034  BD 0FFF			    mov	bp,0FFFh
+     45
+     46	    0037			 a12:
+     47
+     48	    0037  81 FD	0FFF			    cmp	bp,0FFFh
+     49	    003B  75 0A				    jne	 a7
+     50	    003D  B0 02				    mov	al,2
+     51	    003F  B6 02				    mov	dh,2
+     52	    0041  02 C2				    add	al,dl
+     53	    0043  E6 01				    out	1,al
+     54	    0045  EB 14				    jmp	a6
+     55	    0047			 a7:
+     56	    0047  8A C2				    mov	al,dl
+     57	    0049  B6 00				    mov	dh,0
+Turbo Assembler	 Version 3.1	    14/10/01 09:00:04	    Page 2
+road.asm
+
+
+
+     58	    004B  E6 01				    out	1,al
+     59
+     60	    004D  81 FD	FFFF			    cmp	bp,0FFFFh
+     61	    0051  75 08				    jne	 a6
+     62	    0053  B0 01				    mov	al,1
+     63	    0055  B6 01				    mov	dh,1
+     64	    0057  02 C2				    add	al,dl
+     65	    0059  E6 01				    out	1,al
+     66
+     67	    005B			 a6:
+     68
+     69	    005B  51				    push cx
+     70	    005C  8B CD				    mov	cx,bp
+     71	    005E  49			 delay:	    dec	cx
+     72	    005F  75 FD				    jnz	delay
+     73	    0061  59				    pop	cx
+     74
+     75	    0062  E4 00				    in	  al,0
+     76	    0064  A8 64				    test  al,100
+     77	    0066  74 0A				    jz a3
+     78	    0068  B0 04				    mov	al,4
+     79	    006A  B2 04				    mov	dl,4
+     80	    006C  02 C6				    add	al,dh
+     81	    006E  E6 01				    out	1,al
+     82	    0070  EB 15				    jmp	a4
+     83	    0072			 a3:
+     84	    0072  B0 00				    mov	al,0
+     85	    0074  B2 00				    mov	dl,0
+     86	    0076  02 C6				    add	al,dh
+     87	    0078  E6 01				    out	1,al
+     88	    007A  8A C1				    mov	 al,cl
+     89	    007C  FE C9				    dec	 cl
+     90	    007E  D7				    xlat
+     91	    007F  E6 00				    out	 0,al
+     92	    0081  3C 00				    cmp	al,0
+     93	    0083  75 90				    jnz	a1
+     94	    0085  EB 8C				    jmp	a2
+     95	    0087			 a4:
+     96	    0087  80 F9	07			    cmp	cl,7
+     97	    008A  7E 04				    jng	 a5
+     98	    008C  32 C9				    xor	cl,cl
+     99	    008E  EB 85				    jmp	a1
+    100	    0090			 a5:
+    101	    0090  FE C1				    inc	cl
+    102	    0092  8A C1				    mov	al,cl
+    103	    0094  D7				    xlat
+    104	    0095  E6 00				    out	0,al
+    105	    0097  80 F9	08			    cmp	cl,8
+    106	    009A  0F 85	FF77			    jne	a1
+    107	    009E  B1 00				    mov	cl,0
+    108	    00A0  E9 FF72			    jmp	a1
+    109
+    110
+    111
+    112					 ;В следующей строке необходимо	указать	смещение стартовой точки
+    113						    org	  RomSize-16
+    114						    ASSUME cs:NOTHING
+Turbo Assembler	 Version 3.1	    14/10/01 09:00:04	    Page 3
+road.asm
+
+
+
+    115	    0FF0  EA 00000009sr			    jmp	  Far Ptr Start
+    116	    0FF5			 Code	    ENDS
+    117					 END
+Turbo Assembler	 Version 3.1	    14/10/01 09:00:04	    Page 4
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "14/10/01"
+??FILENAME			  Text	 "road	  "
+??TIME				  Text	 "09:00:04"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 ROAD
+@WORDSIZE			  Text	 2
+A				  Byte	 CODE:0000
+A1				  Near	 CODE:0015
+A10				  Near	 CODE:0029
+A11				  Near	 CODE:002E
+A12				  Near	 CODE:0037
+A2				  Near	 CODE:0013
+A3				  Near	 CODE:0072
+A4				  Near	 CODE:0087
+A5				  Near	 CODE:0090
+A6				  Near	 CODE:005B
+A7				  Near	 CODE:0047
+A9				  Near	 CODE:001F
+B				  Byte	 CODE:0001
+DELAY				  Near	 CODE:005E
+ROMSIZE				  Number 1000
+START				  Near	 CODE:0009
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+

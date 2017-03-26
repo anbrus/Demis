@@ -1,0 +1,13 @@
+TARGETNAME=DirectBeep
+TARGETTYPE=DRIVER
+
+
+
+TARGETPATH=bin
+
+INCLUDES=$(BASEDIR)\inc
+
+C_DEFINES=-DDRIVER
+
+SOURCES=				\
+	DirectBeep.cpp

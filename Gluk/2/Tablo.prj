@@ -1,0 +1,6 @@
+[SOURCE]=00000001,tablo.asm
+[ARCH]=00000000,tablo.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(374,188,1386,807)D:\Work\VC\Demis2k\Gluk\2\tablo.asm

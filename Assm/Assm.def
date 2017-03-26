@@ -1,0 +1,6 @@
+LIBRARY      "Assm"
+DESCRIPTION  'Windows Dynamic Link Library'
+
+EXPORTS	
+        AssembleFile
+        LinkFiles
