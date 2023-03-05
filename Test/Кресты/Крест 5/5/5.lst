@@ -1,0 +1,277 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/17 08:30:05
+5.asm							     Page 1 - 1
+
+
+				.386
+ = 1000				RomSize    EQU   4096
+ = 0002				NMatrix    EQU   2           ;Порт выбора матричного индикатора 
+ = 0001				NStolb     EQU   1           ;Порт выбора столбца
+ = 0000				NImage     EQU   0           ;Порт выбора изображения в столбец
+ = 0003				NumMatrix  EQU   3           ;Количество матричных индикаторов
+ = 0000				ACPRdy     EQU   0           ;Порт АЦП лапы Rdy
+ = 0001				ACPOut     EQU   1           ;Порт АЦП лапы Out
+ = 0002				ACPStart   EQU   2           ;Порт АЦП лапы Start
+ = 0000				Keyboard   EQU   0           ;Порт кнопок (П,Р,С)
+ = 0030				Mercanie   EQU   30h         ;"Мерцание" - количество пустых циклов по 65535 раз, чтобы буквы не двоились
+
+ 0000				Data       SEGMENT use16 AT 100h
+ 0000  0020 [			Vyvod      db    32 dup(?)   ;Тридцатидвух битный массив, который постоянно выводится на дисплей
+        00
+       ]
+ 0020 00			OffstVyvod db    ?           ;Переменная для того, чтобы лазать по массиву Vyvod
+ 0021 00			SpeedCX    db    ?           ;Счётчик скорости (портится), возобновляемый из переменной Speed
+ 0022 00			Speed      db    ?           ;Счётчик скорости (не портится)
+ 0023 00			CurrNum    db    ?           ;Текущий номер буковки, которая бегает на дисплее (0,1,2) и которая будет перезаписана кнопкой
+ 0024 00			Old        db    ?           ;Переменная для выделения переднего фронта волны
+ 0025				Data       ENDS
+
+ 0000				Code       SEGMENT use16
+				           ASSUME cs:Code,ds:Data,es:Code,ss:Stk
+ 0000 00 FF 01 01 01 01		Image      db    00000000b,11111111b,00000001b,00000001b,00000001b,00000001b,11111111b,00000000b    ;П
+       FF 00
+ 0008  00 FF 11 11 11 11	           db    00000000b,11111111b,00010001b,00010001b,00010001b,00010001b,00001110b,00000000b    ;Р
+       0E 00
+ 0010  00 7E 81 81 81 81	           db    00000000b,01111110b,10000001b,10000001b,10000001b,10000001b,10000001b,00000000b    ;С
+       81 00
+
+				Clear      MACRO Port        ;Процедура очистки индикаторов. Выведена для удобности и наглядности
+				           xor   al,al
+				           out   Port,al
+				           ENDM
+
+ 0018				Prepare    PROC  NEAR        ;Подготовка
+ 0018  33 C0			           xor   ax,ax
+ 001A  8D 36 0000 R		           lea   si,Vyvod
+ 001E  B9 0020			           mov   cx,size Vyvod
+ 0021  B0 00			PodgotM1:  mov   al,0        ;Обнуляем массив Vyvod, т.к. этот массив - критические данные
+ 0023  88 04			           mov   [si],al
+ 0025  46			           inc   si
+ 0026  E2 F9			           loop  PodgotM1
+ 0028  A2 0023 R		           mov   CurrNum,al
+ 002B  A2 0020 R		           mov   OffstVyvod,al
+ 002E  A2 0023 R		           mov   CurrNum,al
+ 0031  A2 0024 R		           mov   Old,al
+ 0034  B0 07			           mov   al,0111b    ;0111b - у нас такое значение изначально выставлено на АЦП (0.00).
+				                 
+				                 ;        1) Считываем с порта в al, получаем 00000000b
+				                 ;        2) Делаем операцию not al, получаем 11111111b
+				                 ;        3) Далее операция shr al,5 получаем 00000111b
+ 0036  A2 0022 R		           mov   Speed,al
+ 0039  A2 0021 R		           mov   SpeedCX,al
+ 003C  C3			           RET
+ 003D				Prepare    ENDP
+
+ 003D				Displ      PROC  NEAR
+ 003D  B2 01			           mov   dl,00000001b    ;первый мартичный индикатор
+ 003F  B9 0003			           mov   cx,NumMatrix
+ 0042  8D 36 0000 R		           lea   si,Vyvod
+ 0046  32 FF			           xor   bh,bh
+ 0048  8A 1E 0020 R		           mov   bl,OffstVyvod
+ 004C				DisplM1:   Clear NStolb
+ 004C  32 C0		     1	           xor   al,al
+ 004E  E6 01		     1	           out   NStolb,al
+ 0050  8A C2			           mov   al,dl
+ 0052  E6 02			           out   NMatrix,al
+ 0054  51			           push  cx
+ 0055  B9 0008			           mov   cx,8
+ 0058				DisplM2:   Clear NStolb
+ 0058  32 C0		     1	           xor   al,al
+ 005A  E6 01		     1	           out   NStolb,al
+ 005C  8A 00			           mov   al,[si+bx]
+ 005E  E6 00			           out   NImage,al
+ 0060  32 C0			           xor   al,al
+ 0062  F9			           stc                   ;поднимаем флаг CF=1 (есть перенос)
+ 0063  D2 D8			           rcr   al,cl           ;сдвиг вправо, получаем номер столбца, в который будем выводить изображение
+ 0065  E6 01			           out   NStolb,al
+ 0067  FE C3			           inc   bl              ;чтоб не уползти за 32 байта массива vyvod, при переполнении сдвигаемся вначало
+ 0069  80 FB 1F			           cmp   bl,size Vyvod - 1
+ 006C  75 02			           jne   DisplM3
+ 006E  32 DB			           xor   bl,bl
+ 0070  E2 E6			DisplM3:   loop  DisplM2
+ 0072  D0 C2			           rol   dl,1            ;следующий матричный индикатор
+ 0074  59			           pop   cx
+ 0075  E2 D5			           loop  DisplM1
+				           Clear NStolb
+ 0077  32 C0		     1	           xor   al,al
+ 0079  E6 01		     1	           out   NStolb,al
+ 007B  C3			           RET
+ 007C				Displ      ENDP
+
+ 007C				Delay      PROC  NEAR
+ 007C  33 C9			           xor   cx,cx
+ 007E  E2 FE			DelayM1:   loop  DelayM1
+ 0080  FE 0E 0021 R		           dec   SpeedCX
+ 0084  75 20			           jnz   DelayM2
+ 0086  A0 0022 R		           mov   al,Speed
+ 0089  A2 0021 R		           mov   SpeedCX,al
+ 008C  B9 0030			           mov   cx,Mercanie
+ 008F  51			DelayM4:   push  cx
+ 0090  33 C9			           xor   cx,cx
+ 0092  E2 FE			DelayM3:   loop  DelayM3
+ 0094  59			           pop   cx
+ 0095  E2 F8			           loop  DelayM4
+ 0097  FE 06 0020 R		           inc   OffstVyvod
+ 009B  80 3E 0020 R 1F		           cmp   OffstVyvod,size Vyvod - 1
+ 00A0  75 04			           jne   DelayM2
+ 00A2  88 2E 0020 R		           mov   OffstVyvod,ch
+ 00A6  C3			DelayM2:   RET
+ 00A7				Delay      ENDP
+
+ 00A7				ACP        PROC  NEAR
+ 00A7  B0 08			           mov   al,00001000b    ;4-я лапа подключена к Start у АЦП
+ 00A9  E6 02			           out   ACPStart,al
+ 00AB  E4 00			ACPM1:     in    al,ACPRdy
+ 00AD  A8 01			           test  al,1
+ 00AF  74 FA			           jz    ACPM1
+ 00B1  32 C0			           xor   al,al
+ 00B3  E6 02			           out   ACPStart,al
+ 00B5  E4 01			           in    al,ACPOut
+ 00B7  F6 D0			           not   al
+ 00B9  C0 E8 05			           shr   al,5
+ 00BC  0C 01			           or    al,1
+ 00BE  A2 0022 R		           mov   Speed,al
+ 00C1  C3			           RET
+ 00C2				ACP        ENDP
+
+ 00C2				KeyRead    PROC  NEAR
+ 00C2  E4 00			           in    al,Keyboard
+ 00C4  F6 D0			           not   al
+ 00C6  C0 E8 05			           shr   al,5
+ 00C9  8A E0			           mov   ah,al
+ 00CB  32 06 0024 R		           xor   al,Old
+ 00CF  22 C4			           and   al,ah
+ 00D1  88 26 0024 R		           mov   Old,ah
+ 00D5  C3			           RET
+ 00D6				KeyRead    ENDP
+
+ 00D6				Print      PROC  NEAR
+ 00D6  0A C0			           or    al,al
+ 00D8  74 3D			           jz    PrintM3
+ 00DA  32 E4			           xor   ah,ah
+ 00DC  FE C4			PrintM1:   inc   ah
+ 00DE  D0 E8			           shr   al,1      ;из унитарного в двоичный позиционный
+ 00E0  75 FA			           jnz   PrintM1
+ 00E2  FE CC			           dec   ah
+ 00E4  C1 E8 05			           shr   ax,5         ; shr ax,8 - переносим из ah в ax, чистим ah, shl al, 3 - умножаем al на 8
+ 00E7  8D 1E 0000 R		           lea   bx,Image
+ 00EB  03 D8			           add   bx,ax
+ 00ED  8D 36 0000 R		           lea   si,Vyvod
+ 00F1  A0 0023 R		           mov   al,CurrNum  ; 0,1,2. Номер буковки
+ 00F4  32 E4			           xor   ah,ah
+ 00F6  C1 E0 03			           shl   ax,3
+ 00F9  03 F0			           add   si,ax
+ 00FB  FE 06 0023 R		           inc   CurrNum
+ 00FF  80 3E 0023 R 03		           cmp   CurrNum,3
+ 0104  75 05			           jne   PrintM4   ;если не равно 3
+ 0106  C6 06 0023 R 00		           mov   CurrNum,0
+ 010B  B9 0008			PrintM4:   mov   cx,8
+ 010E  26: 8A 07		PrintM2:   mov   al,es:[bx]
+ 0111  88 04			           mov   [si],al
+ 0113  43			           inc   bx
+ 0114  46			           inc   si
+ 0115  E2 F7			           loop  PrintM2
+ 0117  C3			PrintM3:   RET
+ 0118				Print      ENDP
+
+ 0118  B8 ---- R		Start:     mov   ax,Data
+ 011B  8E D8			           mov   ds,ax
+ 011D  B8 ---- R		           mov   ax,Code
+ 0120  8E C0			           mov   es,ax
+ 0122  B8 ---- R		           mov   ax,Stk
+ 0125  8E D0			           mov   ss,ax
+ 0127  E8 FEEE			           call  Prepare
+ 012A  E8 FF95			InfLoop:   call  KeyRead
+ 012D  E8 FFA6			           call  Print
+ 0130  E8 FF0A			           call  Displ
+ 0133  E8 FF46			           call  Delay
+ 0136  E8 FF6E			           call  ACP
+ 0139  EB EF			           jmp   InfLoop
+
+				           org   RomSize-16
+				           ASSUME cs:NOTHING
+ 0FF0  EA ---- 0118 R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+
+ 0000				Stk        SEGMENT use16 STACK
+				           org 10h 
+ 0010  0005 [			           dw  5 dup(?)
+        0000
+       ]
+ 001A				StkTop     LABEL Word
+ 001A				Stk        ENDS
+
+				END
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/17 08:30:05
+5.asm							     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+Clear  . . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 0025	  Abs	  Private 
+Stk  . . . . . . . . . . . . . .	16 Bit	 001A	  Para	  Stack	  
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+ACP  . . . . . . . . . . . . . .	P Near	 00A7	  Code	Length= 001B Public
+  ACPM1  . . . . . . . . . . . .	L Near	 00AB	  Code	
+Delay  . . . . . . . . . . . . .	P Near	 007C	  Code	Length= 002B Public
+  DelayM1  . . . . . . . . . . .	L Near	 007E	  Code	
+  DelayM4  . . . . . . . . . . .	L Near	 008F	  Code	
+  DelayM3  . . . . . . . . . . .	L Near	 0092	  Code	
+  DelayM2  . . . . . . . . . . .	L Near	 00A6	  Code	
+Displ  . . . . . . . . . . . . .	P Near	 003D	  Code	Length= 003F Public
+  DisplM1  . . . . . . . . . . .	L Near	 004C	  Code	
+  DisplM2  . . . . . . . . . . .	L Near	 0058	  Code	
+  DisplM3  . . . . . . . . . . .	L Near	 0070	  Code	
+KeyRead  . . . . . . . . . . . .	P Near	 00C2	  Code	Length= 0014 Public
+Prepare  . . . . . . . . . . . .	P Near	 0018	  Code	Length= 0025 Public
+  PodgotM1 . . . . . . . . . . .	L Near	 0021	  Code	
+Print  . . . . . . . . . . . . .	P Near	 00D6	  Code	Length= 0042 Public
+  PrintM1  . . . . . . . . . . .	L Near	 00DC	  Code	
+  PrintM4  . . . . . . . . . . .	L Near	 010B	  Code	
+  PrintM2  . . . . . . . . . . .	L Near	 010E	  Code	
+  PrintM3  . . . . . . . . . . .	L Near	 0117	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ACPOut . . . . . . . . . . . . .	Number	 0001h	 
+ACPRdy . . . . . . . . . . . . .	Number	 0000h	 
+ACPStart . . . . . . . . . . . .	Number	 0002h	 
+CurrNum  . . . . . . . . . . . .	Byte	 0023	  Data	
+Image  . . . . . . . . . . . . .	Byte	 0000	  Code	
+InfLoop  . . . . . . . . . . . .	L Near	 012A	  Code	
+Keyboard . . . . . . . . . . . .	Number	 0000h	 
+Mercanie . . . . . . . . . . . .	Number	 0030h	 
+NImage . . . . . . . . . . . . .	Number	 0000h	 
+NMatrix  . . . . . . . . . . . .	Number	 0002h	 
+NStolb . . . . . . . . . . . . .	Number	 0001h	 
+NumMatrix  . . . . . . . . . . .	Number	 0003h	 
+OffstVyvod . . . . . . . . . . .	Byte	 0020	  Data	
+Old  . . . . . . . . . . . . . .	Byte	 0024	  Data	
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+SpeedCX  . . . . . . . . . . . .	Byte	 0021	  Data	
+Speed  . . . . . . . . . . . . .	Byte	 0022	  Data	
+Start  . . . . . . . . . . . . .	L Near	 0118	  Code	
+StkTop . . . . . . . . . . . . .	Word	 001A	  Stk	
+Vyvod  . . . . . . . . . . . . .	Byte	 0000	  Data	
+
+	   0 Warnings
+	   0 Errors

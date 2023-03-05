@@ -1,0 +1,884 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/02/17 16:53:26
+lock.asm						     Page 1 - 1
+
+
+ = 1000				RomSize    EQU  4096
+ = 0032				NMax       EQU  50
+ = 0000				KbdPort    EQU  0
+ = 0001				IndicPort  EQU  1
+
+ 0000				Data       SEGMENT AT 100h
+
+ 0000  0003 [			           KbdImage    db 3 dup(?)
+        00
+       ]
+ 0003 00			           Mode        db ?          
+ 0004 00			           KbdErr      db ?       
+ 0005 00			           EmpKbd      db ?       
+ 0006 00			           NextDig     db ?       
+ 0007  0009 [			           LockCode    db 9 dup(?)
+        00
+       ]
+ 0010  0004 [			           ArrayDisp   db 4 dup(?)
+        00
+       ]
+ 0014  0009 [			           LCD         db 9 dup(?)
+        00
+       ]
+ 001D 00			           NumDigCode  db ?
+ 001E 00			           NumDigCode2 db ?
+ 001F 00			           Buffer      db ?
+ 0020 00			           Buffer1     db ?
+ 0021 00			           Block       db ?           
+ 0022 00			           Open        db ?
+ 0023 00			           Popitka     db ?
+ 0024 0000			           Delay       dw ?
+ 0026 0000			           Delay1      dw ?
+ 0028 00			           OldNextDig  db ?
+ 0029 0000			           Tyr         dw ?
+ 002B 0000			           Tyr1        dw ? 
+ 002D 00			           frg         db ?        
+ 002E 00			           frg1        db ?        
+ 002F 00			           frg2        db ?    
+ 0030 00			           gdr         db ?     
+				                         
+ 0031				Data       ENDS
+
+ 0000				Stk        SEGMENT AT 200h
+ 0000  001E [			           dw 30 dup (?)
+        0000
+       ]
+ 003C				           StkTop Label Word
+ 003C				Stk        ENDS
+
+ 0000				Code       SEGMENT
+				           ASSUME cs:Code,ds:Data,es:Data
+
+ 0000 3F 0C 76 5E 4D 5B		Images db 3Fh, 0Ch, 76h, 5Eh, 4Dh, 5Bh, 7Bh, 0Eh, 7Fh, 5Fh, 00h
+       7B 0E 7F 5F 00
+
+				;Модуль 'Функциональная подготовка'
+ 000B				FuncPrep Proc Near
+ 000B  8D 3E 0007 R		           lea  DI, LockCode
+ 000F  B9 0009			           mov  CX, length LockCode
+ 0012  C6 05 00			      FP1: mov  byte ptr [DI], 0
+ 0015  47			           inc  DI
+ 0016  E2 FA			           loop FP1
+				           
+ 0018  C6 06 0023 R 00		           mov  Popitka, 0
+ 001D  C6 06 001F R 00		           mov  Buffer, 0
+ 0022  C6 06 0020 R 00		           mov  Buffer1, 0           
+ 0027  C6 06 0022 R 00		           mov  Open, 0
+ 002C  C6 06 0021 R 00		           mov  Block, 0
+ 0031  C6 06 001D R 00		           mov  NumDigCode, 0
+ 0036  C6 06 001E R 00		           mov  NumDigCode2, 0
+ 003B  C7 06 0024 R 0000	           mov  Delay, 0
+ 0041  C7 06 0026 R 0000	           mov  Delay1, 0
+ 0047  C7 06 0029 R 0000	           mov  Tyr, 0
+ 004D  C7 06 002B R 0003	           mov  Tyr1, 3
+ 0053  C6 06 002D R 00		           mov  frg, 0
+ 0058  C6 06 002E R 00		           mov  frg1, 0
+ 005D  C6 06 002F R 00		           mov  frg2, 0
+ 0062  C6 06 0030 R 00		           mov  gdr, 0
+ 0067  C3			           ret
+ 0068				FuncPrep Endp
+
+				;Модуль 'Ввод режима'
+ 0068				LockModIn Proc Near
+ 0068  C6 06 0003 R 00		           mov  Mode, 0       ;Режим='Воспроизведение'   
+ 006D  E4 00			           in   AL, KbdPort
+ 006F  BA 0000			           mov  DX, KbdPort
+ 0072  E8 000A			           call VibrDestr
+ 0075  A8 80			           test AL, 80h
+ 0077  75 05			           jne  LMI1
+ 0079  C6 06 0003 R FF		           mov  Mode, 0FFh    ;Режим='Установка'
+ 007E  C3			     LMI1: ret
+ 007F				LockModIn Endp
+
+				;Модуль 'Гашение дребезга'
+ 007F				VibrDestr Proc Near
+ 007F  8A E0			      VD1: mov  AH, AL
+ 0081  B7 00			           mov  BH, 0
+ 0083  EC			      VD2: in   AL, DX
+ 0084  38 C4			           cmp  AH, AL
+ 0086  75 F7			           jne  VD1
+ 0088  FE C7			           inc  BH
+ 008A  80 FF 32			           cmp  BH, NMax
+ 008D  75 F4			           jne  VD2
+ 008F  8A C4			           mov  AL, AH
+ 0091  C3			           ret
+ 0092				VibrDestr Endp
+
+				;Модуль 'Ввод с клавиатуры'
+ 0092				KbdInput Proc Near
+ 0092  8D 3E 0000 R		          lea DI, KbdImage
+ 0096  32 C9			          xor CL, CL
+				           
+ 0098  B0 01			     KI2: mov AL, 1
+ 009A  D2 E0			          shl AL, CL
+ 009C  0A 06 001F R		          or  AL, Buffer
+ 00A0  E6 00			          out KbdPort, AL
+ 00A2  E4 00			          in  AL, KbdPort
+ 00A4  24 0F			          and AL, 0Fh
+ 00A6  74 2C			          jz KI1
+				          
+ 00A8  BA 0000			          mov DX, KbdPort
+ 00AB  E8 FFD1			          call VibrDestr           
+ 00AE  88 05			          mov [DI], AL
+				          
+ 00B0  E4 00			     KI3: in AL, KbdPort
+ 00B2  80 3E 0030 R 01		          cmp  gdr,1
+ 00B7  75 15			          jne  KI5     
+ 00B9  FF 06 0026 R		          inc  Delay1  
+ 00BD  83 3E 0026 R FF		          cmp  Delay1,0FFFFh
+ 00C2  75 0A			          jne  KI5
+ 00C4  C7 06 0026 R 0000	          mov  Delay1,0
+ 00CA  FF 06 0024 R		          inc  Delay      
+ 00CE  24 0F			     KI5: and AL, 0Fh
+ 00D0  75 DE			          jnz KI3
+ 00D2  EB 02			          jmp KI4
+				          
+ 00D4  88 05			     KI1: mov [DI], AL
+ 00D6  47			     KI4: inc DI
+ 00D7  FE C1			          inc CL
+ 00D9  80 F9 03			          cmp CL, length KbdImage
+ 00DC  75 BA			          jnz KI2
+				          
+ 00DE  C3			          ret
+ 00DF				KbdInput Endp
+
+				;Модуль 'Контроль ввода с клавиатуры'
+ 00DF				KbdInContr Proc Near
+ 00DF  8D 36 0000 R		           lea SI, KbdImage
+ 00E3  B9 0003			           mov CX, 3
+ 00E6  B2 00			           mov DL, 0
+ 00E8  8A 04			     KIC2: mov AL, [SI]
+ 00EA  B4 04			           mov AH, 4
+ 00EC  D0 E8			     KIC1: shr AL, 1
+ 00EE  80 D2 00			           adc DL, 0
+ 00F1  FE CC			           dec AH
+ 00F3  75 F7			           jnz KIC1
+ 00F5  46			           inc SI
+ 00F6  E2 F0			           loop KIC2
+				           
+ 00F8  C6 06 0004 R 00		           mov KbdErr, 0
+ 00FD  C6 06 0005 R 00		           mov EmpKbd, 0
+ 0102  80 FA 00			           cmp DL, 0
+ 0105  74 0C			           jz KIC3
+ 0107  80 FA 01			           cmp DL, 1
+ 010A  74 0C			           jz KIC4
+ 010C  C6 06 0004 R FF		           mov KbdErr, 0FFh
+ 0111  EB 05			           jmp KIC4
+ 0113  C6 06 0005 R FF		     KIC3: mov EmpKbd, 0FFh
+
+ 0118  C3			     KIC4: ret
+ 0119				KbdInContr Endp
+
+				;Модуль 'Преобразование очередной цифры'
+ 0119				NxtDigTrf Proc Near
+ 0119  80 3E 0004 R 00		           cmp KbdErr, 0
+ 011E  75 41			           jne NDF1
+ 0120  80 3E 0005 R 00		           cmp EmpKbd, 0
+ 0125  75 3A			           jne NDF1
+				           
+ 0127  33 D2			           xor DX, DX
+ 0129  8D 36 0000 R		           lea SI, KbdImage
+				           
+ 012D  8A 04			     NDF3: mov AL, [SI]
+ 012F  24 0F			           and AL, 0Fh
+ 0131  3C 00			           cmp AL, 0
+ 0133  75 05			           jnz NDF2
+ 0135  FE C2			           inc DL
+ 0137  46			           inc SI
+ 0138  EB F3			           jmp NDF3
+				           
+ 013A  D0 E8			     NDF2: shr AL, 1
+ 013C  72 04			           jc  NDF4
+ 013E  FE C6			           inc DH
+ 0140  EB F8			           jmp NDF2
+				           
+ 0142  D0 E2			     NDF4: shl DL, 1
+ 0144  D0 E2			           shl DL, 1
+ 0146  0A F2			           or  DH, DL     
+ 0148  88 36 0006 R		           mov NextDig, DH
+				           
+ 014C  80 3E 002F R 01		           cmp frg2,1
+ 0151  75 04			           jne H1
+ 0153  FE 0E 002F R		           dec frg2
+				              
+ 0157  80 FE 0B			       H1: cmp DH, 11
+ 015A  72 05			           jb  NDF1
+ 015C  C6 06 0005 R FF		           mov EmpKbd, 0FFh 
+				                   
+ 0161  C3			     NDF1: ret
+ 0162				NxtDigTrf Endp
+
+				;Модуль 'Установка кода 1 уровня'
+ 0162				FormLockCode1 Proc Near
+ 0162  80 3E 001D R 00		           cmp NumDigCode, 0
+ 0167  75 6C			           jnz FLC1
+				           
+ 0169  80 3E 0003 R 00		           cmp Mode, 0
+ 016E  75 65			           jnz FLC1
+				                     
+ 0170  80 3E 001E R 00		           cmp NumDigCode2, 0
+ 0175  75 5E			           jnz FLC1
+				       
+ 0177  C6 06 0020 R 00		           mov  Buffer1, 0
+ 017C  C6 06 0022 R 00		           mov  Open, 0
+ 0181  C6 06 0021 R 00		           mov  Block, 0
+ 0186  C6 06 0023 R 00		           mov  Popitka, 0
+				           
+ 018B  80 0E 001F R 08		           or  Buffer, 08h
+ 0190  A0 001F R		           mov AL, Buffer
+ 0193  E6 00			           out KbdPort, AL
+				                      
+ 0195  80 3E 0004 R 00		           cmp KbdErr, 0
+ 019A  75 39			           jne FLC1
+ 019C  80 3E 0005 R 00		           cmp EmpKbd, 0
+ 01A1  75 32			           jne FLC1
+				                    
+ 01A3  80 3E 0006 R 0A		           cmp NextDig,10
+ 01A8  74 1A			           je  FLC4           
+
+ 01AA  BF 0000			           mov DI, 0
+ 01AD  B9 0003			           mov CX, 3
+ 01B0  8A 85 0008 R		     FLC3: mov AL, LockCode[DI+1]
+ 01B4  88 85 0007 R		           mov LockCode[DI], AL
+ 01B8  47			           inc DI
+ 01B9  E2 F5			           loop FLC3
+				           
+ 01BB  A0 0006 R		           mov AL, NextDig
+ 01BE  88 85 0007 R		           mov LockCode[DI], AL
+ 01C2  EB 11			           jmp FLC1
+				           
+ 01C4  FE 06 001E R		     FLC4: inc NumDigCode2
+ 01C8  FE 06 002D R		           inc frg
+ 01CC  FE 06 002E R		           inc frg1
+ 01D0  C6 06 0006 R 00		           mov NextDig,0
+ 01D5  C3			     FLC1: ret
+ 01D6				FormLockCode1 Endp
+
+				;Модуль 'Установка кода 2 уровня'
+ 01D6				FormLockCode2 Proc Near
+ 01D6  80 3E 001D R 01		           cmp NumDigCode, 1
+ 01DB  75 4E			           jnz F1 
+				           
+ 01DD  80 3E 0003 R 00		           cmp Mode, 0
+ 01E2  74 47			           jz F1
+				           
+ 01E4  32 C0			           xor AL, AL
+ 01E6  A0 0007 R		           mov AL, LockCode[0]
+ 01E9  38 06 000A R		           cmp LockCode[3],AL
+ 01ED  7F 06			           jg  F2
+ 01EF  2A 06 000A R		           sub AL, LockCode[3]
+ 01F3  EB 06			           jmp F3
+ 01F5  2A 06 000A R		      F2:  sub AL, LockCode[3]
+ 01F9  F6 D8			           neg AL  
+ 01FB  8A D0			      F3:  mov DL, AL
+ 01FD  80 E2 08			           and DL, 00001000b
+ 0200  D0 EA			           shr DL, 1
+ 0202  D0 EA			           shr DL, 1
+ 0204  D0 EA			           shr DL, 1
+ 0206  88 16 000B R		           mov LockCode[4], DL
+ 020A  8A D0			           mov DL, AL
+ 020C  80 E2 04			           and DL, 00000100b
+ 020F  D0 EA			           shr DL,1
+ 0211  D0 EA			           shr DL,1
+ 0213  88 16 000C R		           mov LockCode[5], DL
+ 0217  8A D0			           mov DL, AL
+ 0219  80 E2 02			           and DL, 00000010b
+ 021C  D0 EA			           shr DL,1
+ 021E  88 16 000D R		           mov LockCode[6], DL
+ 0222  8A D0			           mov DL, AL
+ 0224  80 E2 01			           and DL, 00000001b
+ 0227  88 16 000E R		           mov LockCode[7], DL
+				          
+ 022B  C3			       F1: ret
+ 022C				FormLockCode2 Endp
+
+				;Модуль 'Установка кода 3 уровня'
+ 022C				FormLockCode3 Proc Near
+ 022C  80 3E 001D R 00		           cmp NumDigCode, 0
+ 0231  75 4F			           jnz FL1
+				           
+ 0233  80 3E 0003 R 00		           cmp Mode, 0
+ 0238  75 48			           jnz FL1
+				                     
+ 023A  80 3E 001E R 01		           cmp NumDigCode2, 1
+ 023F  75 41			           jnz FL1
+				           
+ 0241  C6 06 001F R 00		           mov  Buffer, 0
+ 0246  C6 06 0020 R 01		           mov  Buffer1,1
+ 024B  C6 06 0022 R 00		           mov  Open, 0
+ 0250  C6 06 0021 R 00		           mov  Block, 0
+ 0255  C6 06 0023 R 00		           mov  Popitka, 0
+				                      
+ 025A  80 3E 0004 R 00		           cmp KbdErr, 0
+ 025F  75 21			           jne FL1
+ 0261  80 3E 0005 R 00		           cmp EmpKbd, 0
+ 0266  75 1A			           jne FL1
+				           
+ 0268  80 3E 0006 R 0A		           cmp NextDig,10
+ 026D  74 13			           je  FL1
+				           
+ 026F  80 3E 002E R 00		           cmp frg1,0         
+ 0274  74 06			           je  FL5
+ 0276  FE 0E 002E R		           dec frg1
+ 027A  EB 06			           jmp FL1                       
+ 027C  A0 0006 R		      FL5: mov AL, NextDig
+ 027F  A2 000F R		           mov LockCode[8], AL
+				                      
+ 0282  C3			     FL1:  ret
+ 0283				FormLockCode3 Endp
+
+				;Модуль 'Формирование массива отображения 1 уровня'
+ 0283				FormDisp1 Proc Near
+ 0283  80 3E 0004 R 00		           cmp KbdErr, 0
+ 0288  75 4B			           jnz FD1
+				           
+ 028A  80 3E 001D R 00		           cmp NumDigCode, 0
+ 028F  75 44			           jnz FD1
+				           
+ 0291  80 3E 001E R 00		           cmp NumDigCode2, 0
+ 0296  75 3D			           jnz FD1
+				           
+ 0298  80 0E 001F R 08		           or  Buffer, 08h
+ 029D  A0 001F R		           mov AL, Buffer
+ 02A0  E6 00			           out KbdPort, AL
+				           
+ 02A2  80 3E 0003 R FF		           cmp Mode, 0FFh
+ 02A7  75 12			           jne FD4
+				           
+ 02A9  C6 06 0020 R 00		           mov  Buffer1, 0
+ 02AE  8D 3E 0010 R		           lea DI, ArrayDisp
+ 02B2  B9 0004			           mov CX, 4
+ 02B5  C6 05 0A			      FD2: mov byte ptr [DI], 10
+ 02B8  47			           inc DI
+ 02B9  E2 FA			           loop FD2
+				           
+ 02BB  80 3E 0003 R 00		      FD4: cmp Mode, 0
+ 02C0  75 13			           jne FD1
+				           
+ 02C2  8D 3E 0010 R		           lea DI, ArrayDisp
+ 02C6  8D 36 0007 R		           lea SI, LockCode
+ 02CA  B9 0004			           mov CX, 4
+ 02CD  8A 04			      FD3: mov AL, [SI]
+ 02CF  88 05			           mov [DI], AL
+ 02D1  46			           inc SI
+ 02D2  47			           inc DI
+ 02D3  E2 F8			           loop FD3
+				                      
+ 02D5  C3			      FD1: ret
+ 02D6				FormDisp1 Endp
+
+				;Модуль 'Формирование массива отображения 3 уровня'
+ 02D6				FormDisp3 Proc Near
+ 02D6  80 3E 0004 R 00		           cmp KbdErr, 0
+ 02DB  75 6E			           jnz FF1
+				           
+ 02DD  80 3E 001D R 00		           cmp NumDigCode, 0
+ 02E2  75 67			           jnz FF1
+				           
+ 02E4  80 3E 001E R 01		           cmp NumDigCode2, 1
+ 02E9  75 60			           jnz FF1   
+				           
+ 02EB  80 3E 0003 R FF		           cmp Mode, 0FFh
+ 02F0  75 1C			           jne FF4
+				           
+ 02F2  80 0E 001F R 08		           or  Buffer, 08h
+ 02F7  A0 001F R		           mov AL, Buffer
+ 02FA  E6 00			           out KbdPort, AL
+				                     
+ 02FC  C6 06 0020 R 00		           mov Buffer1, 0           
+ 0301  8D 3E 0010 R		           lea DI, ArrayDisp
+ 0305  B9 0004			           mov CX, 4
+ 0308  C6 05 0A			      FF2: mov byte ptr [DI], 10
+ 030B  47			           inc DI
+ 030C  E2 FA			           loop FF2
+				           
+ 030E  80 3E 0003 R 00		      FF4: cmp Mode, 0
+ 0313  75 36			           jne FF1
+				           
+ 0315  80 3E 0006 R 0A		           cmp NextDig,10
+ 031A  74 17			           je FF6  
+ 031C  A0 000F R		           mov AL, LockCode[8]
+ 031F  C6 06 0010 R 0A		           mov ArrayDisp[0], 10
+ 0324  C6 06 0011 R 0A		           mov ArrayDisp[1], 10
+ 0329  C6 06 0012 R 0A		           mov ArrayDisp[2], 10
+ 032E  A2 0013 R		           mov ArrayDisp[3], AL
+ 0331  EB 18			           jmp FF1
+				           
+				     
+ 0333  8D 3E 0010 R		      FF6: lea DI, ArrayDisp
+ 0337  8D 36 0007 R		           lea SI, LockCode
+ 033B  B9 0004			           mov CX, 4
+ 033E  8A 04			      FF5: mov AL, [SI]
+ 0340  88 05			           mov [DI], AL
+ 0342  46			           inc SI
+ 0343  47			           inc DI
+ 0344  E2 F8			           loop FF5     
+ 0346  C6 06 001E R 00		           mov NumDigCode2, 0
+				                
+ 034B  C3			      FF1: ret
+ 034C				FormDisp3 Endp
+
+				;Модуль 'Вывод кода'
+ 034C				OutputCode Proc Near           
+ 034C  80 3E 0004 R 00		           cmp KbdErr, 0
+ 0351  75 28			           jnz OC1
+				                      
+ 0353  B9 0004			           mov CX, 4
+ 0356  BA 0001			           mov DX, IndicPort
+ 0359  33 FF			           xor DI, DI
+				           
+ 035B  33 C0			      OC2: xor AX, AX
+ 035D  8A 85 0010 R		           mov AL, ArrayDisp[DI]
+ 0361  8B F0			           mov SI, AX
+ 0363  2E: 8A 84 0000 R		           mov AL, Images[SI]
+ 0368  83 FA 04			           cmp DX, 4
+ 036B  75 09			           jne OC3
+ 036D  D0 E0			           shl AL, 1
+ 036F  08 06 0020 R		           or  Buffer1, AL  
+ 0373  A0 0020 R		           mov AL, Buffer1  
+				                    
+ 0376  EE			      OC3: out DX, AL
+ 0377  47			           inc DI
+ 0378  42			           inc DX
+ 0379  E2 E0			           loop OC2
+ 037B  C3			      OC1: ret
+ 037C				OutputCode Endp
+
+				;Модуль 'Сравнение кода 1 уровня'
+ 037C				CmpCode1 Proc Near
+ 037C  80 3E 001D R 00		         cmp NumDigCode, 0
+ 0381  74 03			         je  BB1
+ 0383  E9 00A2			         jmp CC2
+ 0386  80 3E 0004 R 00		BB1:     cmp KbdErr, 0
+ 038B  74 03			         je  BB2
+ 038D  E9 0098			         jmp CC2
+ 0390  80 3E 0005 R 00		BB2:     cmp EmpKbd, 0
+ 0395  74 03			         je  BB3
+ 0397  E9 008E			         jmp CC2                  
+ 039A  80 3E 0003 R 00		BB3:     cmp Mode, 0
+ 039F  75 03			         jne  BB4
+ 03A1  E9 0084			         jmp CC2
+				                       
+ 03A4  80 3E 0006 R 0A		BB4:     cmp NextDig, 10
+ 03A9  72 07			         jb  CC0
+ 03AB  C6 06 0005 R FF		         mov EmpKbd, 0FFh 
+ 03B0  EB 76			         jmp CC2
+				             
+ 03B2  C6 06 001F R 00		CC0:     mov Buffer, 0
+ 03B7  C6 06 001F R 08		         mov Buffer, 08h 
+ 03BC  8B 3E 0029 R		         mov DI, Tyr
+ 03C0  A0 0006 R		         mov AL, NextDig
+ 03C3  88 85 0014 R		         mov LCD[DI], AL
+ 03C7  FF 06 0029 R		         inc Tyr  
+ 03CB  83 3E 0029 R 04		         cmp Tyr, 4
+ 03D0  74 13			         je  CC4
+ 03D2  EB 54			         jmp CC2
+
+ 03D4  80 0E 001F R 20		CC3:     or  Buffer, 20h 
+ 03D9  C7 06 0029 R 0000	         mov Tyr, 0
+ 03DF  FE 06 0023 R		         inc Popitka
+ 03E3  EB 27			         jmp CC1   
+
+ 03E5  BF 0000			CC4:     mov DI, 0
+ 03E8  B9 0004			         mov CX, 4
+ 03EB  8A 85 0014 R		CC5:     mov AL, LCD[DI]
+ 03EF  3A 85 0007 R		         cmp AL, LockCode[DI]   
+ 03F3  75 DF			         jne CC3
+ 03F5  47			         inc DI
+ 03F6  E2 F3			         loop CC5
+				                   
+ 03F8  80 0E 001F R 10		         or  Buffer, 10h
+ 03FD  FE 06 001D R		         inc NumDigCode
+ 0401  C6 06 0023 R 00		         mov Popitka, 0
+ 0406  C7 06 0029 R 0000	         mov Tyr, 0
+				               
+ 040C  A0 001F R		CC1:     mov AL, Buffer
+ 040F  BA 000A			         mov DX, 10
+ 0412  B9 0FFF			CC7:     mov CX, 0FFFh
+ 0415  E6 00			CC6:     out KbdPort, AL
+ 0417  E2 FC			         loop CC6
+ 0419  4A			         dec DX
+ 041A  75 F6			         jnz CC7
+				        
+ 041C  80 3E 0023 R 03		         cmp Popitka, 3
+ 0421  75 05			         jne CC2
+ 0423  C6 06 0021 R FF		         mov Block, 0FFh  
+				       
+ 0428  C3			CC2:     ret
+ 0429				CmpCode1 Endp
+
+				;Модуль 'Сравнение кода 2 уровня'
+ 0429				CmpCode2 Proc Near
+ 0429  80 3E 001D R 01		        cmp NumDigCode, 1
+ 042E  74 03			        je  B1
+ 0430  E9 00A1			        jmp C2
+ 0433  80 3E 0004 R 00		B1:     cmp KbdErr, 0
+ 0438  74 03			        je  B2
+ 043A  E9 0097			        jmp C2
+ 043D  80 3E 0005 R 00		B2:     cmp EmpKbd, 0
+ 0442  74 03			        je  B3
+ 0444  E9 008D			        jmp C2                  
+ 0447  80 3E 0003 R 00		B3:     cmp Mode, 0
+ 044C  75 03			        jne B4
+ 044E  E9 0083			        jmp C2
+				        
+ 0451  80 3E 0006 R 0A		B4:     cmp NextDig, 10
+ 0456  72 07			        jb  C0
+ 0458  C6 06 0005 R FF		        mov EmpKbd, 0FFh
+ 045D  EB 75			        jmp C2 
+				        
+ 045F  C6 06 001F R 00		C0:     mov Buffer, 0
+ 0464  8B 3E 002B R		        mov DI, Tyr1
+ 0468  A0 0006 R		        mov AL, NextDig
+ 046B  88 85 0014 R		        mov LCD[DI], AL
+ 046F  FF 06 002B R		        inc Tyr1  
+ 0473  83 3E 002B R 08		        cmp Tyr1,8
+ 0478  74 13			        je  C4
+ 047A  EB 38			        jmp C1
+				            
+ 047C  80 0E 001F R 20		C3:     or  Buffer,20h  
+ 0481  C7 06 002B R 0004	        mov Tyr1, 4
+ 0487  FE 06 0023 R		        inc Popitka
+ 048B  EB 27			        jmp C1   
+
+ 048D  BF 0004			C4:     mov DI, 4
+ 0490  B9 0004			        mov CX, 4
+ 0493  8A 85 0014 R		C5:     mov AL, LCD[DI]
+ 0497  3A 85 0007 R		        cmp AL, LockCode[DI]   
+ 049B  75 DF			        jne C3
+ 049D  47			        inc DI
+ 049E  E2 F3			        loop C5
+				                  
+ 04A0  80 0E 001F R 10		        or  Buffer, 10h
+ 04A5  C7 06 002B R 0003	        mov Tyr1, 3
+ 04AB  C6 06 0023 R 00		        mov Popitka, 0
+ 04B0  FE 06 001D R		        inc NumDigCode
+				                
+ 04B4  A0 001F R		C1:     mov AL, Buffer
+ 04B7  BA 000A			        mov DX, 10
+ 04BA  B9 0FFF			C7:     mov CX, 0FFFh
+ 04BD  E6 00			C6:     out KbdPort, AL
+ 04BF  E2 FC			        loop C6
+ 04C1  4A			        dec DX
+ 04C2  75 F6			        jnz C7
+ 04C4  FE 06 002F R		        inc frg2   
+				        
+ 04C8  80 3E 0023 R 03		        cmp Popitka, 3
+ 04CD  75 05			        jne C2
+ 04CF  C6 06 0021 R FF		        mov Block, 0FFh  
+				        
+ 04D4  C3			C2:    ret
+ 04D5				CmpCode2 Endp
+
+				;Модуль 'Сравнение кода 3 уровня'
+ 04D5				CmpCode3 Proc Near
+ 04D5  80 3E 001D R 02		        cmp NumDigCode, 2
+ 04DA  74 03			        je V2
+ 04DC  E9 0098			        jmp S2
+				        
+ 04DF  B0 01			V2:     mov AL, 01h
+ 04E1  08 06 0020 R		        or Buffer1, AL
+ 04E5  A0 0020 R		        mov AL, Buffer1
+ 04E8  E6 04			        out 4, AL
+ 04EA  C6 06 001F R 00		        mov Buffer, 0       
+				        
+ 04EF  80 3E 0004 R 00		        cmp KbdErr, 0
+ 04F4  74 02			        je V3
+ 04F6  EB 7F			        jmp S2
+ 04F8  80 3E 0005 R 00		V3:     cmp EmpKbd, 0
+ 04FD  74 02			        je V4
+ 04FF  EB 76			        jmp S2   
+ 0501  80 3E 0003 R 00		V4:     cmp Mode, 0
+ 0506  74 6F			        je  S2
+				                   
+ 0508  C6 06 0030 R 01		        mov gdr, 1          
+ 050D  80 3E 002F R 00		        cmp frg2, 0
+ 0512  75 63			        jne S2
+				        
+ 0514  80 3E 0006 R 0A		        cmp NextDig, 10
+ 0519  72 07			        jb S5
+ 051B  C6 06 0005 R FF		        mov EmpKbd, 0FFh
+ 0520  EB 55			        jmp S2
+
+ 0522  A0 0006 R		S5:     mov AL, NextDig
+ 0525  3A 06 000F R		        cmp AL, LockCode[8]
+ 0529  75 0A			        jne S3
+ 052B  81 3E 0024 R 01F4	        cmp Delay,500     ;время удержания клавиши
+ 0531  72 02			        jb  S3            
+ 0533  EB 17			        jmp S4 
+				        
+ 0535  80 0E 001F R 20		S3:     or  Buffer,20h  
+ 053A  FE 06 0023 R		        inc Popitka
+ 053E  C7 06 0024 R 0000	        mov Delay, 0
+ 0544  C7 06 0026 R 0000	        mov Delay1, 0
+ 054A  EB 0F			        jmp S1   
+
+ 054C  80 0E 001F R 10		S4:     or  Buffer, 10h
+ 0551  C6 06 0022 R FF		        mov Open, 0FFh
+ 0556  C6 06 0023 R 00		        mov Popitka, 0
+				        
+ 055B  A0 001F R		S1:     mov AL, Buffer
+ 055E  BA 0014			        mov DX, 20
+ 0561  B9 0FFF			Q7:     mov CX, 0FFFh
+ 0564  E6 00			Q6:     out KbdPort, AL
+ 0566  E2 FC			        loop Q6
+ 0568  4A			        dec DX
+ 0569  75 F6			        jnz Q7
+				              
+ 056B  80 3E 0023 R 03		        cmp Popitka, 3
+ 0570  75 05			        jne S2
+ 0572  C6 06 0021 R FF		        mov Block, 0FFh
+				                    
+ 0577  C3			S2:    ret
+ 0578				CmpCode3 Endp
+
+				;Модуль 'Открытие замка'
+ 0578				OpenDoor Proc Near
+ 0578  80 3E 0022 R FF		           cmp Open, 0FFh
+ 057D  75 39			           jnz OD1
+				            
+ 057F  B0 00			           mov AL, 0
+ 0581  E6 04			           out 4, AL
+				           
+ 0583  C6 06 001F R 40		           mov Buffer, 40h
+ 0588  A0 001F R		           mov AL, Buffer
+ 058B  BA 0004			           mov DX, 4         ;С помощью регистров CX и DX необходимо
+ 058E  B9 FFFF			      OD5: mov CX, 0FFFFh    ;подобрать время задержки 5 секунд
+ 0591  E6 00			      OD4: out KbdPort, AL   
+ 0593  E2 FC			           loop OD4         
+ 0595  4A			           dec DX            
+ 0596  75 F6			           jnz OD5          
+				          
+ 0598  C6 06 001F R 00		           mov Buffer, 0
+ 059D  C6 06 0022 R 00		           mov Open, 0
+ 05A2  C6 06 001D R 00		           mov NumDigCode, 0
+ 05A7  C7 06 0024 R 0000	           mov Delay,0
+ 05AD  C7 06 0026 R 0000	           mov Delay1,0
+ 05B3  C6 06 0030 R 00		           mov gdr,0  
+				           
+ 05B8  C3			      OD1: ret
+ 05B9				OpenDoor Endp
+
+				;Модуль 'Блокировка замка'
+ 05B9				BlockingOfLock Proc Near
+ 05B9  80 3E 0021 R FF		           cmp Block, 0FFh
+ 05BE  75 3D			           jne BOL1
+				           
+ 05C0  BA 0001			           mov DX, 1
+ 05C3  B9 FFFF			     BOL3: mov CX, 0FFFFh    
+ 05C6  E6 00			     BOL2: out KbdPort, AL   
+ 05C8  E2 FC			           loop BOL2         
+ 05CA  4A			           dec DX            
+ 05CB  75 F6			           jnz BOL3         
+				           
+ 05CD  C6 06 001F R 80		           mov Buffer, 80h
+ 05D2  A0 001F R		           mov AL, Buffer    
+ 05D5  BA 000A			           mov DX, 10        ;С помощью регистров CX и DX необходимо
+ 05D8  B9 FFFF			     BOL5: mov CX, 0FFFFh    ;подобрать время задержки 64 секунды
+ 05DB  E6 00			     BOL4: out KbdPort, AL   
+ 05DD  E2 FC			           loop BOL4         
+ 05DF  4A			           dec DX            
+ 05E0  75 F6			           jnz BOL5          
+				           
+ 05E2  C6 06 001F R 00		           mov Buffer, 0
+ 05E7  C6 06 0021 R 00		           mov Block, 0                     
+ 05EC  C6 06 0023 R 00		           mov Popitka, 0
+ 05F1  C7 06 0024 R 0000	           mov Delay,0
+ 05F7  C7 06 0026 R 0000	           mov Delay1,0
+
+ 05FD  C3			     BOL1: ret
+ 05FE				BlockingOfLock Endp
+				           
+ 05FE				Start:
+ 05FE  B8 ---- R		           mov ax,Data
+ 0601  8E D8			           mov ds,ax
+ 0603  8E C0			           mov es,ax
+ 0605  B8 ---- R		           mov ax,Stk
+ 0608  8E D0			           mov ss,ax
+ 060A  8D 26 003C R		           lea sp,StkTop
+				                      
+ 060E  E8 F9FA			           call FuncPrep         ;Подготовка
+ 0611  E8 FA54			    Cycle: call LockModIn        ;Ввод режимов   
+ 0614  E8 FA7B			           call KbdInput         ;Ввод с клавиатуры
+ 0617  E8 FAC5			           call KbdInContr       ;Проверка ввода с клавиатуры
+ 061A  E8 FAFC			           call NxtDigTrf        ;Преобразование очередной цифры
+ 061D  E8 FB42			           call FormLockCode1    ;Установка кода 1 уровня
+ 0620  E8 FBB3			           call FormLockCode2    ;Установка кода 2 уровня
+ 0623  E8 FC06			           call FormLockCode3    ;Установка кода 3 уровня
+ 0626  E8 FC5A			           call FormDisp1        ;Формирование массива отображения 1 уровня
+ 0629  E8 FCAA			           call FormDisp3        ;Формирование массива отображения 3 уровня
+ 062C  E8 FD1D			           call OutputCode       ;Вывод
+ 062F  E8 FD4A			           call CmpCode1         ;Проверка набранного кода 1 уровня
+ 0632  E8 FDF4			           call CmpCode2         ;Проверка набранного кода 2 уровня   
+ 0635  E8 FE9D			           call CmpCode3         ;Проверка набранного кода 3 уровня  
+ 0638  E8 FF3D			           call OpenDoor         ;Открытие замка
+ 063B  E8 FF7B			           call BlockingOfLock   ;Блокировка замка
+ 063E  EB D1			           jmp Cycle
+
+				           org   RomSize-16
+				           ASSUME cs:NOTHING
+ 0FF0  EA ---- 05FE R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+				End
+Microsoft (R) Macro Assembler Version 6.14.8444		    04/02/17 16:53:26
+lock.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 0031	  Abs	  Private 
+Stk  . . . . . . . . . . . . . .	16 Bit	 003C	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+BlockingOfLock . . . . . . . . .	P Near	 05B9	  Code	Length= 0045 Public
+  BOL3 . . . . . . . . . . . . .	L Near	 05C3	  Code	
+  BOL2 . . . . . . . . . . . . .	L Near	 05C6	  Code	
+  BOL5 . . . . . . . . . . . . .	L Near	 05D8	  Code	
+  BOL4 . . . . . . . . . . . . .	L Near	 05DB	  Code	
+  BOL1 . . . . . . . . . . . . .	L Near	 05FD	  Code	
+CmpCode1 . . . . . . . . . . . .	P Near	 037C	  Code	Length= 00AD Public
+  BB1  . . . . . . . . . . . . .	L Near	 0386	  Code	
+  BB2  . . . . . . . . . . . . .	L Near	 0390	  Code	
+  BB3  . . . . . . . . . . . . .	L Near	 039A	  Code	
+  BB4  . . . . . . . . . . . . .	L Near	 03A4	  Code	
+  CC0  . . . . . . . . . . . . .	L Near	 03B2	  Code	
+  CC3  . . . . . . . . . . . . .	L Near	 03D4	  Code	
+  CC4  . . . . . . . . . . . . .	L Near	 03E5	  Code	
+  CC5  . . . . . . . . . . . . .	L Near	 03EB	  Code	
+  CC1  . . . . . . . . . . . . .	L Near	 040C	  Code	
+  CC7  . . . . . . . . . . . . .	L Near	 0412	  Code	
+  CC6  . . . . . . . . . . . . .	L Near	 0415	  Code	
+  CC2  . . . . . . . . . . . . .	L Near	 0428	  Code	
+CmpCode2 . . . . . . . . . . . .	P Near	 0429	  Code	Length= 00AC Public
+  B1 . . . . . . . . . . . . . .	L Near	 0433	  Code	
+  B2 . . . . . . . . . . . . . .	L Near	 043D	  Code	
+  B3 . . . . . . . . . . . . . .	L Near	 0447	  Code	
+  B4 . . . . . . . . . . . . . .	L Near	 0451	  Code	
+  C0 . . . . . . . . . . . . . .	L Near	 045F	  Code	
+  C3 . . . . . . . . . . . . . .	L Near	 047C	  Code	
+  C4 . . . . . . . . . . . . . .	L Near	 048D	  Code	
+  C5 . . . . . . . . . . . . . .	L Near	 0493	  Code	
+  C1 . . . . . . . . . . . . . .	L Near	 04B4	  Code	
+  C7 . . . . . . . . . . . . . .	L Near	 04BA	  Code	
+  C6 . . . . . . . . . . . . . .	L Near	 04BD	  Code	
+  C2 . . . . . . . . . . . . . .	L Near	 04D4	  Code	
+CmpCode3 . . . . . . . . . . . .	P Near	 04D5	  Code	Length= 00A3 Public
+  V2 . . . . . . . . . . . . . .	L Near	 04DF	  Code	
+  V3 . . . . . . . . . . . . . .	L Near	 04F8	  Code	
+  V4 . . . . . . . . . . . . . .	L Near	 0501	  Code	
+  S5 . . . . . . . . . . . . . .	L Near	 0522	  Code	
+  S3 . . . . . . . . . . . . . .	L Near	 0535	  Code	
+  S4 . . . . . . . . . . . . . .	L Near	 054C	  Code	
+  S1 . . . . . . . . . . . . . .	L Near	 055B	  Code	
+  Q7 . . . . . . . . . . . . . .	L Near	 0561	  Code	
+  Q6 . . . . . . . . . . . . . .	L Near	 0564	  Code	
+  S2 . . . . . . . . . . . . . .	L Near	 0577	  Code	
+FormDisp1  . . . . . . . . . . .	P Near	 0283	  Code	Length= 0053 Public
+  FD2  . . . . . . . . . . . . .	L Near	 02B5	  Code	
+  FD4  . . . . . . . . . . . . .	L Near	 02BB	  Code	
+  FD3  . . . . . . . . . . . . .	L Near	 02CD	  Code	
+  FD1  . . . . . . . . . . . . .	L Near	 02D5	  Code	
+FormDisp3  . . . . . . . . . . .	P Near	 02D6	  Code	Length= 0076 Public
+  FF2  . . . . . . . . . . . . .	L Near	 0308	  Code	
+  FF4  . . . . . . . . . . . . .	L Near	 030E	  Code	
+  FF6  . . . . . . . . . . . . .	L Near	 0333	  Code	
+  FF5  . . . . . . . . . . . . .	L Near	 033E	  Code	
+  FF1  . . . . . . . . . . . . .	L Near	 034B	  Code	
+FormLockCode1  . . . . . . . . .	P Near	 0162	  Code	Length= 0074 Public
+  FLC3 . . . . . . . . . . . . .	L Near	 01B0	  Code	
+  FLC4 . . . . . . . . . . . . .	L Near	 01C4	  Code	
+  FLC1 . . . . . . . . . . . . .	L Near	 01D5	  Code	
+FormLockCode2  . . . . . . . . .	P Near	 01D6	  Code	Length= 0056 Public
+  F2 . . . . . . . . . . . . . .	L Near	 01F5	  Code	
+  F3 . . . . . . . . . . . . . .	L Near	 01FB	  Code	
+  F1 . . . . . . . . . . . . . .	L Near	 022B	  Code	
+FormLockCode3  . . . . . . . . .	P Near	 022C	  Code	Length= 0057 Public
+  FL5  . . . . . . . . . . . . .	L Near	 027C	  Code	
+  FL1  . . . . . . . . . . . . .	L Near	 0282	  Code	
+FuncPrep . . . . . . . . . . . .	P Near	 000B	  Code	Length= 005D Public
+  FP1  . . . . . . . . . . . . .	L Near	 0012	  Code	
+KbdInContr . . . . . . . . . . .	P Near	 00DF	  Code	Length= 003A Public
+  KIC2 . . . . . . . . . . . . .	L Near	 00E8	  Code	
+  KIC1 . . . . . . . . . . . . .	L Near	 00EC	  Code	
+  KIC3 . . . . . . . . . . . . .	L Near	 0113	  Code	
+  KIC4 . . . . . . . . . . . . .	L Near	 0118	  Code	
+KbdInput . . . . . . . . . . . .	P Near	 0092	  Code	Length= 004D Public
+  KI2  . . . . . . . . . . . . .	L Near	 0098	  Code	
+  KI3  . . . . . . . . . . . . .	L Near	 00B0	  Code	
+  KI5  . . . . . . . . . . . . .	L Near	 00CE	  Code	
+  KI1  . . . . . . . . . . . . .	L Near	 00D4	  Code	
+  KI4  . . . . . . . . . . . . .	L Near	 00D6	  Code	
+LockModIn  . . . . . . . . . . .	P Near	 0068	  Code	Length= 0017 Public
+  LMI1 . . . . . . . . . . . . .	L Near	 007E	  Code	
+NxtDigTrf  . . . . . . . . . . .	P Near	 0119	  Code	Length= 0049 Public
+  NDF3 . . . . . . . . . . . . .	L Near	 012D	  Code	
+  NDF2 . . . . . . . . . . . . .	L Near	 013A	  Code	
+  NDF4 . . . . . . . . . . . . .	L Near	 0142	  Code	
+  H1 . . . . . . . . . . . . . .	L Near	 0157	  Code	
+  NDF1 . . . . . . . . . . . . .	L Near	 0161	  Code	
+OpenDoor . . . . . . . . . . . .	P Near	 0578	  Code	Length= 0041 Public
+  OD5  . . . . . . . . . . . . .	L Near	 058E	  Code	
+  OD4  . . . . . . . . . . . . .	L Near	 0591	  Code	
+  OD1  . . . . . . . . . . . . .	L Near	 05B8	  Code	
+OutputCode . . . . . . . . . . .	P Near	 034C	  Code	Length= 0030 Public
+  OC2  . . . . . . . . . . . . .	L Near	 035B	  Code	
+  OC3  . . . . . . . . . . . . .	L Near	 0376	  Code	
+  OC1  . . . . . . . . . . . . .	L Near	 037B	  Code	
+VibrDestr  . . . . . . . . . . .	P Near	 007F	  Code	Length= 0013 Public
+  VD1  . . . . . . . . . . . . .	L Near	 007F	  Code	
+  VD2  . . . . . . . . . . . . .	L Near	 0083	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ArrayDisp  . . . . . . . . . . .	Byte	 0010	  Data	
+Block  . . . . . . . . . . . . .	Byte	 0021	  Data	
+Buffer1  . . . . . . . . . . . .	Byte	 0020	  Data	
+Buffer . . . . . . . . . . . . .	Byte	 001F	  Data	
+Cycle  . . . . . . . . . . . . .	L Near	 0611	  Code	
+Delay1 . . . . . . . . . . . . .	Word	 0026	  Data	
+Delay  . . . . . . . . . . . . .	Word	 0024	  Data	
+EmpKbd . . . . . . . . . . . . .	Byte	 0005	  Data	
+Images . . . . . . . . . . . . .	Byte	 0000	  Code	
+IndicPort  . . . . . . . . . . .	Number	 0001h	 
+KbdErr . . . . . . . . . . . . .	Byte	 0004	  Data	
+KbdImage . . . . . . . . . . . .	Byte	 0000	  Data	
+KbdPort  . . . . . . . . . . . .	Number	 0000h	 
+LCD  . . . . . . . . . . . . . .	Byte	 0014	  Data	
+LockCode . . . . . . . . . . . .	Byte	 0007	  Data	
+Mode . . . . . . . . . . . . . .	Byte	 0003	  Data	
+NMax . . . . . . . . . . . . . .	Number	 0032h	 
+NextDig  . . . . . . . . . . . .	Byte	 0006	  Data	
+NumDigCode2  . . . . . . . . . .	Byte	 001E	  Data	
+NumDigCode . . . . . . . . . . .	Byte	 001D	  Data	
+OldNextDig . . . . . . . . . . .	Byte	 0028	  Data	
+Open . . . . . . . . . . . . . .	Byte	 0022	  Data	
+Popitka  . . . . . . . . . . . .	Byte	 0023	  Data	
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+Start  . . . . . . . . . . . . .	L Near	 05FE	  Code	
+StkTop . . . . . . . . . . . . .	Word	 003C	  Stk	
+Tyr1 . . . . . . . . . . . . . .	Word	 002B	  Data	
+Tyr  . . . . . . . . . . . . . .	Word	 0029	  Data	
+frg1 . . . . . . . . . . . . . .	Byte	 002E	  Data	
+frg2 . . . . . . . . . . . . . .	Byte	 002F	  Data	
+frg  . . . . . . . . . . . . . .	Byte	 002D	  Data	
+gdr  . . . . . . . . . . . . . .	Byte	 0030	  Data	
+
+	   0 Warnings
+	   0 Errors

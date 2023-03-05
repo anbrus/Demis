@@ -2,7 +2,6 @@
 //
 
 #include "stdafx.h"
-#include "stdelem.h"
 #include "AddressDlg.h"
 
 #ifdef _DEBUG

@@ -1,0 +1,109 @@
+Turbo Assembler	 Version 3.1	    11/01/05 20:29:36	    Page 1
+Test.asm
+
+
+
+      1					 .386
+      2					 ;Задайте объём	ПЗУ в байтах
+      3		  =1000			 RomSize    EQU	  4096
+      4
+      5	    0000			 Code	    SEGMENT use16
+      6					 ;Здесь	размещаются описания констант
+      7
+      8						    ASSUME cs:Code
+      9
+     10	    0000			 Delay	    proc  near
+     11	    0000  51				    push  cx
+     12	    0001  B9 0320			    mov	  cx,800
+     13	    0004			 DLoop1:
+     14	    0004  B8 0064			    mov	  ax,100
+     15	    0007			 DLoop2:
+     16	    0007  48				    dec	  ax
+     17	    0008  75 FD				    jnz	  DLoop2
+     18	    000A  E2 F8				    loop  DLoop1
+     19	    000C  59				    pop	  cx
+     20
+     21	    000D  C3				    ret
+     22	    000E			 Delay	    endp
+     23
+     24	    000E			 Start:
+     25					 ;Здесь	размещается код	программы
+     26	    000E  B7 00				    mov	  bh,0
+     27	    0010  B3 FF				    mov	  bl,0FFh
+     28
+     29	    0012			 InfLoop:
+     30						    ;in	   al,0
+     31						    ;out   0,al
+     32						    ;in	   al,1
+     33						    ;out   1,al
+     34						    ;jmp   InfLoop
+     35
+     36	    0012  B0 00				    mov	  al,0
+     37	    0014  E6 03				    out	  3,al
+     38
+     39	    0016  8A C7				    mov	  al,bh
+     40	    0018  E6 02				    out	  2,al
+     41	    001A  B0 01				    mov	  al,1
+     42	    001C  E6 03				    out	  3,al
+     43	    001E  E8 FFDF			    call  Delay
+     44	    0021  B0 00				    mov	  al,0
+     45	    0023  E6 03				    out	  3,al
+     46
+     47	    0025  8A C3				    mov	  al,bl
+     48	    0027  E6 02				    out	  2,al
+     49	    0029  B0 02				    mov	  al,2
+     50	    002B  E6 03				    out	  3,al
+     51	    002D  E8 FFD0			    call  Delay
+     52	    0030  B0 00				    mov	  al,0
+     53	    0032  E6 03				    out	  3,al
+     54
+     55	    0034  E4 00				    in	  al,0
+     56	    0036  3A C2				    cmp	  al,dl
+     57	    0038  74 D8				    jz	  InfLoop
+Turbo Assembler	 Version 3.1	    11/01/05 20:29:36	    Page 2
+Test.asm
+
+
+
+     58
+     59	    003A  8A D0				    mov	  dl,al
+     60
+     61	    003C  FE C7				    inc	  bh
+     62	    003E  FE CB				    dec	  bl
+     63
+     64	    0040  EB D0				    jmp	  InfLoop
+     65
+     66					 ;В следующей строке необходимо	указать	смещение стартовой точки
+     67						    org	  RomSize-16
+     68
+     69						    ASSUME cs:NOTHING
+     70	    0FF0  EA 0000000Esr			    jmp	  Far Ptr Start
+     71	    0FF5			 Code	    ENDS
+     72					 END
+Turbo Assembler	 Version 3.1	    11/01/05 20:29:36	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "11/01/05"
+??FILENAME			  Text	 "Test	  "
+??TIME				  Text	 "20:29:36"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 TEST
+@WORDSIZE			  Text	 2
+DELAY				  Near	 CODE:0000
+DLOOP1				  Near	 CODE:0004
+DLOOP2				  Near	 CODE:0007
+INFLOOP				  Near	 CODE:0012
+ROMSIZE				  Number 1000
+START				  Near	 CODE:000E
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+

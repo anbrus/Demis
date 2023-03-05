@@ -1,0 +1,7 @@
+[ARCH]=00000000,Keyboard.arh
+[SOURCE]=00000001,Keyboard.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(96,78,922,612)D:\USERS\MPS\Μορ3\Keyboard.asm
+[WND.arh]=(204,72,1022,590)D:\USERS\MPS\Μορ3\Keyboard.arh

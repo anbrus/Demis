@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:29:02
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:51
 Keyboard.asm						     Page 1 - 1
 
 
@@ -162,7 +162,7 @@ Keyboard.asm						     Page 1 - 1
  0FF0  EA ---- 00E4 R		           jmp   Far Ptr Start
  0FF5				Code       ENDS
 				END
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:29:02
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:51
 Keyboard.asm						     Symbols 2 - 1
 
 

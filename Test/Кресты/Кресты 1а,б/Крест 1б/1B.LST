@@ -1,0 +1,66 @@
+Turbo Assembler	 Version 3.1	    18/02/12 11:58:04	    Page 1
+1b.asm
+
+
+
+      1					 .386
+      2					 ;Задайте объём	ПЗУ в байтах
+      3		  =1000			 RomSize    EQU	  4096
+      4
+      5	    0000			 Data	    SEGMENT AT 40h use16
+      6					 ;Здесь	размещаются описания переменных
+      7	    0000  ??			 Old	    db	  ?
+      8	    0001  ??			 FlagLamp   db	  ?
+      9	    0002			 Data	    ENDS
+     10
+     11	    0000			 Code	    SEGMENT use16
+     12					 ;Здесь	размещаются описания констант
+     13
+     14						    ASSUME cs:Code,ds:Data,es:Data
+     15	    0000			 Start:
+     16					 ;Здесь	размещается код	программы
+     17	    0000  E4 00				    in al, 0  ;порт ввода
+     18	    0002  8A E0				    mov	ah, al ;сохраняем текущее значение, т.к. испортим его
+     19	    0004  32 06	0000r			    xor	al, Old	;выделяем фронты
+     20	    0008  22 C4				    and	al, ah	;выделяем передние фронты
+     21	    000A  88 26	0000r			    mov	Old, ah	;
+     22	    000E  74 09				    jz m1
+     23	    0010  F6 16	0001r			    not	FlagLamp ;инвертируем флаг
+     24	    0014  A0 0001r			    mov	al,FlagLamp
+     25	    0017  E6 00				    out	0, al
+     26
+     27	    0019  EB E5			 m1:	    jmp	Start
+     28
+     29					 ;В следующей строке необходимо	указать	смещение стартовой точки
+     30						    org	  RomSize-16
+     31						    ASSUME cs:NOTHING
+     32	    0FF0  EA 00000000sr			    jmp	  Far Ptr Start
+     33	    0FF5			 Code	    ENDS
+     34					 END
+Turbo Assembler	 Version 3.1	    18/02/12 11:58:04	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "18/02/12"
+??FILENAME			  Text	 "1b	  "
+??TIME				  Text	 "11:58:04"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 1B
+@WORDSIZE			  Text	 2
+FLAGLAMP			  Byte	 DATA:0001
+M1				  Near	 CODE:0019
+OLD				  Byte	 DATA:0000
+ROMSIZE				  Number 1000
+START				  Near	 CODE:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+DATA				  16  0002  AT 0040
+

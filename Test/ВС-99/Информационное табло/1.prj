@@ -1,0 +1,7 @@
+[SOURCE]=00000001,1.asm
+[ARCH]=00000000,1.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.arh]=(88,88,730,422)D:\TEMP\Новая папка\1\1.arh
+[WND.asm]=(66,66,712,404)D:\TEMP\Новая папка\1\1.asm

@@ -1,0 +1,7 @@
+[SOURCE]=00000001,Termo.asm
+[ARCH]=00000000,Termo.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(44,0,686,488)D:\USERS\Stud98\222\v.2.2\Termo.asm
+[WND.arh]=(154,154,796,488)D:\USERS\Stud98\222\v.2.2\Termo.arh

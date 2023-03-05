@@ -1,0 +1,112 @@
+Turbo Assembler	 Version 3.1	    01/03/12 16:45:28	    Page 1
+Lab3.asm
+
+
+
+      1					 .386
+      2		  =1000			 RomSize    EQU	  4096
+      3		  =0001			 FirstButt  EQU	  1
+      4		  =0001			 Clockwise  EQU	  1
+      5
+      6	    0000			 Data	    SEGMENT use16 AT 1000h
+      7	    0000  ??				    Way	       db    ?
+      8	    0001  ??				    Old	       db    ?
+      9	    0002  ??				    Speed      db    ?
+     10	    0003  ??				    SpeedCX    db    ?
+     11	    0004  ??				    Current    db    ?
+     12	    0005			 Data	    ENDS
+     13
+     14	    0000			 Code	    SEGMENT use16
+     15						    ASSUME cs:Code,ds:Data,es:Code
+     16
+     17	    0000  32 C0			 Start:	    xor	  al,al		  ;обнуление
+     18	    0002  A2 0001r			    mov	  Old,al	  ;переменных
+     19	    0005  A2 0000r			    mov	  Way,al
+     20	    0008  A2 0002r			    mov	  Speed,al
+     21	    000B  FE C0				    inc	  al
+     22	    000D  A2 0003r			    mov	  SpeedCX,al
+     23	    0010  A2 0004r			    mov	  Current,al
+     24	    0013  E4 00			 InfLoop:   in	  al,0		  ;считывание из порта [0000h]
+     25	    0015  8A E0				    mov	  ah,al		  ;сохраняем считанное значение
+     26	    0017  32 06	0001r			    xor	  al,Old	  ;выделяем фронт волны
+     27	    001B  22 C4				    and	  al,ah		  ;передний фронт
+     28	    001D  88 26	0001r			    mov	  Old,ah	  ;последнее значение становится старым
+     29	    0021  74 10				    jz	  m1
+     30	    0023  A8 01				    test  al,FirstButt	  ;нажата первая кнопка?
+     31	    0025  74 06				    jz	  m3
+     32	    0027  F6 16	0000r			    not	  Way		  ;инверсия переменной направления
+     33	    002B  EB 06				    jmp	  m1
+     34	    002D  A2 0003r		 m3:	    mov	  SpeedCX,al	  ;изменение переменной	скорости
+     35	    0030  A2 0002r			    mov	  Speed,al
+     36	    0033  33 C9			 m1:	    xor	  cx,cx
+     37	    0035  90			 m5:	    nop
+     38	    0036  E2 FD				    loop  m5
+     39	    0038  FE 0E	0003r			    dec	  SpeedCX
+     40	    003C  75 D5				    jnz	  InfLoop
+     41	    003E  A0 0002r			    mov	  al,Speed	  ;восстанавливаем
+     42	    0041  A2 0003r			    mov	  SpeedCX,al	  ;счетчик SpeedCX
+     43	    0044  A0 0004r			    mov	  al,current
+     44	    0047  F6 06	0000r 01		    test  Way,Clockwise	  ;вращение по / против	часовой
+     45	    004C  74 04				    jz	  m4
+     46	    004E  D0 C0				    rol	  al,1		  ;против часовой стрелки
+     47	    0050  EB 02				    jmp	  m2
+     48	    0052  D0 C8			 m4:	    ror	  al,1		  ;по часовой стрелке
+     49	    0054  A2 0004r		 m2:	    mov	  current,al
+     50	    0057  E6 00				    out	  0,al		  ;вывод в порт	[0000h]
+     51	    0059  EB B8				    jmp	  InfLoop
+     52
+     53						    org	  RomSize-16
+     54						    ASSUME cs:NOTHING
+     55	    0FF0  EA 00000000sr			    jmp	  Far Ptr Start
+     56	    0FF5			 Code	    ENDS
+     57
+Turbo Assembler	 Version 3.1	    01/03/12 16:45:28	    Page 2
+Lab3.asm
+
+
+
+     58	    0000			 Stk	    SEGMENT use16 STACK
+     59	    0000  0A*(????)			    DW	  10 DUP (?)
+     60	    0014			 StkTop	    LABEL WORD
+     61	    0014			 Stk	    ENDS
+     62
+     63					 END
+Turbo Assembler	 Version 3.1	    01/03/12 16:45:28	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "01/03/12"
+??FILENAME			  Text	 "Lab3	  "
+??TIME				  Text	 "16:45:28"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 STK
+@FILENAME			  Text	 LAB3
+@WORDSIZE			  Text	 2
+CLOCKWISE			  Number 0001
+CURRENT				  Byte	 DATA:0004
+FIRSTBUTT			  Number 0001
+INFLOOP				  Near	 CODE:0013
+M1				  Near	 CODE:0033
+M2				  Near	 CODE:0054
+M3				  Near	 CODE:002D
+M4				  Near	 CODE:0052
+M5				  Near	 CODE:0035
+OLD				  Byte	 DATA:0001
+ROMSIZE				  Number 1000
+SPEED				  Byte	 DATA:0002
+SPEEDCX				  Byte	 DATA:0003
+START				  Near	 CODE:0000
+STKTOP				  Word	 STK:0014
+WAY				  Byte	 DATA:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+DATA				  16  0005  AT 1000
+STK				  16  0014 Para	  Stack
+

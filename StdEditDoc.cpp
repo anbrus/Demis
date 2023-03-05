@@ -48,23 +48,29 @@ BOOL CStdEditDoc::OnNewDocument()
 void CStdEditDoc::Serialize(CArchive& ar)
 {
 	// CEditView contains an edit control which handles all serialization
-  if(ar.IsStoring()) {
-    char Buf[65536];
-    CEdit &EditCtrl=((CEditView*)m_viewList.GetHead())->GetEditCtrl();
+	if (ar.IsStoring()) {
+		CEdit& EditCtrl = ((CEditView*)m_viewList.GetHead())->GetEditCtrl();
 
-    DWORD Length=EditCtrl.GetWindowText(Buf,sizeof(Buf)-1);
-    CharToOem(Buf,Buf);
-    ar.Write(Buf,Length);
-  }
-  if(ar.IsLoading()) {
-    char Buf[65536];
-    CEdit &EditCtrl=((CEditView*)m_viewList.GetHead())->GetEditCtrl();
+		int lengthText = EditCtrl.GetWindowTextLength();
+		char* Buf = new char[lengthText + 1];
 
-    DWORD Length=ar.Read(Buf,sizeof(Buf)-1);
-    Buf[Length]='\0';
-    OemToChar(Buf,Buf);
-    EditCtrl.SetWindowText(Buf);
-  }
+		DWORD Length = EditCtrl.GetWindowText(Buf, lengthText + 1);
+		CharToOem(Buf, Buf);
+		ar.Write(Buf, Length);
+		delete[] Buf;
+	}
+	if (ar.IsLoading()) {
+		CEdit& EditCtrl = ((CEditView*)m_viewList.GetHead())->GetEditCtrl();
+
+		size_t lengthText = static_cast<size_t>(ar.GetFile()->GetLength());
+		char* Buf = new char[lengthText + 1];
+
+		DWORD Length = ar.Read(Buf, lengthText);
+		Buf[Length] = '\0';
+		OemToChar(Buf, Buf);
+		EditCtrl.SetWindowText(Buf);
+		delete[] Buf;
+	}
 	//((CEditView*)m_viewList.GetHead())->SerializeRaw(ar);
 }
 
@@ -86,8 +92,8 @@ void CStdEditDoc::Dump(CDumpContext& dc) const
 /////////////////////////////////////////////////////////////////////////////
 // CStdEditDoc commands
 
-void CStdEditDoc::OnUpdateFileSave(CCmdUI* pCmdUI) 
+void CStdEditDoc::OnUpdateFileSave(CCmdUI* pCmdUI)
 {
-	if(IsModified()) pCmdUI->Enable(TRUE);
-  else pCmdUI->Enable(FALSE);
+	if (IsModified()) pCmdUI->Enable(TRUE);
+	else pCmdUI->Enable(FALSE);
 }

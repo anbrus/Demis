@@ -1,0 +1,49 @@
+Turbo Assembler	 Version 3.1	    18/02/12 11:21:56	    Page 1
+Beep.asm
+
+
+
+      1					 .386
+      2					 ;Задайте объём	ПЗУ в байтах
+      3		  =1000			 RomSize    EQU	  4096
+      4
+      5	    0000			 Code	    SEGMENT use16
+      6						    ASSUME cs:Code,ds:Code,es:Code
+      7	    0000			 Start:
+      8	    0000			 InfLoop:
+      9	    0000  E4 00				    in	  al,0
+     10	    0002  C0 E0	02			    shl	  al,2
+     11	    0005  E6 00				    out	  0,al
+     12
+     13	    0007  EB F7				    jmp	  InfLoop
+     14
+     15					 ;В следующей строке необходимо	указать	смещение стартовой точки
+     16						    org	  RomSize-16
+     17						    ASSUME cs:NOTHING
+     18	    0FF0  EA 00000000sr			    jmp	  Far Ptr Start
+     19	    0FF5			 Code	    ENDS
+     20					 END
+Turbo Assembler	 Version 3.1	    18/02/12 11:21:56	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "18/02/12"
+??FILENAME			  Text	 "Beep	  "
+??TIME				  Text	 "11:21:56"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 BEEP
+@WORDSIZE			  Text	 2
+INFLOOP				  Near	 CODE:0000
+ROMSIZE				  Number 1000
+START				  Near	 CODE:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+

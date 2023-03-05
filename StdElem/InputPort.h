@@ -9,7 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
 
 class CInputPort;
@@ -17,32 +17,37 @@ class CInputPort;
 class CInPortArchWnd : public CElementWnd
 {
 public:
-	virtual void Draw(CDC* pDC);
-	void DrawValue(CDC* pDC);
-	int Width,Height;
-	CInPortArchWnd(CElement* pElement);
+	CInPortArchWnd(CElementBase* pElement);
 	virtual ~CInPortArchWnd();
 
+	virtual void Draw(CDC* pDC);
+	virtual void Redraw(int64_t ticks) override;
+	void DrawDynamic(CDC* pDC);
+	void DrawStatic(CDC* pDC);
+	int Width, Height;
+
 protected:
-  //{{AFX_MSG(CInPortArchWnd)
+	CDC MemoryDC;
+
 	afx_msg void OnAddress();
-	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
+	DECLARE_MESSAGE_MAP()
 };
 
-class CInputPort : public CElement  
+class CInputPort : public CElementBase
 {
 public:
+	CInputPort(BOOL ArchMode, int id);
+	virtual ~CInputPort();
+
 	virtual DWORD GetPinState();
 	virtual DWORD GetPortData();
 	virtual void SetPinState(DWORD NewState);
 	DWORD Value;
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
-	CInputPort(BOOL ArchMode,CElemInterface* pInterface);
-	virtual ~CInputPort();
 	void UpdateTipText();
 };
 

@@ -1,65 +1,68 @@
-
-#include "StdElem\StdElem.h"
-
 #pragma once
 
-class CElement  
+#include <string>
+
+class CElement
 {
 public:
-	BOOL CreateInstance(CString &ElemI);
-	CElement();
-	virtual ~CElement();
+	/*BOOL CreateInstance(CString &ElemI);
+	CElement();*/
+	virtual ~CElement() {};
 
-  HANDLE get_hElement();
-  void put_hElement(HANDLE hElement);
-  DWORD get_nType();
-  void get_sName(CString &Str);
-  void get_sClsId(CString &Str);
-  HWND get_hArchWnd();
-  HWND get_hConstrWnd();
-  DWORD get_nAddress();
-  BOOL get_bModifiedFlag();
-  void get_sTipText(CString &Str);
-  BOOL get_bArchSelected();
-  void put_bArchSelected(BOOL newVal);
-  BOOL get_bConstrSelected();
-  void put_bConstrSelected(BOOL newVal);
-  DWORD get_nPointCount();
-  DWORD get_nPortData();
-  void put_nPortData(DWORD newVal);
-  DWORD get_nPinState();
-  void put_nPinState(DWORD newVal);
-  long get_nArchAngle();
-  void put_nArchAngle(long newVal);
-  long get_nConstrAngle();
-  void put_nConstrAngle(long newVal);
-  BOOL Show(HWND hArchParentWnd,HWND hConstrParentWnd);
-  BOOL Create(CString &sElemName,BOOL bArchMode);
-  BOOL Reset(BOOL bEditMode,__int64 *pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
-  BOOL ConnectPin(DWORD nPinIndex,BOOL bConnect);
-  DWORD GetPinType(DWORD nPinIndex);
-  DWORD GetPointPos(DWORD nPointIndex);
-  BOOL Save(OLE_HANDLE hFile);
-  BOOL Load(OLE_HANDLE hFile);
-  void OnInstrCounterEvent();
+	virtual int get_Id()=0;
+	virtual void put_Id(int id) = 0;
+	virtual DWORD get_nType() = 0;
+	virtual CString get_sName() = 0;
+	virtual CString get_sClsId() = 0;
+	virtual HWND get_hArchWnd() = 0;
+	virtual HWND get_hConstrWnd() = 0;
+	virtual DWORD get_nAddress() = 0;
+	virtual BOOL get_bModifiedFlag() = 0;
+	virtual CString get_sTipText() = 0;
+	virtual BOOL get_bArchSelected() = 0;
+	virtual void put_bArchSelected(BOOL newVal) = 0;
+	virtual BOOL get_bConstrSelected() = 0;
+	virtual void put_bConstrSelected(BOOL newVal) = 0;
+	virtual DWORD get_nPointCount() = 0;
+	virtual DWORD GetPortData() = 0;
+	virtual void SetPortData(DWORD newVal) = 0;
+	virtual DWORD GetPinState() = 0;
+	virtual void SetPinState(DWORD newVal) = 0;
+	virtual long get_nArchAngle() = 0;
+	virtual void put_nArchAngle(long newVal) = 0;
+	virtual long get_nConstrAngle() = 0;
+	virtual void put_nConstrAngle(long newVal) = 0;
 
+	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd)=0;
+	//virtual BOOL Create(CString &sElemName, BOOL bArchMode)=0;
+	virtual BOOL Reset(BOOL bEditMode, __int64 *pTickCounter, DWORD TaktFreq, DWORD FreePinLevel)=0;
+	virtual BOOL ConnectPin(DWORD nPinIndex, BOOL bConnect)=0;
+	virtual DWORD GetPinType(DWORD nPinIndex)=0;
+	virtual DWORD GetPointPos(DWORD nPointIndex)=0;
+	virtual BOOL Save(HANDLE hFile)=0;
+	virtual BOOL Load(HANDLE hFile)=0;
+	//virtual void OnInstrCounterEvent()=0;
+	virtual BOOL IsArchRedrawRequired()=0;
+	virtual BOOL IsConstrRedrawRequired()=0;
+	virtual void RedrawArchWnd(int64_t ticks)=0;
+	virtual void RedrawConstrWnd(int64_t ticks)=0;
+	virtual void OnVSync() = 0;
 protected:
-	IElement *pInterface;
+	//IElement *pInterface;
 };
 
 class CElemLib
 {
 public:
-	BOOL CreateInstance(CString &ElemID);
-	CElemLib();
-	virtual ~CElemLib();
+	//BOOL CreateInstance(CString &ElemID);
+	//CElemLib();
+	virtual ~CElemLib() {};
 
-  void get_sLibraryName(CString &Str);
-  DWORD get_nElementsCount();
-  void GetElementName(DWORD Index,CString &Str);
-  DWORD GetElementType(DWORD Index);
-  HBITMAP GetElementIcon(DWORD Index);
-protected:
-	IElemLib *pInterface;
+	virtual CString getLibraryName()=0;
+	virtual DWORD getElementsCount() =0;
+	virtual CString GetElementName(DWORD Index) =0;
+	virtual DWORD GetElementType(DWORD Index) =0;
+	virtual HBITMAP GetElementIcon(DWORD Index) =0;
+	virtual CElement* CreateElement(const CString& name, bool isArchMode, int id) = 0;
 };
 

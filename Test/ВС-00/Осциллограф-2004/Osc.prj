@@ -1,0 +1,8 @@
+[ARCH]=00000000,Osc.arh
+[SOURCE]=00000001,Osc.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(66,66,708,400)D:\USERS\01\Îñö-2004\Osc.asm
+[WND.arh]=(54,98,696,358)D:\USERS\01\Îñö-2004\Osc.arh
+[WND.arh]=(88,88,730,422)A:\Îñö-2004\Osc.arh

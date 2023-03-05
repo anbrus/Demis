@@ -9,7 +9,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
 
 class CLedArchWnd : public CElementWnd  
@@ -17,8 +17,9 @@ class CLedArchWnd : public CElementWnd
 public:
 	virtual void Draw(CDC* pDC);
 	void DrawValue(CDC* pDC);
-	CLedArchWnd(CElement* pElement);
+	CLedArchWnd(CElementBase* pElement);
 	virtual ~CLedArchWnd();
+	virtual void Redraw(int64_t ticks) override;
 
 protected:
   //{{AFX_MSG(CLedArchWnd)
@@ -35,8 +36,9 @@ class CLedConstrWnd : public CElementWnd
 public:
 	virtual void Draw(CDC* pDC);
 	void DrawValue(CDC* pDC);
-	CLedConstrWnd(CElement* pElement);
+	CLedConstrWnd(CElementBase* pElement);
 	virtual ~CLedConstrWnd();
+	virtual void Redraw(int64_t ticks) override;
 
 protected:
   //{{AFX_MSG(CLedConstrWnd)
@@ -47,21 +49,22 @@ protected:
   DECLARE_MESSAGE_MAP()
 };
 
-class CLedElement : public CElement  
+class CLedElement : public CElementBase  
 {
 public:
+	CLedElement(BOOL ArchMode, int id);
+	virtual ~CLedElement();
+
 	void OnSelectColor();
 	COLORREF Color;
 	virtual void SetPinState(DWORD NewState);
 	virtual void UpdateTipText();
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	virtual BOOL Reset(BOOL bEditMode,int64_t* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
 	BOOL ActiveHigh;
 	BOOL HighLighted;
-  CLedElement(BOOL ArchMode,CElemInterface* pInterface);
-	virtual ~CLedElement();
 	void OnActiveHigh();
 	void OnActiveLow();
 };

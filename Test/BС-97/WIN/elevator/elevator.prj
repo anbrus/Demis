@@ -1,0 +1,5 @@
+[ARCH]=0,elevator.arh
+[SOURCE]=1,elevator.asm
+[ROMSIZE]=4
+[WND.arh]=(42,24,772,474)D:\laba\elevator.arh
+[WND.asm]=(54,34,696,396)D:\laba\elevator.asm

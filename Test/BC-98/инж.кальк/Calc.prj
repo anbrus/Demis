@@ -1,0 +1,5 @@
+[SOURCE]=00000001,calc.asm
+[ARCH]=00000000,calc.arh
+[ROMSIZE]=16
+[FREQ]=1000000
+[WND.arh]=(44,44,686,378)C:\DEMIS\calc.arh

@@ -1,0 +1,742 @@
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 1
+marin_lr.asm
+
+
+
+      1					 .386
+      2					 ;Задайте объём	ПЗУ в байтах
+      3		  =1000			 RomSize    EQU	  4096
+      4
+      5					 ;Задайте необходимый адрес стека
+      6	    0000			 Stk	    SEGMENT at 100h use16
+      7					 ;Задайте необходимый размер стека
+      8	    0000  64*(????)			    dw 100 dup (?)
+      9	    00C8			 StkTop	    Label Word
+     10	    00C8			 Stk	    ENDS
+     11
+     12
+     13	    0000			 Data	    SEGMENT at 200h use16
+     14					 ;Здесь	размещаются описания переменных
+     15
+     16	    0000  ????			 cur_temp1  dw	  ?
+     17	    0002  ????			 li_lim1    dw	  ?
+     18	    0004  ????			 hi_lim1    dw	  ?
+     19	    0006  ????			 cur_temp2  dw	  ?
+     20	    0008  ????			 li_lim2    dw	  ?
+     21	    000A  ????			 hi_lim2    dw	  ?
+     22	    000C  ????			 cur_temp3  dw	  ?
+     23	    000E  ????			 li_lim3    dw	  ?
+     24	    0010  ????			 hi_lim3    dw	  ?
+     25	    0012  ????			 cur_temp4  dw	  ?
+     26	    0014  ????			 li_lim4    dw	  ?
+     27	    0016  ????			 hi_lim4    dw	  ?
+     28
+     29	    0018  ????			 cur_temp   dw	  ?
+     30
+     31	    001A  ????			 port_in    dw	  ?
+     32	    001C  ????			 port_in1   dw	  ?
+     33	    001E  ????			 port_in2   dw	  ?
+     34	    0020  ????			 schet	    dw	  ?
+     35
+     36	    0022  ??			 Nomer	    db	  ?
+     37	    0023  ??			 Lampa2	    db	  ?
+     38	    0024  ??			 znak	    db	  ?
+     39	    0025  ??			 Mode	    db	  ?
+     40	    0026  ??			 Lampa	    db	  ?
+     41	    0027  ??			 OldKey	    db	  ?
+     42	    0028  ??			 Key	    db	  ?
+     43	    0029  ??			 c1	    db	  ?
+     44	    002A  ??			 c2	    db	  ?
+     45	    002B  ??			 c3	    db	  ?
+     46
+     47
+     48	    002C			 Data	    ENDS
+     49
+     50	    0000			 Code	    SEGMENT use16
+     51					 ;Здесь	размещаются описания констант
+     52
+     53						    ASSUME cs:Code, ds:Data, es:Data
+     54
+     55	    0000  3F 0C	76 5E 4D 5B 7B+	 Image	    DB	  03Fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh,07Fh,05Fh ;образы от 0 до 9
+     56		  0E 7F	5F
+     57
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 2
+marin_lr.asm
+
+
+
+     58	    000A			 ADC_Rdy proc near
+     59
+     60	    000A  8B 16	001Ar			    mov	dx,port_in
+     61	    000E  EC			 l2:	    in al,dx
+     62	    000F  3C 01				    cmp	al,1h	      ;ждем сигнала Rdy
+     63	    0011  74 02				    je l1
+     64	    0013  EB F9				    jmp	l2
+     65
+     66	    0015  8B 16	001Er		 l1:	    mov	dx,port_in2
+     67	    0019  EC				    in al,dx
+     68	    001A  8A E0				    mov	ah,al
+     69	    001C  8B 16	001Cr			    mov	dx,port_in1
+     70	    0020  EC				    in al,dx
+     71	    0021  A3 0018r			    mov	cur_temp,ax   ;текущая рабочая температура
+     72	    0024  C3				    ret
+     73	    0025			 ADC_Rdy endp
+     74
+     75	    0025			 Index_temp proc near	      ;вывод значений на индикаторы
+     76
+     77	    0025  A1 0018r			    mov	ax,cur_temp
+     78	    0028  3D 8000			    cmp	ax,8000h
+     79	    002B  72 0A				    jb l5	      ;переход,	если <
+     80
+     81	    002D  2D 8000			    sub	ax,8000h      ;вычитаем	32768
+     82	    0030  C6 06	0024r 00		    mov	znak,0h
+     83	    0035  EB 0C				    jmp	l6
+     84
+     85	    0037  BA 8000		 l5:	    mov	dx,8000h      ;вычитаем	из 32768
+     86	    003A  2B D0				    sub	dx,ax
+     87	    003C  8B C2				    mov	ax,dx
+     88	    003E  C6 06	0024r 40		    mov	znak,40h
+     89
+     90	    0043  C1 E8	06		 l6:	    shr	ax,06h	      ;делим на	64
+     91	    0046  8B D0				    mov	dx,ax	      ;512
+     92	    0048  B3 0A				    mov	bl,0ah
+     93	    004A  F6 F3				    div	bl	      ;делим на	10, в al результат
+     94	    004C  B4 00				    mov	ah,0
+     95	    004E  A2 002Ar			    mov	c2,al
+     96	    0051  F6 E3				    mul	bl	      ;умножаем	на 10
+     97	    0053  2B D0				    sub	dx,ax
+     98	    0055  88 16	0029r			    mov	c1,dl
+     99
+    100	    0059  A0 002Ar			    mov	al,c2
+    101	    005C  33 D2				    xor	dx,dx
+    102	    005E  B4 00				    mov	ah,0
+    103	    0060  8A D0				    mov	dl,al
+    104	    0062  B3 0A				    mov	bl,0ah
+    105	    0064  F6 F3				    div	bl	      ;делим на	10, в al результат
+    106	    0066  B4 00				    mov	ah,0
+    107	    0068  A2 002Br			    mov	c3,al
+    108	    006B  F6 E3				    mul	bl	      ;умножаем	на 10
+    109	    006D  2B D0				    sub	dx,ax
+    110	    006F  88 16	002Ar			    mov	c2,dl
+    111
+    112						    ;вывод значения на семисегментные индикаторы
+    113	    0073  A0 0029r			    mov	al,c1
+    114	    0076  B4 00				    mov	ah,0
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 3
+marin_lr.asm
+
+
+
+    115	    0078  8B D8				    mov	bx,ax
+    116	    007A  2E: 8A 87 0000r		    mov	al,Image+bx
+    117	    007F  8B 16	001Ar			    mov	dx,port_in
+    118	    0083  EE				    out	dx,al
+    119
+    120	    0084  A0 002Ar			    mov	al,c2
+    121	    0087  B4 00				    mov	ah,0
+    122	    0089  8B D8				    mov	bx,ax
+    123	    008B  2E: 8A 87 0000r		    mov	al,Image+bx
+    124	    0090  04 80				    add	al,80h
+    125	    0092  8B 16	001Er			    mov	dx,port_in2
+    126	    0096  EE				    out	dx,al
+    127
+    128	    0097  A0 002Br			    mov	al,c3
+    129	    009A  B4 00				    mov	ah,0
+    130	    009C  8B D8				    mov	bx,ax
+    131	    009E  2E: 8A 87 0000r		    mov	al,Image+bx
+    132	    00A3  8B 16	001Cr			    mov	dx,port_in1
+    133	    00A7  EE				    out	dx,al
+    134
+    135	    00A8  A0 0024r			    mov	al,znak
+    136	    00AB  FF 06	001Cr			    inc	port_in1
+    137	    00AF  8B 16	001Cr			    mov	dx,port_in1
+    138	    00B3  EE				    out	dx,al
+    139
+    140	    00B4  C3			 l7:	    ret
+    141	    00B5			 Index_temp endp
+    142
+    143	    00B5			 Init proc near		      ;инициализация переменных
+    144
+    145	    00B5  C7 06	0002r 0000		    mov	li_lim1,0
+    146	    00BB  C7 06	0004r FFFF		    mov	hi_lim1,0ffffh
+    147	    00C1  C7 06	0008r 0000		    mov	li_lim2,0
+    148	    00C7  C7 06	000Ar FFFF		    mov	hi_lim2,0ffffh
+    149	    00CD  C7 06	000Er 0000		    mov	li_lim3,0
+    150	    00D3  C7 06	0010r FFFF		    mov	hi_lim3,0ffffh
+    151	    00D9  C7 06	0014r 0000		    mov	li_lim4,0
+    152	    00DF  C7 06	0016r FFFF		    mov	hi_lim4,0ffffh
+    153	    00E5  C6 06	0022r 04		    mov	Nomer,4
+    154	    00EA  C6 06	0025r 01		    mov	Mode,1
+    155	    00EF  C6 06	0026r 0C		    mov	Lampa,00001100b
+    156	    00F4  C6 06	0027r 00		    mov	OldKey,0
+    157	    00F9  C7 06	0020r 0040		    mov	schet,64
+    158	    00FF  C6 06	0023r 00		    mov	Lampa2,0
+    159	    0104  C3				    ret
+    160	    0105			 Init endp
+    161
+    162	    0105			 ADC_Start proc	near
+    163	    0105  B0 00				    mov	al,0
+    164	    0107  E6 00				    out	0,al
+    165
+    166	    0109  B0 01				    mov	al,1
+    167	    010B  E6 00				    out	0,al
+    168	    010D  C3				    ret
+    169	    010E			 ADC_Start endp
+    170
+    171	    010E			 Save_Cur_temp proc near	  ;отображение РТ помещений
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 4
+marin_lr.asm
+
+
+
+    172
+    173	    010E  C7 06	001Ar 0004		    mov	port_in,04h
+    174	    0114  C7 06	001Cr 0006		    mov	port_in1,06h
+    175	    011A  C7 06	001Er 0005		    mov	port_in2,05h
+    176	    0120  E8 FEE7			    call ADC_Rdy
+    177	    0123  A1 0018r			    mov	ax,cur_temp
+    178	    0126  A3 0000r			    mov	cur_temp1,ax
+    179
+    180	    0129  C7 06	001Ar 0008		    mov	port_in,08h
+    181	    012F  C7 06	001Cr 000A		    mov	port_in1,0ah
+    182	    0135  C7 06	001Er 0009		    mov	port_in2,09h
+    183	    013B  E8 FECC			    call ADC_Rdy
+    184	    013E  A1 0018r			    mov	ax,cur_temp
+    185	    0141  A3 0006r			    mov	cur_temp2,ax
+    186
+    187	    0144  C7 06	001Ar 0010		    mov	port_in,10h
+    188	    014A  C7 06	001Cr 0012		    mov	port_in1,12h
+    189	    0150  C7 06	001Er 0011		    mov	port_in2,11h
+    190	    0156  E8 FEB1			    call ADC_Rdy
+    191	    0159  A1 0018r			    mov	ax,cur_temp
+    192	    015C  A3 000Cr			    mov	cur_temp3,ax
+    193
+    194	    015F  C7 06	001Ar 0020		    mov	port_in,20h
+    195	    0165  C7 06	001Cr 0022		    mov	port_in1,22h
+    196	    016B  C7 06	001Er 0021		    mov	port_in2,21h
+    197	    0171  E8 FE96			    call ADC_Rdy
+    198	    0174  A1 0018r			    mov	ax,cur_temp
+    199	    0177  A3 0012r			    mov	cur_temp4,ax
+    200	    017A  C3				    ret
+    201	    017B			 Save_Cur_temp endp
+    202
+    203	    017B			 Kn_Nomer proc near
+    204
+    205	    017B  E4 55				    in al,55h
+    206	    017D  A8 3C				    test al,00111100b
+    207	    017F  74 18				    jz k3	      ;если кнопка № помещения не нажата
+    208	    0181  B4 04				    mov	ah,04h
+    209	    0183  84 C4			 k1:	    test al,ah
+    210	    0185  75 04				    jnz	k4
+    211	    0187  D0 E4				    shl	ah,1
+    212	    0189  EB F8				    jmp	k1
+    213	    018B  88 26	0022r		 k4:	    mov	Nomer,ah
+    214	    018F  A0 0026r			    mov	al,Lampa
+    215	    0192  24 FC				    and	al,11111100b  ;погасим лампочки	ВЗ и НЗ
+    216	    0194  0C 04				    or al,00000100b
+    217	    0196  A2 0026r			    mov	Lampa,al
+    218	    0199  A0 0022r		 k3:	    mov	al,Nomer
+    219	    019C  E6 55				    out	55h,al	      ;индикатор № помещения
+    220
+    221	    019E  C3				    ret
+    222	    019F			 Kn_Nomer endp
+    223
+    224
+    225	    019F			 Vivod_rt proc near	      ;вывод РТ	помещений
+    226
+    227	    019F  C7 06	001Ar 0004		    mov	port_in,04h
+    228	    01A5  C7 06	001Cr 0006		    mov	port_in1,06h
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 5
+marin_lr.asm
+
+
+
+    229	    01AB  C7 06	001Er 0005		    mov	port_in2,05h
+    230	    01B1  A1 0000r			    mov	ax,cur_temp1
+    231	    01B4  A3 0018r			    mov	cur_temp,ax
+    232	    01B7  E8 FE6B			    call Index_temp
+    233
+    234	    01BA  C7 06	001Ar 0008		    mov	port_in,08h
+    235	    01C0  C7 06	001Cr 000A		    mov	port_in1,0ah
+    236	    01C6  C7 06	001Er 0009		    mov	port_in2,09h
+    237	    01CC  A1 0006r			    mov	ax,cur_temp2
+    238	    01CF  A3 0018r			    mov	cur_temp,ax
+    239	    01D2  E8 FE50			    call Index_temp
+    240
+    241	    01D5  C7 06	001Ar 0010		    mov	port_in,10h
+    242	    01DB  C7 06	001Cr 0012		    mov	port_in1,12h
+    243	    01E1  C7 06	001Er 0011		    mov	port_in2,11h
+    244	    01E7  A1 000Cr			    mov	ax,cur_temp3
+    245	    01EA  A3 0018r			    mov	cur_temp,ax
+    246	    01ED  E8 FE35			    call Index_temp
+    247
+    248	    01F0  C7 06	001Ar 0020		    mov	port_in,20h
+    249	    01F6  C7 06	001Cr 0022		    mov	port_in1,22h
+    250	    01FC  C7 06	001Er 0021		    mov	port_in2,21h
+    251	    0202  A1 0012r			    mov	ax,cur_temp4
+    252	    0205  A3 0018r			    mov	cur_temp,ax
+    253	    0208  E8 FE1A			    call Index_temp
+    254	    020B  C3				    ret
+    255
+    256	    020C			 Vivod_rt endp
+    257
+    258	    020C			 Vivo_Pult proc	near
+    259
+    260	    020C  A0 0026r			   mov al,Lampa
+    261	    020F  A8 01				   test	al,1
+    262	    0211  75 0A				   jnz v1
+    263	    0213  A8 02				   test	al,2
+    264	    0215  75 0B				   jnz v2
+    265	    0217  A8 04				   test	al,4
+    266	    0219  75 0C				   jnz v3
+    267	    021B  EB 6C				   jmp v4
+    268	    021D  BB 0004		 v1:	    mov	bx,4
+    269	    0220  EB 0A				    jmp	v5
+    270	    0222  BB 0002		 v2:	    mov	bx,2
+    271	    0225  EB 05				    jmp	v5
+    272	    0227  BB 0000		 v3:	    mov	bx,0
+    273	    022A  EB 00				    jmp	v5
+    274
+    275	    022C  B4 04			 v5:	   mov ah,04h
+    276	    022E  84 26	0022r			    test Nomer,ah
+    277	    0232  75 1A				    jnz	s1
+    278
+    279	    0234  D0 E4				    shl	ah,1
+    280	    0236  84 26	0022r			    test Nomer,ah
+    281	    023A  75 1C				    jnz	s2
+    282
+    283	    023C  D0 E4				    shl	ah,1
+    284	    023E  84 26	0022r			    test Nomer,ah
+    285	    0242  75 1E				    jnz	s3
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 6
+marin_lr.asm
+
+
+
+    286
+    287	    0244  D0 E4				    shl	ah,1
+    288	    0246  84 26	0022r			    test Nomer,ah
+    289	    024A  75 20				    jnz	s4
+    290
+    291	    024C  EB 26				    jmp	s5
+    292
+    293	    024E  8B 97	0000r		 s1:	    mov	dx,cur_temp1+bx
+    294	    0252  89 16	0018r			    mov	cur_temp,dx
+    295	    0256  EB 1C				    jmp	s5
+    296
+    297	    0258  8B 97	0006r		 s2:	    mov	dx,cur_temp2+bx
+    298	    025C  89 16	0018r			    mov	cur_temp,dx
+    299	    0260  EB 12				    jmp	s5
+    300
+    301	    0262  8B 97	000Cr		 s3:	    mov	dx,cur_temp3+bx
+    302	    0266  89 16	0018r			    mov	cur_temp,dx
+    303	    026A  EB 08				    jmp	s5
+    304
+    305	    026C  8B 97	0012r		 s4:	    mov	dx,cur_temp4+bx
+    306	    0270  89 16	0018r			    mov	cur_temp,dx
+    307
+    308	    0274  C7 06	001Ar 0044	 s5:	   mov port_in,44h
+    309	    027A  C7 06	001Cr 0046		   mov port_in1,46h
+    310	    0280  C7 06	001Er 0045		   mov port_in2,45h
+    311	    0286  E8 FD9C			   call	Index_temp   ;вывод cur_temp на	пульте
+    312	    0289  C3			 v4:	   ret
+    313	    028A			 Vivo_Pult endp
+    314
+    315
+    316
+    317	    028A			 Scan_Key proc near
+    318	    028A  E4 01				    in al,1
+    319	    028C  A2 0028r			    mov	Key,al
+    320	    028F  C3				    ret
+    321	    0290			 Scan_Key endp
+    322
+    323	    0290			 Graniza proc near
+    324
+    325	    0290  A0 0028r			    mov	al,Key
+    326	    0293  24 07				    and	al,00000111b
+    327	    0295  3C 00				    cmp	al,0
+    328	    0297  74 0D				    jz g1
+    329	    0299  8A 26	0026r			    mov	ah,Lampa
+    330	    029D  80 E4	F8			    and	ah,11111000b
+    331	    02A0  0A E0				    or ah,al
+    332	    02A2  88 26	0026r			    mov	Lampa,ah
+    333	    02A6  C3			 g1:	    ret
+    334	    02A7			 Graniza endp
+    335
+    336	    02A7			 Rejim proc near	  ;обработка нажатия кнопки установка
+    337								      ;индикация кнопки	установка
+    338	    02A7  F6 06	0027r 40		    test OLdKey,01000000b
+    339	    02AC  75 1F				    jnz	r1
+    340	    02AE  F6 06	0028r 40		    test Key,01000000b
+    341	    02B3  74 18				    jz r1
+    342
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 7
+marin_lr.asm
+
+
+
+    343	    02B5  80 36	0025r 01		    xor	Mode,1
+    344	    02BA  F6 06	0026r 08		    test Lampa,8h
+    345	    02BF  74 07				    jz r2
+    346	    02C1  80 26	0026r F7		    and	Lampa,11110111b
+    347	    02C6  EB 05				    jmp	r1
+    348	    02C8  80 0E	0026r 08	 r2:	    or Lampa,8h
+    349
+    350	    02CD  A0 0028r		 r1:	    mov	al,Key
+    351	    02D0  A2 0027r			    mov	OldKey,al
+    352	    02D3  C3				    ret
+    353	    02D4			 Rejim endp
+    354
+    355	    02D4			 Ustanovka proc	near
+    356
+    357	    02D4  80 3E	0025r 01		    cmp	Mode,1
+    358	    02D9  75 12				    jne	u6
+    359
+    360	    02DB  F6 06	0028r 18		    test Key,00011000b
+    361	    02E0  74 0E				    jz u8		  ;если	кнопки не нажаты
+    362
+    363	    02E2  A0 0026r			    mov	al,Lampa
+    364	    02E5  A8 01				    test al,1
+    365	    02E7  75 0A				    jnz	uv1
+    366	    02E9  A8 02				    test al,2
+    367	    02EB  75 0B				    jnz	uv2
+    368
+    369	    02ED  E9 0086		 u6:	    jmp	u1
+    370	    02F0  EB 7E	90		 u8:	    jmp	u4
+    371
+    372	    02F3  BB 0004		 uv1:	     mov bx,4
+    373	    02F6  EB 05				    jmp	uv5
+    374	    02F8  BB 0002		 uv2:	     mov bx,2
+    375	    02FB  EB 00				    jmp	uv5
+    376
+    377	    02FD  B4 04			 uv5:	    mov	ah,04h
+    378	    02FF  84 26	0022r			    test Nomer,ah
+    379	    0303  75 1A				    jnz	us1
+    380
+    381	    0305  D0 E4				    shl	ah,1
+    382	    0307  84 26	0022r			    test Nomer,ah
+    383	    030B  75 17				    jnz	us2
+    384
+    385	    030D  D0 E4				    shl	ah,1
+    386	    030F  84 26	0022r			    test Nomer,ah
+    387	    0313  75 14				    jnz	us3
+    388
+    389	    0315  D0 E4				    shl	ah,1
+    390	    0317  84 26	0022r			    test Nomer,ah
+    391	    031B  75 11				    jnz	us4
+    392
+    393	    031D  EB 12				    jmp	us5
+    394
+    395	    031F  BE 0000r		 us1:	     lea si,cur_temp1
+    396	    0322  EB 0D				     jmp us5
+    397
+    398	    0324  BE 0006r		 us2:	     lea si,cur_temp2
+    399	    0327  EB 08				     jmp us5
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 8
+marin_lr.asm
+
+
+
+    400
+    401	    0329  BE 000Cr		 us3:	     lea si,cur_temp3
+    402	    032C  EB 03				     jmp us5
+    403
+    404	    032E  BE 0012r		 us4:	     lea si,cur_temp4
+    405
+    406	    0331  F6 06	0028r 10	 us5:	    test Key,00010000b	  ;вверх?
+    407	    0336  75 09				    jnz	u2
+    408	    0338  F6 06	0028r 08		    test Key,00001000b	  ;вниз?
+    409	    033D  75 1A				    jnz	u3
+    410	    033F  EB 35				    jmp	u1
+    411
+    412	    0341  81 38	FFFF		 u2:	    cmp	word ptr[si+bx],0ffffh		;
+    413	    0345  74 2F				    jz u1
+    414	    0347  A1 0020r			    mov	ax,schet
+    415	    034A  01 00				    add	word ptr[si+bx],ax
+    416	    034C  73 04				    jnc	u5
+    417	    034E  C7 00	FFFF			    mov	word ptr[si+bx],0ffffh
+    418	    0352  83 06	0020r 10	 u5:	    add	schet,16
+    419	    0357  EB 1D				    jmp	u1
+    420
+    421
+    422	    0359  83 38	00		 u3:	    cmp	word ptr[si+bx],0	       ;
+    423	    035C  74 18				    jz u1
+    424	    035E  A1 0020r			    mov	ax,schet
+    425	    0361  29 00				    sub	word ptr[si+bx],ax
+    426	    0363  73 04				    jnc	u7
+    427	    0365  C7 00	0000			    mov	word ptr[si+bx],0
+    428	    0369  83 06	0020r 10	 u7:	    add	schet,16
+    429	    036E  EB 06				    jmp	 u1
+    430
+    431	    0370  C7 06	0020r 0040	 u4:	    mov	schet,64
+    432
+    433
+    434	    0376  C3			 u1:	    ret
+    435	    0377			 Ustanovka endp
+    436
+    437	    0377			 Slegenie proc near
+    438	    0377  80 3E	0025r 01		    cmp	Mode,1
+    439	    037C  74 62				    jz sl1
+    440	    037E  BE 0000r			    lea	si,cur_temp1
+    441	    0381  B3 04				    mov	bl,4
+    442	    0383  8B 04			 sl5:	     mov ax,[si]
+    443	    0385  8B 54	02			    mov	dx,[si+2]
+    444	    0388  C1 E8	06			    shr	ax,6
+    445	    038B  C1 EA	06			    shr	dx,6
+    446	    038E  3B C2				    cmp	ax,dx
+    447	    0390  72 18				    jb sl2		   ;переход если cur<li
+    448	    0392  8B 54	04			    mov	dx,[si+4]
+    449	    0395  C1 EA	06			    shr	dx,6
+    450	    0398  3B C2				    cmp	ax,dx
+    451	    039A  77 24				    ja sl3		   ;переход если cur>hi
+    452
+    453	    039C  B6 FC				    mov	dh,11111100b	   ;обнуляем индикатор,	если ОК
+    454	    039E  8A CB				    mov	cl,bl
+    455	    03A0  D0 E1				    shl	cl,1
+    456	    03A2  D2 C6				    rol	dh,cl
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 9
+marin_lr.asm
+
+
+
+    457	    03A4  20 36	0023r			    and	Lampa2,dh
+    458	    03A8  EB 2C				    jmp	sl4
+    459
+    460	    03AA  B6 FC			 sl2:	    mov	dh,11111100b
+    461	    03AC  8A CB				    mov	cl,bl
+    462	    03AE  D0 E1				    shl	cl,1
+    463	    03B0  D2 C6				    rol	dh,cl
+    464	    03B2  20 36	0023r			    and	Lampa2,dh
+    465	    03B6  B6 02				    mov	dh,00000010b
+    466	    03B8  D2 C6				    rol	dh,cl
+    467	    03BA  08 36	0023r			    or Lampa2,dh
+    468	    03BE  EB 16				    jmp	sl4
+    469
+    470	    03C0  B6 FC			 sl3:	    mov	dh,11111100b
+    471	    03C2  8A CB				    mov	cl,bl
+    472	    03C4  D0 E1				    shl	cl,1
+    473	    03C6  D2 C6				    rol	dh,cl
+    474	    03C8  20 36	0023r			    and	Lampa2,dh
+    475	    03CC  B6 01				    mov	dh,00000001b
+    476	    03CE  D2 C6				    rol	dh,cl
+    477	    03D0  08 36	0023r			    or Lampa2,dh
+    478	    03D4  EB 00				    jmp	sl4
+    479
+    480	    03D6  83 C6	06		 sl4:	    add	si,6
+    481	    03D9  FE CB				    dec	bl
+    482	    03DB  80 FB	00			    cmp	bl,0
+    483	    03DE  75 A3				    jnz	sl5
+    484
+    485	    03E0  C3			 sl1:	    ret
+    486	    03E1			 Slegenie endp
+    487
+    488	    03E1			 Signal	proc near	      ;состояния системы на пульте
+    489
+    490	    03E1  B4 04				    mov	ah,04h
+    491	    03E3  84 26	0022r			    test Nomer,ah
+    492	    03E7  75 18				    jnz	t1
+    493	    03E9  D0 E4				    shl	ah,1
+    494	    03EB  84 26	0022r			    test Nomer,ah
+    495	    03EF  75 21				    jnz	t2
+    496	    03F1  D0 E4				    shl	ah,1
+    497	    03F3  84 26	0022r			    test Nomer,ah
+    498	    03F7  75 29				    jnz	t3
+    499	    03F9  D0 E4				    shl	ah,1
+    500	    03FB  84 26	0022r			    test Nomer,ah
+    501	    03FF  75 34				    jnz	t4
+    502
+    503	    0401  A0 0023r		 t1:	    mov	al,Lampa2	      ;для первого помещения
+    504	    0404  C0 E0	06			    shl	al,6
+    505	    0407  80 26	0026r 3F		    and	Lampa,00111111b
+    506	    040C  08 06	0026r			    or Lampa,al
+    507	    0410  EB 36				    jmp	t5
+    508	    0412  A0 0023r		 t2:	    mov	al,Lampa2	      ;для второго помещения
+    509	    0415  24 C0				    and	al,11000000b
+    510	    0417  80 26	0026r 3F		    and	Lampa,00111111b
+    511	    041C  08 06	0026r			    or Lampa,al
+    512	    0420  EB 26				    jmp	t5
+    513	    0422  A0 0023r		 t3:	    mov	al,Lampa2	      ;для третьего помещения
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 10
+marin_lr.asm
+
+
+
+    514	    0425  C0 E0	02			    shl	al,2
+    515	    0428  24 C0				    and	al,11000000b
+    516	    042A  80 26	0026r 3F		    and	Lampa,00111111b
+    517	    042F  08 06	0026r			    or Lampa,al
+    518	    0433  EB 13				    jmp	t5
+    519	    0435  A0 0023r		 t4:	    mov	al,Lampa2	      ;для 4 помещения
+    520	    0438  C0 E0	04			    shl	al,4
+    521	    043B  24 C0				    and	al,11000000b
+    522	    043D  80 26	0026r 3F		    and	Lampa,00111111b
+    523	    0442  08 06	0026r			    or Lampa,al
+    524	    0446  EB 00				    jmp	t5
+    525
+    526	    0448  C3			 t5:	    ret
+    527	    0449			 Signal	endp
+    528
+    529	    0449			 Vivo_Lampa proc near	      ;вывод состояния системы и вывод индикаторов
+    530	    0449  A0 0026r			    mov	al,Lampa
+    531	    044C  E6 01				    out	1,al
+    532	    044E  A0 0023r			    mov	al,Lampa2
+    533	    0451  E6 02				    out	2,al
+    534	    0453  C3				    ret
+    535	    0454			 Vivo_Lampa endp
+    536
+    537
+    538	    0454			 Start:
+    539	    0454  B8 0000s			    mov	ax,Data
+    540	    0457  8E D8				    mov	ds,ax
+    541	    0459  8E C0				    mov	es,ax
+    542	    045B  B8 0000s			    mov	ax,Stk
+    543	    045E  8E D0				    mov	ss,ax
+    544	    0460  BC 00C8r			    lea	sp,StkTop
+    545
+    546					 ;Здесь	размещается код	программы
+    547
+    548	    0463  E8 FC4F			    call Init		      ;инициализация переменных
+    549	    0466  E8 FE21		 p1:	    call Scan_Key	      ;считывание значений кнопок на пульте
+    550	    0469  E8 FC99			    call ADC_Start	      ;стобирующий сигнал на АЦП
+    551	    046C  E8 FC9F			    call Save_Cur_temp	      ;сохраняем рабочую температуру
+    552	    046F  E8 FD09			    call Kn_Nomer	      ;получаем	номер помещения	для отображения
+    553	    0472  E8 FE1B			    call Graniza	      ;задаем ВЗ и НЗ и	РТ
+    554	    0475  E8 FE2F			    call Rejim		      ;получение режима	работы системы
+    555	    0478  E8 FE59			    call Ustanovka	      ;обработка кнопок	Вверх и	Вниз
+    556	    047B  E8 FEF9			    call Slegenie	      ;определяем состояние системы
+    557	    047E  E8 FF60			    call Signal		      ;выводим состояние системы
+    558	    0481  E8 FD1B			    call Vivod_rt	   ;вывод РТ помещений
+    559	    0484  E8 FD85			    call Vivo_Pult	   ;вывод чисел	на пульте
+    560	    0487  E8 FFBF			    call Vivo_Lampa	   ;вывод индикаторов на пульте
+    561	    048A  EB DA				    jmp	p1
+    562
+    563
+    564
+    565					 ;В следующей строке необходимо	указать	смещение стартовой точки
+    566						    org	  RomSize-16
+    567						    ASSUME cs:NOTHING
+    568	    0FF0  EA 00000454sr			    jmp	  Far Ptr Start
+    569	    0FF5			 Code	    ENDS
+    570					 END
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 11
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "27/05/04"
+??FILENAME			  Text	 "marin_lr"
+??TIME				  Text	 "19:06:58"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 MARIN_LR
+@WORDSIZE			  Text	 2
+ADC_RDY				  Near	 CODE:000A
+ADC_START			  Near	 CODE:0105
+C1				  Byte	 DATA:0029
+C2				  Byte	 DATA:002A
+C3				  Byte	 DATA:002B
+CUR_TEMP			  Word	 DATA:0018
+CUR_TEMP1			  Word	 DATA:0000
+CUR_TEMP2			  Word	 DATA:0006
+CUR_TEMP3			  Word	 DATA:000C
+CUR_TEMP4			  Word	 DATA:0012
+G1				  Near	 CODE:02A6
+GRANIZA				  Near	 CODE:0290
+HI_LIM1				  Word	 DATA:0004
+HI_LIM2				  Word	 DATA:000A
+HI_LIM3				  Word	 DATA:0010
+HI_LIM4				  Word	 DATA:0016
+IMAGE				  Byte	 CODE:0000
+INDEX_TEMP			  Near	 CODE:0025
+INIT				  Near	 CODE:00B5
+K1				  Near	 CODE:0183
+K3				  Near	 CODE:0199
+K4				  Near	 CODE:018B
+KEY				  Byte	 DATA:0028
+KN_NOMER			  Near	 CODE:017B
+L1				  Near	 CODE:0015
+L2				  Near	 CODE:000E
+L5				  Near	 CODE:0037
+L6				  Near	 CODE:0043
+L7				  Near	 CODE:00B4
+LAMPA				  Byte	 DATA:0026
+LAMPA2				  Byte	 DATA:0023
+LI_LIM1				  Word	 DATA:0002
+LI_LIM2				  Word	 DATA:0008
+LI_LIM3				  Word	 DATA:000E
+LI_LIM4				  Word	 DATA:0014
+MODE				  Byte	 DATA:0025
+NOMER				  Byte	 DATA:0022
+OLDKEY				  Byte	 DATA:0027
+P1				  Near	 CODE:0466
+PORT_IN				  Word	 DATA:001A
+PORT_IN1			  Word	 DATA:001C
+PORT_IN2			  Word	 DATA:001E
+R1				  Near	 CODE:02CD
+R2				  Near	 CODE:02C8
+REJIM				  Near	 CODE:02A7
+ROMSIZE				  Number 1000
+Turbo Assembler	 Version 3.1	    27/05/04 19:06:58	    Page 12
+Symbol Table
+
+
+
+S1				  Near	 CODE:024E
+S2				  Near	 CODE:0258
+S3				  Near	 CODE:0262
+S4				  Near	 CODE:026C
+S5				  Near	 CODE:0274
+SAVE_CUR_TEMP			  Near	 CODE:010E
+SCAN_KEY			  Near	 CODE:028A
+SCHET				  Word	 DATA:0020
+SIGNAL				  Near	 CODE:03E1
+SL1				  Near	 CODE:03E0
+SL2				  Near	 CODE:03AA
+SL3				  Near	 CODE:03C0
+SL4				  Near	 CODE:03D6
+SL5				  Near	 CODE:0383
+SLEGENIE			  Near	 CODE:0377
+START				  Near	 CODE:0454
+STKTOP				  Word	 STK:00C8
+T1				  Near	 CODE:0401
+T2				  Near	 CODE:0412
+T3				  Near	 CODE:0422
+T4				  Near	 CODE:0435
+T5				  Near	 CODE:0448
+U1				  Near	 CODE:0376
+U2				  Near	 CODE:0341
+U3				  Near	 CODE:0359
+U4				  Near	 CODE:0370
+U5				  Near	 CODE:0352
+U6				  Near	 CODE:02ED
+U7				  Near	 CODE:0369
+U8				  Near	 CODE:02F0
+US1				  Near	 CODE:031F
+US2				  Near	 CODE:0324
+US3				  Near	 CODE:0329
+US4				  Near	 CODE:032E
+US5				  Near	 CODE:0331
+USTANOVKA			  Near	 CODE:02D4
+UV1				  Near	 CODE:02F3
+UV2				  Near	 CODE:02F8
+UV5				  Near	 CODE:02FD
+V1				  Near	 CODE:021D
+V2				  Near	 CODE:0222
+V3				  Near	 CODE:0227
+V4				  Near	 CODE:0289
+V5				  Near	 CODE:022C
+VIVOD_RT			  Near	 CODE:019F
+VIVO_LAMPA			  Near	 CODE:0449
+VIVO_PULT			  Near	 CODE:020C
+ZNAK				  Byte	 DATA:0024
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+DATA				  16  002C  AT 0200
+STK				  16  00C8  AT 0100
+

@@ -1,0 +1,1154 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/17 08:26:05
+Kurs.asm						     Page 1 - 1
+
+
+				.386
+
+ = 1000				RomSize       EQU   4096
+ = 0032				NMax          EQU   50
+ = 000A				MinTime       EQU   10
+ = 0020				CountRotate   EQU   32
+ = 0010				OneSec        EQU   16
+ = 001E				MaxRes        EQU   30
+ = 0000				MinRes        EQU   0
+ = 0001				MinNom        EQU   1
+ = 0028				MaxNom        EQU   40
+ = 2FFF				DelayValue    EQU   02FFFh
+ = B2B8				ConstR1       EQU   45752
+ = D41C				ConstR2       EQU   54300
+ = 300C				ConstR3       EQU   12300 
+ = 0001				_HandR        EQU   00000001b
+ = 0002				_AutoR        EQU   00000010b
+ = 0004				_RandomR      EQU   00000100b
+ = 0008				_NextPD       EQU   00001000b
+ = 0010				_BackPD       EQU   00010000b 
+ = 0020				_NextRes      EQU   00100000b
+ = 0040				_BackRes      EQU   01000000b
+ = 0080				_Start        EQU   10000000b
+ = 0001				_NextAutoR    EQU   00000001b
+ = 0002				_NextRandomR  EQU   00000010b
+ = 0000				_ClearARRPV   EQU   00000000b
+ = 0002				_DatResetRes  EQU   00000010b
+ = 0004				_DatResetDiamag EQU  000000100b
+ = 0008				_DatResetTol  EQU   00001000b
+
+ = 0000				ButtonPort      EQU   0
+ = 0000				ACPAndIndPort     EQU   0
+ = 0002				ACPDataPort     EQU   2
+ = 000B				ResRotatePort   EQU   0bh
+ = 000C				DiamagRotatePort EQU  0ch
+ = 000D				TolRotatePort   EQU   0dh
+ = 0001				InPort          EQU   1
+ = 000E				OutPort         EQU   0eh
+ = 0002				DigIndPortSelected EQU  2 
+ = 0001				DigIndPortData   EQU  1
+ = 0008				MatIndSelected   EQU 8
+ = 0009				MatIndData       EQU 9
+ = 000A				MatIndStolSelected  EQU  0Ah
+
+ 0000				Data       SEGMENT use16 AT 40h 
+				          
+ 0000 00			           FlagR         db  ?
+ 0001 00			           FlagPD        db  ?
+ 0002 00			           FlagResAndRR    db  ?
+ 0003 00			           FlagARRPV     db  ?
+ 0004 00			           DelayHEX      db  ?
+ 0005 00			           NomHEX        db  ?
+ 0006 00			           ResHEH        db  ?
+ 0007 00			           NomRandom     db  ?
+ 0008 00			           DelayBCD      db  ?
+ 0009 00			           NomBCD        db  ?
+ 000A 00			           ResBCD        db  ?
+ 000B 0000			           RandomConst1  dw  ?
+ 000D 0000			           RandomConst2  dw  ?
+ 000F 0000			           RandomConst3  dw  ?
+ 0011 00			           ResRotate     db  ?
+ 0012 00			           DiamagRotate  db  ?
+ 0013 00			           TolRotate     db  ?
+ 0014				Data       ENDS
+
+
+ 0000				Stk        SEGMENT use16 AT 300h
+ 0000  0019 [			           dw    25 dup (?)
+        0000
+       ]
+ 0032				StkTop     Label Word
+ 0032				Stk        ENDS
+
+
+ 0000				Code       SEGMENT use16
+				           ASSUME cs:Code,ds:Data,es:Code
+ 0000 3F 0C 76 5E 4D 5B		    Image  DB   03Fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh,07Fh,05Fh   
+       7B 0E 7F 5F
+ 000A FF 3F 3F 3F 3F 0F		BaseImage  DB   0FFh, 03Fh, 03Fh, 03Fh, 03Fh, 00Fh, 02Fh, 02Fh,02Fh, 02Fh, 00Fh, 03Fh, 03Fh, 03Fh, 03Fh, 0FFh,0FFh, 080h, 080h, 080h, 080h, 080h, 080h, 080h,080h, 080h, 080h, 080h, 080h, 080h, 080h, 0FFh
+       2F 2F 2F 2F 0F 3F
+       3F 3F 3F FF FF 80
+       80 80 80 80 80 80
+       80 80 80 80 80 80
+       80 FF
+ 002A  FF FF FF 3F 80 BE	           DB   0FFh, 0FFh, 0FFh, 03Fh, 080h, 0BEh, 0BEh, 0BEh,0BEh, 0BEh, 0BEh, 0BEh, 080h, 03Fh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 080h, 0BFh, 0BFh, 0BFh, 0B9h,0B1h, 0B9h, 0BFh, 0BFh, 0BFh, 080h, 0FFh, 0FFh
+       BE BE BE BE BE BE
+       80 3F FF FF FF FF
+       FF 80 BF BF BF B9
+       B1 B9 BF BF BF 80
+       FF FF
+ 004A  BF 7F FF FF FF FF	           DB   0BFh, 07Fh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 07Fh, 0BFh,0FFh, 0FFh, 0FEh, 0FDh, 01Bh, 017h, 00Fh, 01Fh,01Fh, 00Fh, 017h, 01Bh, 0FDh, 0FEh, 0FFh, 0FFh
+       FF FF FF FF FF FF
+       FF FF 7F BF FF FF
+       FE FD 1B 17 0F 1F
+       1F 0F 17 1B FD FE
+       FF FF
+ 006A  FF FF FF 03 FB D9	           DB   0FFh, 0FFh, 0FFh, 003h, 0FBh, 0D9h, 0D9h, 0DBh,0FBh, 0DBh, 089h, 0D9h, 0FBh, 003h, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 080h, 0BFh, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BFh, 0BFh, 0BFh, 080h, 0FFh, 0FFh
+       D9 DB FB DB 89 D9
+       FB 03 FF FF FF FF
+       FF 80 BF BF BF BF
+       BF BF BF BF BF 80
+       FF FF
+ 008A  FF CF 07 77 77 77	           DB   0FFh, 0CFh, 007h, 077h, 077h, 077h, 007h, 0CFh,0CFh, 007h, 077h, 077h, 077h, 007h, 0CFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+       07 CF CF 07 77 77
+       77 07 CF FF FF FF
+       FF FF FF FF FF FF
+       FF FF FF FF FF FF
+       FF FF
+ 00AA  FF FF FF FF FF FF	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h,000h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 081h, 099h, 0BDh, 0BDh, 080h,080h, 0BDh, 0BDh, 099h, 081h, 0FFh, 0FFh, 0FFh
+       FF 00 00 FF FF FF
+       FF FF FF FF FF FF
+       FF 81 99 BD BD 80
+       80 BD BD 99 81 FF
+       FF FF
+ 00CA  FF FF FF FF FF FF	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 007h,007h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 081h, 081h, 081h, 081h, 080h,080h, 081h, 081h, 081h, 081h, 0FFh, 0FFh, 0FFh
+       FF 07 07 FF FF FF
+       FF FF FF FF FF FF
+       FF 81 81 81 81 80
+       80 81 81 81 81 FF
+       FF FF
+ 00EA  FF FF FF 3F 5F 6F	           DB   0FFh, 0FFh, 0FFh, 03Fh, 05Fh, 06Fh, 06Fh, 06Fh,06Fh, 06Fh, 06Fh, 05Fh, 03Fh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 080h, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BFh, 080h, 0FFh, 0FFh, 0FFh, 0FFh
+       6F 6F 6F 6F 6F 5F
+       3F FF FF FF FF FF
+       FF FF 80 BF BF BF
+       BF BF BF 80 FF FF
+       FF FF
+ 010A  FF FF FF FF 03 FB	           DB   0FFh, 0FFh, 0FFh, 0FFh, 003h, 0FBh, 0FBh, 0FBh,0FBh, 0FBh, 0FBh, 003h, 0DFh, 0DFh, 01Fh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 080h, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BFh, 080h, 0FBh, 0FBh, 0F8h, 0FFh
+       FB FB FB FB FB 03
+       DF DF 1F FF FF FF
+       FF FF 80 BF BF BF
+       BF BF BF 80 FB FB
+       F8 FF
+ 012A  FF FF FF FF FF FF	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FDh, 0F9h, 0F5h, 0EDh, 0DDh, 0BDh, 0BDh, 0BDh,0BDh, 0BDh, 0BDh, 0DDh, 0EDh, 0F5h, 0F9h, 0FDh
+       FF FF FF FF FF FF
+       FF FF FF FF FD F9
+       F5 ED DD BD BD BD
+       BD BD BD DD ED F5
+       F9 FD
+
+ 014A  0F 3F 3F 3F 3F 3F	           DB   00Fh, 03Fh, 03Fh, 03Fh, 03Fh, 03Fh, 03Fh, 03Fh,03Fh, 03Fh, 03Fh, 03Fh, 03Fh, 03Fh, 00Fh, 0FFh,0FFh, 0FEh, 0FFh, 0FEh, 0FFh, 0FEh, 0FFh, 0FEh,0FFh, 0FEh, 0FFh, 0FEh, 0FFh, 0FEh, 0FFh, 0FFh
+       3F 3F 3F 3F 3F 3F
+       3F 3F 0F FF FF FE
+       FF FE FF FE FF FE
+       FF FE FF FE FF FE
+       FF FF
+ 016A  FF FF 03 FB 5B FB	           DB   0FFh, 0FFh, 003h, 0FBh, 05Bh, 0FBh, 057h, 0FBh,05Bh, 0FBh, 003h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 000h, 07Fh, 055h, 07Fh, 055h, 07Fh,055h, 07Fh, 000h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh 
+       57 FB 5B FB 03 FF
+       FF FF FF FF FF FF
+       00 7F 55 7F 55 7F
+       55 7F 00 FF FF FF
+       FF FF
+ 018A  FF FF 03 FB 0B 6B	           DB   0FFh, 0FFh, 003h, 0FBh, 00Bh, 06Bh, 06Bh, 06Bh,008h, 0FBh, 003h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 000h, 07Fh, 055h, 07Fh, 055h, 07Fh,055h, 07Fh, 000h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+       6B 6B 08 FB 03 FF
+       FF FF FF FF FF FF
+       00 7F 55 7F 55 7F
+       55 7F 00 FF FF FF
+       FF FF
+ 01AA  FF FF FF FF 00 FE	           DB   0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0FEh, 0FEh,0FEh, 0FEh, 07Eh, 0FEh, 000h, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 080h, 0BFh, 0BFh, 0BFh,0BFh, 0BFh, 0BEh, 0BFh, 080h, 0FFh, 0FFh, 0FFh
+       FE FE FE FE 7E FE
+       00 FF FF FF FF FF
+       FF FF 80 BF BF BF
+       BF BF BE BF 80 FF
+       FF FF
+ 01CA  FF 01 7D 7D 7D 7D	           DB   0FFh, 001h, 07Dh, 07Dh, 07Dh, 07Dh, 07Dh, 001h,07Dh, 07Dh, 07Dh, 07Dh, 07Dh, 001h, 0FFh, 0FFh,0FFh, 0C0h, 0DFh, 0DFh, 0DFh, 0DFh, 0DFh, 0DFh,0DFh, 0DFh, 0DFh, 0DFh, 0DFh, 0C0h, 0FFh, 0FFh
+       7D 01 7D 7D 7D 7D
+       7D 01 FF FF FF C0
+       DF DF DF DF DF DF
+       DF DF DF DF DF C0
+       FF FF
+ 01EA  FF FF FF EF 0F EF	           DB   0FFh, 0FFh, 0FFh, 0EFh, 00Fh, 0EFh, 0EFh, 0E7h,0E7h, 0EFh, 0EFh, 00Fh, 0EFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0F0h, 0F7h, 0F7h, 0F7h,0F7h, 0F7h, 0F7h, 0F0h, 0FFh, 0FFh, 0FFh, 0FFh
+       EF E7 E7 EF EF 0F
+       EF FF FF FF FF FF
+       FF FF F0 F7 F7 F7
+       F7 F7 F7 F0 FF FF
+       FF FF
+ 020A  FF FF FF FF EF 83	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0EFh, 083h, 0BAh, 029h,029h, 0BAh, 083h, 0EFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 00Ch, 0E0h,0E0h, 00Ch, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh
+       BA 29 29 BA 83 EF
+       FF FF FF FF FF FF
+       FF FF FF FF 0C E0
+       E0 0C FF FF FF FF
+       FF FF
+ 022A  FF FF FF FF FF FF	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h,000h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0F7h, 0E7h, 0C7h, 087h, 000h,000h, 087h, 0C7h, 0E7h, 0F7h, 0FFh, 0FFh, 0FFh
+       FF 00 00 FF FF FF
+       FF FF FF FF FF FF
+       FF F7 E7 C7 87 00
+       00 87 C7 E7 F7 FF
+       FF FF
+ 024A  1F 0F 07 7F 7F 7F	           DB   01Fh, 00Fh, 007h, 07Fh, 07Fh, 07Fh, 07Fh, 07Fh,07Fh, 07Fh, 07Fh, 07Fh, 07Fh, 07Fh, 07Fh, 0FFh,0F0h, 0F0h, 0F0h, 0FEh, 0FEh, 0FEh, 0FEh, 0FEh,0FEh, 0FEh, 0FEh, 0FEh, 0FEh, 0FEh, 0FEh, 0FFh 
+       7F 7F 7F 7F 7F 7F
+       7F 7F 7F FF F0 F0
+       F0 FE FE FE FE FE
+       FE FE FE FE FE FE
+       FE FF
+ 026A  FF FF FF 1F 1F 1F	           DB   0FFh, 0FFh, 0FFh, 01Fh, 01Fh, 01Fh, 07Fh, 07Fh,07Fh, 07Fh, 07Fh, 07Fh, 07Fh, 07Fh, 07Fh, 0FFh,0FBh, 0F9h, 0F8h, 0F8h, 0F8h, 0F8h, 0F8h, 0FAh,0FEh, 0FEh, 0FEh, 0FEh, 0FEh, 0FEh, 0FEh, 0FFh
+       7F 7F 7F 7F 7F 7F
+       7F 7F 7F FF FB F9
+       F8 F8 F8 F8 F8 FA
+       FE FE FE FE FE FE
+       FE FF
+				          
+ 028A  7F 3F DF EF F7 FB	           DB   07Fh, 03Fh, 0DFh, 0EFh, 0F7h, 0FBh, 0FDh, 0FEh,0FEh, 0FDh, 0FBh, 0F7h, 0EFh, 0DFh, 03Fh, 07Fh,0FFh, 000h, 07Fh, 07Fh, 07Fh, 07Fh, 060h, 06Eh,06Eh, 060h, 07Fh, 07Fh, 07Fh, 07Fh, 000h, 0FFh
+       FD FE FE FD FB F7
+       EF DF 3F 7F FF 00
+       7F 7F 7F 7F 60 6E
+       6E 60 7F 7F 7F 7F
+       00 FF
+ 02AA  FF DB B1 00 71 BB	           DB   0FFh, 0DBh, 0B1h, 000h, 071h, 0BBh, 0FFh, 0FFh,0FFh, 0DBh, 0B1h, 000h, 071h, 0BBh, 0FFh, 0FFh,0FFh, 0DBh, 0B1h, 000h, 071h, 0BBh, 0FFh, 0FFh,0FFh, 0DBh, 0B1h, 000h, 071h, 0BBh, 0FFh, 0FFh
+       FF FF FF DB B1 00
+       71 BB FF FF FF DB
+       B1 00 71 BB FF FF
+       FF DB B1 00 71 BB
+       FF FF
+ 02CA  FF FF FF FF 0E ED	           DB   0FFh, 0FFh, 0FFh, 0FFh, 00Eh, 0EDh, 0EBh, 0E7h,0E7h, 0EBh, 0EDh, 00Eh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0F0h, 0C7h, 0F7h, 0F7h,0F7h, 0F7h, 0C7h, 0F0h, 0FFh, 0FFh, 0FFh, 0FFh
+       EB E7 E7 EB ED 0E
+       FF FF FF FF FF FF
+       FF FF F0 C7 F7 F7
+       F7 F7 C7 F0 FF FF
+       FF FF
+ 02EA  FF 01 FD FD 7D DD	           DB   0FFh, 001h, 0FDh, 0FDh, 07Dh, 0DDh, 0ADh, 055h,055h, 0ADh, 0DDh, 07Dh, 0FDh, 0FDh, 001h, 0FFh,0FFh, 080h, 0BFh, 0BFh, 0BFh, 09Eh, 0ADh, 0B0h,0B0h, 0ADh, 09Eh, 0BFh, 0BFh, 0BFh, 080h, 0FFh
+       AD 55 55 AD DD 7D
+       FD FD 01 FF FF 80
+       BF BF BF 9E AD B0
+       B0 AD 9E BF BF BF
+       80 FF
+ 030A  FF FF 01 7D 7D 7D	           DB   0FFh, 0FFh, 001h, 07Dh, 07Dh, 07Dh, 07Dh, 07Dh,001h, 0FFh, 001h, 0FDh, 0FDh, 03Dh, 001h, 0FFh,0FFh, 0FFh, 0FFh, 0C2h, 0DBh, 0DBh, 0DBh, 0DAh,0DBh, 0DBh, 0C2h, 0FEh, 0FEh, 0FEh, 0FEh, 0FFh
+       7D 7D 01 FF 01 FD
+       FD 3D 01 FF FF FF
+       FF C2 DB DB DB DA
+       DB DB C2 FE FE FE
+       FE FF
+ 032A  7F BF DF DF C7 C7	           DB   07Fh, 0BFh, 0DFh, 0DFh, 0C7h, 0C7h, 0DFh, 0DFh,0DFh, 0DFh, 0DFh, 0DFh, 0DFh, 0DFh, 0BFh, 07Fh,0F8h, 0FBh, 0F8h, 0F6h, 0E2h, 0F6h, 0F8h, 0FBh,0FBh, 0F8h, 0F6h, 0E2h, 0F6h, 0F8h, 0FBh, 0F8h
+       DF DF DF DF DF DF
+       DF DF BF 7F F8 FB
+       F8 F6 E2 F6 F8 FB
+       FB F8 F6 E2 F6 F8
+       FB F8
+ 034A  FF DF DF 1F DF DF	           DB   0FFh, 0DFh, 0DFh, 01Fh, 0DFh, 0DFh, 0DFh, 0DFh,0DFh, 0DFh, 0DFh, 0DFh, 01Fh, 0DFh, 0DFh, 0FFh,0FFh, 0FFh, 0FFh, 0F0h, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0F0h, 0FFh, 0FFh, 0FFh
+       DF DF DF DF DF DF
+       1F DF DF FF FF FF
+       FF F0 FF FF FF FF
+       FF FF FF FF F0 FF
+       FF FF
+ 036A  FF FF FF FF FF FF	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 003h, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 080h, 0FEh, 0FEh, 0FEh,0FEh, 0FEh, 0FEh, 080h, 0FFh, 0FFh, 0FFh, 0FFh
+       FF FF FF FF FF 03
+       FF FF FF FF FF FF
+       FF FF 80 FE FE FE
+       FE FE FE 80 FF FF
+       FF FF
+ 038A  FF FF FF FF FF 7F	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 07Fh, 0BFh, 0DFh,0EFh, 0EFh, 0EFh, 0EFh, 00Fh, 0FFh, 0FFh, 0FFh,0FFh, 0FEh, 0FCh, 0FAh, 0F6h, 0EFh, 0EFh, 0EFh,0EFh, 0EFh, 0EFh, 0EFh, 0EEh, 0EEh, 0E0h, 0FFh
+       BF DF EF EF EF EF
+       0F FF FF FF FF FE
+       FC FA F6 EF EF EF
+       EF EF EF EF EE EE
+       E0 FF
+ 03AA  FF 01 FD FD FD FD	           DB   0FFh, 001h, 0FDh, 0FDh, 0FDh, 0FDh, 07Dh, 001h,001h, 07Dh, 07Dh, 07Dh, 0FDh, 0FDh, 001h, 0FFh,0FFh, 080h, 0BFh, 0BFh, 0BFh, 0BFh, 0BEh, 0B0h,0B0h, 0BEh, 0BEh, 0BEh, 0BFh, 0BFh, 080h, 0FFh
+       7D 01 01 7D 7D 7D
+       FD FD 01 FF FF 80
+       BF BF BF BF BE B0
+       B0 BE BE BE BF BF
+       80 FF
+				           
+ 03CA  FF 3F 3F 3F 3F 0F	           DB   0FFh, 03Fh, 03Fh, 03Fh, 03Fh, 00Fh, 02Fh, 02Fh,02Fh, 02Fh, 00Fh, 03Fh, 03Fh, 03Fh, 03Fh, 0FFh,0FFh, 080h, 080h, 080h, 080h, 080h, 080h, 080h,080h, 080h, 080h, 080h, 080h, 080h, 080h, 0FFh
+       2F 2F 2F 2F 0F 3F
+       3F 3F 3F FF FF 80
+       80 80 80 80 80 80
+       80 80 80 80 80 80
+       80 FF
+ 03EA  FF FF FF FF FF 7F	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 07Fh, 0BFh, 0DFh,0EFh, 0EFh, 0EFh, 0EFh, 00Fh, 0FFh, 0FFh, 0FFh,0FFh, 0FEh, 0FCh, 0FAh, 0F6h, 0EFh, 0EFh, 0EFh,0EFh, 0EFh, 0EFh, 0EFh, 0EEh, 0EEh, 0E0h, 0FFh
+       BF DF EF EF EF EF
+       0F FF FF FF FF FE
+       FC FA F6 EF EF EF
+       EF EF EF EF EE EE
+       E0 FF
+ 040A  FF 01 FD FD 7D DD	           DB   0FFh, 001h, 0FDh, 0FDh, 07Dh, 0DDh, 0ADh, 055h,055h, 0ADh, 0DDh, 07Dh, 0FDh, 0FDh, 001h, 0FFh,0FFh, 080h, 0BFh, 0BFh, 0BFh, 09Eh, 0ADh, 0B0h,0B0h, 0ADh, 09Eh, 0BFh, 0BFh, 0BFh, 080h, 0FFh
+       AD 55 55 AD DD 7D
+       FD FD 01 FF FF 80
+       BF BF BF 9E AD B0
+       B0 AD 9E BF BF BF
+       80 FF
+ 042A  FF FF FF FF FF FF	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 007h,007h, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 081h, 081h, 081h, 081h, 080h,080h, 081h, 081h, 081h, 081h, 0FFh, 0FFh, 0FFh
+       FF 07 07 FF FF FF
+       FF FF FF FF FF FF
+       FF 81 81 81 81 80
+       80 81 81 81 81 FF
+       FF FF
+ 044A  FF FF FF EF 0F EF	           DB   0FFh, 0FFh, 0FFh, 0EFh, 00Fh, 0EFh, 0EFh, 0E7h,0E7h, 0EFh, 0EFh, 00Fh, 0EFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0F0h, 0F7h, 0F7h, 0F7h,0F7h, 0F7h, 0F7h, 0F0h, 0FFh, 0FFh, 0FFh, 0FFh
+       EF E7 E7 EF EF 0F
+       EF FF FF FF FF FF
+       FF FF F0 F7 F7 F7
+       F7 F7 F7 F0 FF FF
+       FF FF
+ 046A  FF FF FF FF FF 00	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0AAh,0FEh, 0AAh, 0FEh, 000h, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 07Fh, 055h,07Fh, 055h, 07Fh, 000h, 0FFh, 0FFh, 0FFh, 0FFh
+       FE AA FE AA FE 00
+       FF FF FF FF FF FF
+       FF FF FF 00 7F 55
+       7F 55 7F 00 FF FF
+       FF FF
+ 048A  FF FF FF FF FF 00	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EAh,0FEh, 0EAh, 0FEh, 000h, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 07Fh, 07Dh,07Fh, 05Fh, 07Fh, 000h, 0FFh, 0FFh, 0FFh, 0FFh
+       FE EA FE EA FE 00
+       FF FF FF FF FF FF
+       FF FF FF 00 7F 7D
+       7F 5F 7F 00 FF FF
+       FF FF
+ 04AA  FF FF FF FF FF 00	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EAh,0FEh, 0EAh, 0FEh, 000h, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 07Fh, 057h,07Fh, 057h, 07Fh, 000h, 0FFh, 0FFh, 0FFh, 0FFh
+       FE EA FE EA FE 00
+       FF FF FF FF FF FF
+       FF FF FF 00 7F 57
+       7F 57 7F 00 FF FF
+       FF FF
+ 04CA  FF FF FF FF FF 00	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EEh,0FEh, 0EEh, 0FEh, 000h, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 07Fh, 055h,07Fh, 055h, 07Fh, 000h, 0FFh, 0FFh, 0FFh, 0FFh
+       FE EE FE EE FE 00
+       FF FF FF FF FF FF
+       FF FF FF 00 7F 55
+       7F 55 7F 00 FF FF
+       FF FF
+ 04EA  FF FF FF FF FF 00	           DB   0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 0FEh, 0EEh,0FEh, 0EEh, 0FEh, 000h, 0FFh, 0FFh, 0FFh, 0FFh,0FFh, 0FFh, 0FFh, 0FFh, 0FFh, 000h, 07Fh, 077h,07Fh, 077h, 07Fh, 000h, 0FFh, 0FFh, 0FFh, 0FFh
+       FE EE FE EE FE 00
+       FF FF FF FF FF FF
+       FF FF FF 00 7F 77
+       7F 77 7F 00 FF FF
+       FF FF
+				           
+ 050A				   VibrDestr  PROC  NEAR
+ 050A  8A E0			           VD1:       mov   ah,al       
+ 050C  B7 00			                      mov   bh,0        
+ 050E  E4 00			           VD2:       in    al,0       
+ 0510  38 C4			                      cmp   ah,al       
+ 0512  75 F6			                      jne   VD1         
+ 0514  FE C7			                      inc   bh          
+ 0516  80 FF 32			                      cmp   bh,NMax     
+ 0519  75 F3			                      jne   VD2         
+ 051B  8A C4			                      mov   al,ah       
+ 051D  C3			                      ret
+ 051E				  VibrDestr  ENDP 
+				  
+ 051E				  ScanButton      PROC  NEAR
+ 051E  50			                      push ax
+ 051F  E4 00			                      in   al,ButtonPort
+ 0521  3C 00			                      cmp  al,0
+ 0523  74 20			                      Jz ExitScanButton 
+ 0525  E8 FFE2			                      call  VibrDestr
+ 0528  E4 00			                      in   al,ButtonPort
+ 052A  8A E0			                      Mov ah,al
+ 052C  24 07			                      and al,00000111b
+ 052E  3C 00			                      cmp al,0
+ 0530  74 03			                      jz NextScanButton
+ 0532  A2 0000 R		                      mov FlagR,al 
+				                    ;  jmp ExitScanButton 
+ 0535  8A C4			       NextScanButton:mov al,ah
+ 0537  24 18			                      and al,00011000b
+ 0539  3C 00			                      cmp al,0
+ 053B  74 03			                      jz Next2ScanButton
+ 053D  A2 0001 R		                      mov FlagPD,al
+				                    ;  jmp ExitScanButton
+ 0540  8A C4			      Next2ScanButton:mov al,ah   
+ 0542  A2 0002 R		                      mov FlagResAndRR,al 
+ 0545  A2 0002 R		       ExitScanButton:mov FlagResAndRR,al 
+ 0548  58			                      pop ax 
+ 0549  C3			                      ret   
+ 054A				  ScanButton      ENDP
+				  
+ 054A				  ScanTime     PROC   NEAR
+ 054A  50			                       push  ax
+ 054B  51			                       push  cx
+ 054C  A0 0001 R		                       mov   al,FlagPD
+ 054F  0A 06 0000 R		                       or    al,FlagR
+ 0553  E6 00			                       out   ACPAndIndPort,al
+ 0555  0C 20			                       or    al,00100000b
+ 0557  E6 00			                       out   ACPAndIndPort,al
+ 0559  E4 01			               WaitRdy:in    al,InPort        
+ 055B  A8 01			                       test  al,1
+ 055D  74 FA			                       jz    WaitRdy
+ 055F  E4 02			                       in    al,ACPDataPort 
+ 0561  B1 03			                       mov   cl,3
+ 0563  D2 E8			                       shr   al,cl
+ 0565  04 0A			                       add   al,MinTime
+ 0567  A2 0004 R		                       mov   DelayHEX,al
+ 056A  E8 0010			                       call  hex_bcd
+ 056D  A2 0008 R		                       mov  DelayBCD,al
+ 0570  E8 0283			                       call PortOut
+ 0573  59			                       pop cx
+ 0574  58			                       pop ax
+ 0575  C3			                       ret
+ 0576				  ScanTime      ENDP 
+				  
+ 0576				  ClearOutPort  proc near
+ 0576  50			                    push ax
+ 0577  B0 00			                    mov al,0
+ 0579  E6 0E			                    out OutPort,al 
+ 057B  58			                    pop ax
+ 057C  C3			                    ret
+ 057D				  ClearOutPort  endp
+				  
+ 057D				  HEX_BCD     PROC NEAR; В cl-hex в al-bcd
+ 057D  51			                 push cx
+ 057E  33 C9			                 xor cx,cx
+ 0580  8A C8			                 mov cl,al
+ 0582  B0 00			                 mov al,0
+ 0584  80 F9 00			                 cmp cl,0
+ 0587  74 05			                 jz ExitHEX_BCD
+ 0589  04 01			     LoopHEX_BCD:Add al,1
+ 058B  27			                 daa
+ 058C  E2 FB			                 loop LoopHEX_BCD
+ 058E  59			     ExitHEX_BCD:pop cx
+ 058F  C3			                 ret  
+ 0590				  HEX_BCD     ENDP 
+				  
+ 0590				  Init          PROC   NEAR
+ 0590  C6 06 0001 R 08		                      mov   FlagPD,_NextPD
+ 0595  C6 06 0000 R 01		                      mov   FlagR,_HandR 
+ 059A  C6 06 0003 R 00		                      mov   FlagARRPV,0; 
+				                ;     mov   DelayHEX,0
+				                ;     mov   DelayBCD,0
+ 059F  C6 06 0005 R 01		                      mov   NomHEX,MinNom
+ 05A4  C6 06 0009 R 01		                      mov   NomBCD,MinNom
+ 05A9  C6 06 0006 R 00		                      mov   ResHEH, MinRes
+ 05AE  C6 06 000A R 00		                      mov   ResBCD, MinRes
+ 05B3  C6 06 0011 R 01		                      mov   ResRotate,1
+ 05B8  C6 06 0012 R 01		                      mov   DiamagRotate,1
+ 05BD  C6 06 0013 R 01		                      mov   TolRotate, 1
+ 05C2  C7 06 000B R B2B8	                      mov   RandomConst1,ConstR1
+ 05C8  C7 06 000D R D41C	                      mov   RandomConst2,ConstR2
+ 05CE  C7 06 000F R 300C	                      mov   RandomConst3,ConstR3   
+ 05D4  E4 01			   NextResRotateLeft: in al,InPort
+ 05D6  A8 02			                      test al,_DatResetRes
+ 05D8  75 0B			                      jnz NextInit1
+ 05DA  E8 00BD			                      call Delay
+ 05DD  E8 00BA			                      call Delay
+ 05E0  E8 010C			                      call ResRotateLeft
+ 05E3  EB EF			                      jmp NextResRotateLeft
+ 05E5				    NextTolRotateLeft:
+ 05E5  E4 01			            NextInit1:in al,InPort
+ 05E7  A8 08			                      test al,_DatResetTol
+ 05E9  75 08			                      jnz nextInit2
+ 05EB  E8 00AC			                      call Delay
+ 05EE  E8 010F			                      call tolRotateLeft
+ 05F1  EB F2			                      jmp NextTolRotateLeft
+ 05F3				 NextDiamagRotateLeft:
+ 05F3  E4 01			            nextInit2:in al,InPort
+ 05F5  A8 04			                      test al,_DatResetDiamag
+ 05F7  75 08			                      jnz NextInit3 
+ 05F9  E8 009E			                      call Delay
+ 05FC  E8 0123			                      call DiamagRotateLeft
+ 05FF  EB F2			                      jmp NextDiamagRotateLeft
+ 0601  B9 0020			             NextInit3:mov cx,CountRotate
+ 0604  E8 0093			    NexttolRotateRight:call Delay
+ 0607  E8 0107			                       call tolRotateRight
+ 060A  E2 F8			                       loop NexttolRotateRight
+ 060C  E8 FF67			                       call  ClearOutPort           
+ 060F  C3			                       ret
+ 0610				  Init          ENDP  
+				  
+ 0610				  OutDigInf     PROC   NEAR
+ 0610  50			                  push ax 
+ 0611  53			                  push bx
+ 0612  52			                  push dx
+ 0613  56			                  push si
+ 0614  57			                  push di
+ 0615  8D 1E 0000 R		                  lea   bx,Image
+ 0619  B2 FE			                  mov   dl,0FEh
+ 061B  8D 3E 0008 R		                  lea   di,DelayBCD
+ 061F  B9 0003			                  mov   cx, 3         
+				         
+ 0622  B0 00			       NextDig:  mov al,0
+ 0624  E6 01			                 out   DigIndPortData,al  
+ 0626  8A C2			                 mov al,dl
+ 0628  E6 02			                 out   DigIndPortSelected,al 
+ 062A  8A 05			                 mov   al,[di]
+ 062C  32 E4			                 xor   ah,ah
+ 062E  8A F0			                 mov   dh,al       
+ 0630  24 0F			                 and   al,0Fh
+ 0632  8B F0			                 mov   si,ax
+ 0634  2E: 8A 00		                 mov al,cs:[bx+si]
+ 0637  E6 01			                 out   DigIndPortData,al  
+ 0639  B0 00			                 mov al,0
+ 063B  E6 01			                 out   DigIndPortData,al
+ 063D  D0 C2			                 rol dl,1 
+ 063F  8A C2			                 mov al,dl
+ 0641  E6 02			                 out   DigIndPortSelected,al       
+ 0643  8A C6			                 mov   al,dh
+ 0645  C0 E8 04			                 shr   al,4
+ 0648  8B F0			                 mov   si,ax
+ 064A  2E: 8A 00		                 mov al,cs:[bx+si]
+ 064D  E6 01			                 out   DigIndPortData,al 
+ 064F  D0 C2			                 rol dl,1 
+ 0651  47			                 inc di 
+ 0652  E2 CE			                 loop NextDig   
+ 0654  5F			                 pop di
+ 0655  5E			                 pop si
+ 0656  5A			                 pop dx
+ 0657  5B			                 pop bx
+ 0658  58			                 pop ax       
+ 0659  C3			                 ret
+ 065A				  OutDigInf     ENDP 
+				  
+ 065A				  Res    PROC NEAR
+ 065A  50			              Push ax
+ 065B  A0 0006 R		              mov al, ResHEH
+ 065E  F6 06 0002 R 20		              test FlagResAndRR,_NextRes
+ 0663  74 0B			              jz SubRes
+ 0665  3C 1E			              cmp al,MaxRes
+ 0667  74 2F			              jz ExitRes
+ 0669  FE C0			              inc al
+ 066B  E8 0081			              call ResRotateLeft 
+ 066E  EB 10			              jmp NextRes
+ 0670  F6 06 0002 R 40		       SubRes:test FlagResAndRR,_BackRes 
+ 0675  74 21			              jz  ExitRes
+ 0677  3C 00			              cmp al,MinRes
+ 0679  74 1D			              jz ExitRes
+ 067B  FE C8			              dec al
+ 067D  E8 00C4			              call ResRotateRight
+ 0680  A2 0006 R		      NextRes:mov ResHEH,al
+ 0683  E8 FEF7			              call  hex_bcd
+ 0686  A2 000A R		              mov ResBCD,al  
+ 0689  E8 000E			              call   Delay
+ 068C  E8 FE8F			              call   ScanButton
+ 068F  E8 FEB8			              call   ScanTime
+ 0692  E8 FF7B			              call  OutDigInf
+				             
+ 0695  E8 FEDE			              call  ClearOutPort
+ 0698  58			      ExitRes:pop ax
+ 0699  C3			              ret
+ 069A				  Res    ENDP     
+				  
+				  
+ 069A				Delay      proc  near
+ 069A  51			           push  cx
+ 069B  B9 2FFF			           mov   cx,DelayValue
+ 069E  41			DelayLoop: inc   cx
+ 069F  49			           dec cx
+ 06A0  41			           inc cx
+ 06A1  49			           dec cx
+ 06A2  41			           inc   cx
+ 06A3  49			           dec cx
+ 06A4  E2 F8			           loop  DelayLoop
+ 06A6  59			           pop   cx
+ 06A7  C3			           ret
+ 06A8				Delay      endp   
+
+ 06A8				Delay1_16sec proc
+ 06A8  51			           push  cx
+ 06A9  E8 FFEE			           call   Delay
+ 06AC  E8 FE6F			           call   ScanButton
+ 06AF  E8 FE98			           call   ScanTime
+ 06B2  E8 FF5B			           call  OutDigInf
+ 06B5  E8 FFA2			           call  res
+				           
+ 06B8  59			           pop   cx
+ 06B9  C3			           ret
+ 06BA				Delay1_16sec endp 
+
+ 06BA				NomD_Pos   proc  near
+ 06BA  50			               push ax
+ 06BB  52			               push dx
+ 06BC  51			               push cx
+ 06BD  32 E4			               xor ah,ah
+ 06BF  B1 05			               mov cl,5
+ 06C1  BA 0003			               mov dx,3
+ 06C4  B0 00			               mov al,0
+ 06C6  EE			     NextClear:out dx,al
+ 06C7  42			               inc dx
+ 06C8  E2 FC			               loop NextClear
+ 06CA  A0 0005 R		               mov al,NomHEX  
+ 06CD  FE C8			               dec al             ; т к нумерация с 1
+ 06CF  B1 03			               mov cl,3
+ 06D1  D2 E8			               shr al,cl
+ 06D3  8A C8			               mov cl,al
+ 06D5  8B D0			               mov dx,ax
+ 06D7  A0 0005 R		               mov al,NomHEX  
+ 06DA  FE C8			               dec al             ; тоже
+ 06DC  C0 E1 03			               shl cl,3
+ 06DF  2A C1			               sub al,cl
+ 06E1  8A C8			               mov cl,al
+ 06E3  B0 01			               mov al,1
+ 06E5  D2 E0			               shl al,cl
+ 06E7  83 C2 03			               add dx,3
+ 06EA  EE			               out dx,al
+ 06EB  59			               pop cx
+ 06EC  5A			               pop dx
+ 06ED  58			               pop ax
+ 06EE  C3			               ret
+ 06EF				NomD_Pos   endp 
+
+ 06EF				ResRotateLeft  proc near            ;К началу
+ 06EF  50			                 push ax
+ 06F0  B0 01			                 mov al,1
+ 06F2  E6 0E			                 out OutPort  ,al                
+ 06F4  A0 0011 R		                 mov al,ResRotate
+ 06F7  D0 C0			                 rol al,1
+ 06F9  E6 0B			                 out ResRotatePort,al
+ 06FB  A2 0011 R		                 mov ResRotate,al
+ 06FE  58			                 pop ax
+ 06FF  C3			                 ret
+ 0700				ResRotateLeft  endp  
+
+ 0700				TolRotateLeft  proc near           ;К забору
+ 0700  50			                 push ax
+ 0701  B0 04			                 mov al,4
+ 0703  E6 0E			                 out OutPort  ,al  
+ 0705  A0 0013 R		                 mov al,TolRotate
+ 0708  D0 C0			                 rol al,1
+ 070A  E6 0D			                 out TolRotatePort,al
+ 070C  A2 0013 R		                 mov TolRotate,al
+ 070F  58			                 pop ax
+ 0710  C3			                 ret
+ 0711				TolRotateLeft  endp
+
+ 0711				TolRotateRight  proc near            ;К показу
+ 0711  50			                 push ax
+ 0712  B0 08			                 mov al,8
+ 0714  E6 0E			                 out OutPort  ,al  
+ 0716  A0 0013 R		                 mov al,TolRotate
+ 0719  D0 C8			                 ror al,1
+ 071B  E6 0D			                 out TolRotatePort,al
+ 071D  A2 0013 R		                 mov TolRotate,al
+ 0720  58			                 pop ax
+ 0721  C3			                 ret
+ 0722				TolRotateRight  endp 
+
+ 0722				DiamagRotateLeft  proc near            ;К началу
+ 0722  50			                 push ax
+ 0723  B0 10			                 mov al,10h
+ 0725  E6 0E			                 out OutPort  ,al  
+ 0727  A0 0012 R		                 mov al,DiamagRotate
+ 072A  D0 C0			                 rol al,1
+ 072C  E6 0C			                 out DiamagRotatePort,al
+ 072E  A2 0012 R		                 mov DiamagRotate,al
+ 0731  58			                 pop ax
+ 0732  C3			                 ret
+ 0733				DiamagRotateLeft  endp 
+
+ 0733				DiamagRotateRight  proc near               ; 
+ 0733  50			                 push ax
+ 0734  B0 20			                 mov al,20h
+ 0736  E6 0E			                 out OutPort  ,al  
+ 0738  A0 0012 R		                 mov al,DiamagRotate
+ 073B  D0 C8			                 ror al,1
+ 073D  E6 0C			                 out DiamagRotatePort,al
+ 073F  A2 0012 R		                 mov DiamagRotate,al
+ 0742  58			                 pop ax
+ 0743  C3			                 ret
+ 0744				DiamagRotateRight  endp
+
+ 0744				ResRotateRight  proc near
+ 0744  50			                 push ax
+ 0745  B0 02			                 mov al,2
+ 0747  E6 0E			                 out OutPort  ,al 
+ 0749  A0 0011 R		                 mov al,ResRotate
+ 074C  D0 C8			                 ror al,1
+ 074E  E6 0B			                 out ResRotatePort,al
+ 0750  A2 0011 R		                 mov ResRotate,al
+ 0753  58			                 pop ax
+ 0754  C3			                 ret
+ 0755				ResRotateRight  endp 
+
+ 0755				OutImage   proc  near
+ 0755  50			              push ax
+ 0756  51			              push cx
+ 0757  52			              push dx
+ 0758  53			              push bx
+				              
+ 0759  33 C9			              xor cx,cx
+ 075B  32 F6			              xor dh,dh
+ 075D  8D 1E 000A R		              lea bx,BaseImage
+ 0761  8A 16 0005 R		              mov dl,NomHEX
+ 0765  FE CA			              dec dl                   ; т к с первого
+ 0767  B1 05			              mov cl,5
+ 0769  D3 E2			              shl dx,cl
+ 076B  03 DA			              add bx,dx
+				               
+ 076D  B6 04			              mov dh,4
+ 076F  B4 01			              mov ah,1
+ 0771  B2 01			   NextMatInd:mov dl,1
+ 0773  B9 0008			              mov cx,8
+ 0776  2E: 8A 07		      NextRow:mov al,cs:[bx]
+ 0779  F6 D0			              not al
+ 077B  E6 09			              out MatIndData,al
+				              
+ 077D  8A C4			              mov al,ah
+ 077F  E6 08			              out MatIndSelected, al
+ 0781  8A C2			              mov al,dl
+ 0783  E6 0A			              out MatIndStolSelected,al
+				                        
+ 0785  B0 00			              mov al,0h
+ 0787  E6 09			              out MatIndData,al
+ 0789  E6 0A			              out MatIndStolSelected,al
+ 078B  D0 E2			              shl dl,1
+ 078D  43			              inc bx
+ 078E  E2 E6			              loop NextRow
+ 0790  D0 E4			              shl ah,1
+ 0792  FE CE			              dec dh
+ 0794  80 FE 00			              cmp dh,0
+ 0797  75 D8			              jnz  NextMatInd
+ 0799  5B			              pop bx
+ 079A  5A			              pop dx
+ 079B  59			              pop cx
+ 079C  58			              pop ax 
+ 079D  C3			              ret
+ 079E				OutImage   endp       
+
+ 079E				TolLeft   proc near
+ 079E  51			                      push cx
+ 079F  B9 0020			                      mov cx,CountRotate
+ 07A2  E8 FF03			  RepeatTolRotateLeft:call Delay1_16sec
+ 07A5  E8 FF58			                      call tolRotateLeft
+ 07A8  E2 F8			                      loop RepeatTolRotateLeft
+ 07AA  E8 FDC9			                      call  ClearOutPort 
+ 07AD  59			                      pop cx
+ 07AE  C3			                      ret
+ 07AF				TolLeft  endp          
+
+ 07AF				TolRight proc near
+ 07AF  51			                     push cx
+ 07B0  B9 0020			                     mov cx,CountRotate
+ 07B3  E8 FEF2			RepeatTolRotateRight:call Delay1_16sec
+ 07B6  E8 FF58			                     call tolRotateRight
+ 07B9  E2 F8			                     loop RepeatTolRotateRight
+ 07BB  E8 FDB8			                     call  ClearOutPort   
+ 07BE  59			                     pop cx
+ 07BF  C3			                     ret
+ 07C0				TolRight endp    
+
+ 07C0				DiamagLeft  proc near
+ 07C0  51			                     Push cx
+ 07C1  B9 0010			                     mov cx,OneSec
+ 07C4  E8 FF5B			                     call DiamagRotateLeft
+ 07C7  E8 FEDE			        Repeat1Loop :call Delay1_16sec           
+ 07CA  E2 FB			                     loop Repeat1Loop 
+ 07CC  E8 FDA7			                     call  ClearOutPort   
+ 07CF  59			                     pop  cx               
+ 07D0  C3			                     ret 
+ 07D1				DiamagLeft  endp
+				                    
+ 07D1				DiamagRight proc near
+ 07D1  51			                      push cx
+ 07D2  B9 0010			                      mov cx,OneSec
+ 07D5  E8 FF5B			                      call DiamagRotateRight
+ 07D8  E8 FECD			          RepeatLoop :call Delay1_16sec              
+ 07DB  E2 FB			                      loop RepeatLoop 
+ 07DD  E8 FD96			                      call  ClearOutPort 
+ 07E0  59			                      pop cx
+ 07E1  C3			                      ret
+ 07E2				DiamagRight endp                                      
+
+
+
+ 07E2				DemDiaposNext  proc near    ;+1
+ 07E2  E8 FFB9			                      call TolLeft
+ 07E5  E8 FFE9			                      call DiamagRight
+ 07E8  E8 FFC4			                      call TolRight
+ 07EB  C3			                      ret
+ 07EC				DemDiaposNext  endp
+
+ 07EC				DemDiaposBack Proc near           ;-1
+ 07EC  E8 FFAF			                     call TolLeft
+ 07EF  E8 FFCE			                     call DiamagLeft
+ 07F2  E8 FFBA			                     call TolRight
+				                   
+ 07F5  C3			                    ret
+ 07F6				DemDiaposBack  endp  
+
+ 07F6				PortOut proc near
+ 07F6  50			                  push ax
+ 07F7  A0 0012 R		                  mov al,DiamagRotate
+ 07FA  E6 0C			                  out DiamagRotatePort,al
+ 07FC  A2 0012 R		                  mov DiamagRotate,al
+ 07FF  A0 0013 R		                  mov al,TolRotate
+ 0802  E6 0D			                  out TolRotatePort,al
+ 0804  A2 0013 R		                  mov TolRotate,al
+ 0807  A0 0011 R		                  mov al,ResRotate
+ 080A  E6 0B			                  out ResRotatePort,al
+ 080C  A2 0011 R		                  mov ResRotate,al
+ 080F  58			                  pop ax
+ 0810  C3			            ret
+ 0811				PortOut endp              
+
+ 0811				HandR      proc  near
+ 0811  F6 06 0000 R 01		               test FlagR,_HandR
+ 0816  74 45			               jz ExitHandR
+ 0818  C6 06 0003 R 00		               mov  FlagARRPV,_ClearARRPV
+ 081D  E8 FE9A			               call NomD_Pos
+ 0820  E8 FF32			               call OutImage
+ 0823  E8 FDEA			               call  OutDigInf
+ 0826  F6 06 0002 R 80		               test FlagResAndRR,_Start
+ 082B  74 30			               jz ExitHandR
+ 082D  8A 0E 0005 R		               mov cl,NomHEX
+ 0831  F6 06 0001 R 10		               test FlagPD,_BackPD
+ 0836  74 0E			               jz Add_1_Nom
+ 0838  80 F9 01			               cmp cl,MinNom
+ 083B  74 20			               jz ExitHandR
+ 083D  FE C9			               dec cl
+ 083F  51			               push cx
+ 0840  E8 FFA9			               call DemDiaposBack
+ 0843  59			               pop cx
+ 0844  EB 0C			               jmp NextHandR
+ 0846  80 F9 28			     Add_1_Nom:cmp cl,MaxNom
+ 0849  74 12			               jz ExitHandR
+ 084B  FE C1			               inc cl
+ 084D  51			               push cx
+ 084E  E8 FF91			               call DemDiaposNext
+ 0851  59			               pop cx
+ 0852  8A C1			    NextHandR: mov al,cl
+ 0854  A2 0005 R		               mov NomHEX,al
+ 0857  E8 FD23			               call  hex_bcd
+ 085A  A2 0009 R		               mov NomBCD,al                                 
+ 085D  C3			     ExitHandR:ret
+ 085E				HandR      endp     
+
+ 085E				AutoR     proc  near
+ 085E  F6 06 0000 R 02		               test FlagR,_AutoR
+ 0863  74 71			               jz ExitAutoR
+ 0865  E8 FEED			               call OutImage
+ 0868  E8 FDA5			               call  OutDigInf
+				               
+ 086B  80 26 0003 R 01		               and FlagARRPV,_NextAutoR
+ 0870  F6 06 0003 R 01		               test FlagARRPV,_NextAutoR
+ 0875  75 0E			               Jnz NextAutoR 
+ 0877  F6 06 0002 R 80		               test FlagResAndRR,_Start
+ 087C  74 58			               jz ExitAutoR 
+ 087E  C6 06 0003 R 01		               mov FlagARRPV,_NextAutoR
+ 0883  EB 51			               Jmp ExitAutoR
+				     
+ 0885  8A 0E 0005 R		     NextAutoR:mov cl,NomHEX
+ 0889  F6 06 0001 R 10		               test FlagPD,_BackPD
+ 088E  74 0E			               jz _Add_1_Nom
+ 0890  80 F9 01			               cmp cl,MinNom
+ 0893  74 41			               jz ExitAutoR
+ 0895  FE C9			               dec cl
+ 0897  51			               push cx
+ 0898  E8 FF51			               call DemDiaposBack
+ 089B  59			               pop cx
+ 089C  EB 0C			               jmp NextAutoR2
+ 089E  80 F9 28			    _Add_1_Nom:cmp cl,MaxNom
+ 08A1  74 33			               jz ExitAutoR
+ 08A3  FE C1			               inc cl
+ 08A5  51			               push cx
+ 08A6  E8 FF39			               call DemDiaposNext
+ 08A9  59			               pop cx
+ 08AA  8A C1			    NextAutoR2:mov al,cl
+ 08AC  A2 0005 R		               mov NomHEX,al
+ 08AF  E8 FCCB			               call  hex_bcd
+ 08B2  A2 0009 R		               mov NomBCD,al 
+ 08B5  E8 FE02			               call NomD_Pos
+ 08B8  33 C9			               xor cx,cx
+ 08BA  33 C0			               xor ax,ax
+ 08BC  A0 0004 R		               mov al,DelayHEX
+ 08BF  B1 04			               mov cl,4
+ 08C1  D3 E0			               shl ax,cl
+ 08C3  8B C8			               mov cx,ax
+ 08C5				NextDelayAutoR:
+ 08C5  E8 FDE0			               call Delay1_16sec
+ 08C8  F6 06 0000 R 02		               test FlagR,_AutoR            ;Если выбран другой режим
+ 08CD  74 07			               jz ExitAutoR
+ 08CF  51			                push cx          
+ 08D0  E8 FE82			               call OutImage
+ 08D3  59			               pop cx
+ 08D4  E2 EF			               loop NextDelayAutoR
+ 08D6  C3			     ExitAutoR:ret                
+ 08D7				AutoR     endp    
+
+ 08D7				Random proc  near
+ 08D7  50			             push ax
+ 08D8  A1 000B R		  NextRandom:mov ax,RandomConst1
+ 08DB  03 06 000D R		             add ax,RandomConst2
+ 08DF  A3 000B R		             mov RandomConst1,ax
+ 08E2  03 06 000F R		             add ax,RandomConst3
+ 08E6  A3 000D R		             mov RandomConst2,ax
+ 08E9  D1 D0			             rcl ax,1
+ 08EB  35 8000			             xor ax,8000h
+ 08EE  A3 000F R		             mov RandomConst3,ax
+ 08F1  24 3F			             and al,0111111b   
+ 08F3  3C 28			             cmp al,40
+ 08F5  77 E1			             ja NextRandom   
+ 08F7  3C 00			             cmp al,0
+ 08F9  74 DD			             Jz NextRandom    
+ 08FB  A2 0007 R		             mov NomRandom,al     
+ 08FE  58			             pop ax
+ 08FF  C3			             ret
+ 0900				Random      endp 
+
+ 0900				RandomR    proc  near
+ 0900  F6 06 0000 R 04		                   test FlagR,_RandomR
+ 0905  0F 84 00B5		                   jz ExitRandomR
+				              
+ 0909  E8 FE49			                   call OutImage
+ 090C  E8 FD01			                   call  OutDigInf
+ 090F  E8 FDA8			                   call NomD_Pos
+ 0912  80 26 0003 R 02		                   and FlagARRPV,_NextRandomR
+ 0917  F6 06 0003 R 02		                   test FlagARRPV,_NextRandomR
+ 091C  75 11			                   Jnz NextRandomR 
+ 091E  F6 06 0002 R 80		                   test FlagResAndRR,_Start
+ 0923  0F 84 0097		                   jz ExitRandomR
+ 0927  C6 06 0003 R 02		                   mov FlagARRPV,_NextRandomR
+ 092C  E9 008F			                  Jmp ExitRandomR
+				              
+				              
+				                   
+ 092F  A0 0005 R		      NextRandomR: mov al,NomHEX
+ 0932  3A 06 0007 R		                   cmp al,NomRandom
+ 0936  72 05			                   jb NomHEX_Men_NomRandom         ;NomHEX<NomRandom
+ 0938  77 35			                   ja NomHEX_Bol_NomRandom          ;NomHEX>NomRandom
+ 093A  E9 0081			                   jmp ExitRandomR
+ 093D  A0 0007 R		NomHEX_Men_NomRandom:mov al,NomRandom
+ 0940  2A 06 0005 R		                   sub al,NomHEX
+ 0944  50			                   push ax  
+ 0945  A0 0007 R		                   mov  al,NomRandom          
+ 0948  E8 FC32			                   call  hex_bcd
+ 094B  A2 0009 R		                   mov NomBCD,al 
+ 094E  E8 FE4D			                   call TolLeft
+				                                         
+ 0951  58			                   pop ax 
+ 0952  33 C9			                   xor cx,cx
+ 0954  8A C8			                   mov cl,al                          
+ 0956  51			       IncNomNext:push cx
+ 0957  E8 FDD9			                   call DiamagRotateRight 
+ 095A  E8 FD4B			                   call Delay1_16sec 
+ 095D  E8 FD48			                   call Delay1_16sec
+ 0960  E8 FC13			                   call  ClearOutPort   
+ 0963  FE 06 0005 R		                   inc NomHEX 
+ 0967  E8 FD50			                   call NomD_Pos
+ 096A  59			                   pop cx                         
+ 096B  E2 E9			                   loop IncNomNext  
+ 096D  EB 30			                   Jmp NextRandomR2
+ 096F  A0 0005 R		 NomHEX_Bol_NomRandom:mov al,NomHEX
+ 0972  2A 06 0007 R		                   sub al,NomRandom
+ 0976  50			                   push ax  
+ 0977  A0 0007 R		                   mov  al,NomRandom          
+ 097A  E8 FC00			                   call  hex_bcd
+ 097D  A2 0009 R		                   mov NomBCD,al 
+ 0980  E8 FE1B			                   call TolLeft
+ 0983  58			                   pop ax 
+ 0984  33 C9			                   xor cx,cx
+ 0986  8A C8			                   mov cl,al                          
+ 0988  51			       DecNomNext :push cx
+ 0989  E8 FD96			                   call DiamagRotateLeft 
+ 098C  E8 FD19			                   call Delay1_16sec 
+ 098F  E8 FD16			                   call Delay1_16sec
+ 0992  E8 FBE1			                   call  ClearOutPort   
+ 0995  FE 0E 0005 R		                   Dec NomHEX 
+ 0999  E8 FD1E			                   call NomD_Pos
+ 099C  59			                   pop cx                         
+ 099D  E2 E9			                   loop DecNomNext   
+				                                        
+ 099F  E8 FE0D			      NextRandomR2:call TolRight
+ 09A2  33 C0			                   xor ax,ax
+ 09A4  A0 0004 R		                   mov al,DelayHEX
+ 09A7  B1 04			                   mov cl,4
+ 09A9  D3 E0			                   shl ax,cl
+ 09AB  8B C8			                   mov cx,ax
+ 09AD  E8 FCF8			  NextDelayRandomR:call Delay1_16sec
+ 09B0  F6 06 0000 R 04		                   test FlagR,_RandomR
+ 09B5  74 07			                   jz ExitRandomR                  ; если выбран другой режим
+ 09B7  51			                   push cx           
+ 09B8  E8 FD9A			                   call OutImage
+ 09BB  59			                   pop cx
+ 09BC  E2 EF			                   loop NextDelayRandomR
+ 09BE  C3			       ExitRandomR:ret
+ 09BF				RandomR         endp        
+
+ 09BF				Start:
+ 09BF  B8 ---- R		           mov   ax,Data
+ 09C2  8E D8			           mov   ds,ax
+ 09C4  B8 ---- R		           mov   ax,Code
+ 09C7  8E C0			           mov   es,ax
+ 09C9  B8 ---- R		           mov   ax,Stk
+ 09CC  8E D0			           mov   ss,ax
+ 09CE  8D 26 0032 R		           lea   sp,StkTop
+ 09D2  E4 40			           in al,40h
+ 09D4  E8 FBB9			           call   Init
+				           
+ 09D7  E8 FB44			 startprog:call   ScanButton
+ 09DA  E8 FB6D			           call   ScanTime 
+				                 
+ 09DD  E8 FC7A			           call   Res 
+ 09E0  E8 FE2E			           call   HandR 
+ 09E3  E8 FE78			           call   AutoR
+ 09E6  E8 FF17			           call   RandomR
+ 09E9  E8 FEEB			           call   Random
+ 09EC  EB E9			           jmp startprog
+
+
+
+				           org   RomSize-16
+				           ASSUME cs:NOTHING
+ 0FF0  EA ---- 09BF R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+				END
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/17 08:26:05
+Kurs.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 0014	  Abs	  Private 
+Stk  . . . . . . . . . . . . . .	16 Bit	 0032	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+AutoR  . . . . . . . . . . . . .	P Near	 085E	  Code	Length= 0079 Public
+  NextAutoR  . . . . . . . . . .	L Near	 0885	  Code	
+  _Add_1_Nom . . . . . . . . . .	L Near	 089E	  Code	
+  NextAutoR2 . . . . . . . . . .	L Near	 08AA	  Code	
+  NextDelayAutoR . . . . . . . .	L Near	 08C5	  Code	
+  ExitAutoR  . . . . . . . . . .	L Near	 08D6	  Code	
+ClearOutPort . . . . . . . . . .	P Near	 0576	  Code	Length= 0007 Public
+Delay1_16sec . . . . . . . . . .	P Near	 06A8	  Code	Length= 0012 Public
+Delay  . . . . . . . . . . . . .	P Near	 069A	  Code	Length= 000E Public
+  DelayLoop  . . . . . . . . . .	L Near	 069E	  Code	
+DemDiaposBack  . . . . . . . . .	P Near	 07EC	  Code	Length= 000A Public
+DemDiaposNext  . . . . . . . . .	P Near	 07E2	  Code	Length= 000A Public
+DiamagLeft . . . . . . . . . . .	P Near	 07C0	  Code	Length= 0011 Public
+  Repeat1Loop  . . . . . . . . .	L Near	 07C7	  Code	
+DiamagRight  . . . . . . . . . .	P Near	 07D1	  Code	Length= 0011 Public
+  RepeatLoop . . . . . . . . . .	L Near	 07D8	  Code	
+DiamagRotateLeft . . . . . . . .	P Near	 0722	  Code	Length= 0011 Public
+DiamagRotateRight  . . . . . . .	P Near	 0733	  Code	Length= 0011 Public
+HEX_BCD  . . . . . . . . . . . .	P Near	 057D	  Code	Length= 0013 Public
+  LoopHEX_BCD  . . . . . . . . .	L Near	 0589	  Code	
+  ExitHEX_BCD  . . . . . . . . .	L Near	 058E	  Code	
+HandR  . . . . . . . . . . . . .	P Near	 0811	  Code	Length= 004D Public
+  Add_1_Nom  . . . . . . . . . .	L Near	 0846	  Code	
+  NextHandR  . . . . . . . . . .	L Near	 0852	  Code	
+  ExitHandR  . . . . . . . . . .	L Near	 085D	  Code	
+Init . . . . . . . . . . . . . .	P Near	 0590	  Code	Length= 0080 Public
+  NextResRotateLeft  . . . . . .	L Near	 05D4	  Code	
+  NextTolRotateLeft  . . . . . .	L Near	 05E5	  Code	
+  NextInit1  . . . . . . . . . .	L Near	 05E5	  Code	
+  NextDiamagRotateLeft . . . . .	L Near	 05F3	  Code	
+  nextInit2  . . . . . . . . . .	L Near	 05F3	  Code	
+  NextInit3  . . . . . . . . . .	L Near	 0601	  Code	
+  NexttolRotateRight . . . . . .	L Near	 0604	  Code	
+NomD_Pos . . . . . . . . . . . .	P Near	 06BA	  Code	Length= 0035 Public
+  NextClear  . . . . . . . . . .	L Near	 06C6	  Code	
+OutDigInf  . . . . . . . . . . .	P Near	 0610	  Code	Length= 004A Public
+  NextDig  . . . . . . . . . . .	L Near	 0622	  Code	
+OutImage . . . . . . . . . . . .	P Near	 0755	  Code	Length= 0049 Public
+  NextMatInd . . . . . . . . . .	L Near	 0771	  Code	
+  NextRow  . . . . . . . . . . .	L Near	 0776	  Code	
+PortOut  . . . . . . . . . . . .	P Near	 07F6	  Code	Length= 001B Public
+RandomR  . . . . . . . . . . . .	P Near	 0900	  Code	Length= 00BF Public
+  NextRandomR  . . . . . . . . .	L Near	 092F	  Code	
+  NomHEX_Men_NomRandom . . . . .	L Near	 093D	  Code	
+  IncNomNext . . . . . . . . . .	L Near	 0956	  Code	
+  NomHEX_Bol_NomRandom . . . . .	L Near	 096F	  Code	
+  DecNomNext . . . . . . . . . .	L Near	 0988	  Code	
+  NextRandomR2 . . . . . . . . .	L Near	 099F	  Code	
+  NextDelayRandomR . . . . . . .	L Near	 09AD	  Code	
+  ExitRandomR  . . . . . . . . .	L Near	 09BE	  Code	
+Random . . . . . . . . . . . . .	P Near	 08D7	  Code	Length= 0029 Public
+  NextRandom . . . . . . . . . .	L Near	 08D8	  Code	
+ResRotateLeft  . . . . . . . . .	P Near	 06EF	  Code	Length= 0011 Public
+ResRotateRight . . . . . . . . .	P Near	 0744	  Code	Length= 0011 Public
+Res  . . . . . . . . . . . . . .	P Near	 065A	  Code	Length= 0040 Public
+  SubRes . . . . . . . . . . . .	L Near	 0670	  Code	
+  NextRes  . . . . . . . . . . .	L Near	 0680	  Code	
+  ExitRes  . . . . . . . . . . .	L Near	 0698	  Code	
+ScanButton . . . . . . . . . . .	P Near	 051E	  Code	Length= 002C Public
+  NextScanButton . . . . . . . .	L Near	 0535	  Code	
+  Next2ScanButton  . . . . . . .	L Near	 0540	  Code	
+  ExitScanButton . . . . . . . .	L Near	 0545	  Code	
+ScanTime . . . . . . . . . . . .	P Near	 054A	  Code	Length= 002C Public
+  WaitRdy  . . . . . . . . . . .	L Near	 0559	  Code	
+TolLeft  . . . . . . . . . . . .	P Near	 079E	  Code	Length= 0011 Public
+  RepeatTolRotateLeft  . . . . .	L Near	 07A2	  Code	
+TolRight . . . . . . . . . . . .	P Near	 07AF	  Code	Length= 0011 Public
+  RepeatTolRotateRight . . . . .	L Near	 07B3	  Code	
+TolRotateLeft  . . . . . . . . .	P Near	 0700	  Code	Length= 0011 Public
+TolRotateRight . . . . . . . . .	P Near	 0711	  Code	Length= 0011 Public
+VibrDestr  . . . . . . . . . . .	P Near	 050A	  Code	Length= 0014 Public
+  VD1  . . . . . . . . . . . . .	L Near	 050A	  Code	
+  VD2  . . . . . . . . . . . . .	L Near	 050E	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+ACPAndIndPort  . . . . . . . . .	Number	 0000h	 
+ACPDataPort  . . . . . . . . . .	Number	 0002h	 
+BaseImage  . . . . . . . . . . .	Byte	 000A	  Code	
+ButtonPort . . . . . . . . . . .	Number	 0000h	 
+ConstR1  . . . . . . . . . . . .	Number	 B2B8h	 
+ConstR2  . . . . . . . . . . . .	Number	 D41Ch	 
+ConstR3  . . . . . . . . . . . .	Number	 300Ch	 
+CountRotate  . . . . . . . . . .	Number	 0020h	 
+DelayBCD . . . . . . . . . . . .	Byte	 0008	  Data	
+DelayHEX . . . . . . . . . . . .	Byte	 0004	  Data	
+DelayValue . . . . . . . . . . .	Number	 2FFFh	 
+DiamagRotatePort . . . . . . . .	Number	 000Ch	 
+DiamagRotate . . . . . . . . . .	Byte	 0012	  Data	
+DigIndPortData . . . . . . . . .	Number	 0001h	 
+DigIndPortSelected . . . . . . .	Number	 0002h	 
+FlagARRPV  . . . . . . . . . . .	Byte	 0003	  Data	
+FlagPD . . . . . . . . . . . . .	Byte	 0001	  Data	
+FlagResAndRR . . . . . . . . . .	Byte	 0002	  Data	
+FlagR  . . . . . . . . . . . . .	Byte	 0000	  Data	
+Image  . . . . . . . . . . . . .	Byte	 0000	  Code	
+InPort . . . . . . . . . . . . .	Number	 0001h	 
+MatIndData . . . . . . . . . . .	Number	 0009h	 
+MatIndSelected . . . . . . . . .	Number	 0008h	 
+MatIndStolSelected . . . . . . .	Number	 000Ah	 
+MaxNom . . . . . . . . . . . . .	Number	 0028h	 
+MaxRes . . . . . . . . . . . . .	Number	 001Eh	 
+MinNom . . . . . . . . . . . . .	Number	 0001h	 
+MinRes . . . . . . . . . . . . .	Number	 0000h	 
+MinTime  . . . . . . . . . . . .	Number	 000Ah	 
+NMax . . . . . . . . . . . . . .	Number	 0032h	 
+NomBCD . . . . . . . . . . . . .	Byte	 0009	  Data	
+NomHEX . . . . . . . . . . . . .	Byte	 0005	  Data	
+NomRandom  . . . . . . . . . . .	Byte	 0007	  Data	
+OneSec . . . . . . . . . . . . .	Number	 0010h	 
+OutPort  . . . . . . . . . . . .	Number	 000Eh	 
+RandomConst1 . . . . . . . . . .	Word	 000B	  Data	
+RandomConst2 . . . . . . . . . .	Word	 000D	  Data	
+RandomConst3 . . . . . . . . . .	Word	 000F	  Data	
+ResBCD . . . . . . . . . . . . .	Byte	 000A	  Data	
+ResHEH . . . . . . . . . . . . .	Byte	 0006	  Data	
+ResRotatePort  . . . . . . . . .	Number	 000Bh	 
+ResRotate  . . . . . . . . . . .	Byte	 0011	  Data	
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+Start  . . . . . . . . . . . . .	L Near	 09BF	  Code	
+StkTop . . . . . . . . . . . . .	Word	 0032	  Stk	
+TolRotatePort  . . . . . . . . .	Number	 000Dh	 
+TolRotate  . . . . . . . . . . .	Byte	 0013	  Data	
+_AutoR . . . . . . . . . . . . .	Number	 0002h	 
+_BackPD  . . . . . . . . . . . .	Number	 0010h	 
+_BackRes . . . . . . . . . . . .	Number	 0040h	 
+_ClearARRPV  . . . . . . . . . .	Number	 0000h	 
+_DatResetDiamag  . . . . . . . .	Number	 0004h	 
+_DatResetRes . . . . . . . . . .	Number	 0002h	 
+_DatResetTol . . . . . . . . . .	Number	 0008h	 
+_HandR . . . . . . . . . . . . .	Number	 0001h	 
+_NextAutoR . . . . . . . . . . .	Number	 0001h	 
+_NextPD  . . . . . . . . . . . .	Number	 0008h	 
+_NextRandomR . . . . . . . . . .	Number	 0002h	 
+_NextRes . . . . . . . . . . . .	Number	 0020h	 
+_RandomR . . . . . . . . . . . .	Number	 0004h	 
+_Start . . . . . . . . . . . . .	Number	 0080h	 
+startprog  . . . . . . . . . . .	L Near	 09D7	  Code	
+
+	   0 Warnings
+	   0 Errors

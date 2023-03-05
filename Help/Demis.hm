@@ -4,6 +4,7 @@ HID_INC_ADD                             0x1006F
 HID_INC_DEL                             0x10070
 HID_ARCH_STATUS                         0x10071
 HID_INSTR_COUNTER                       0x10073
+HID_FPS                                 0x10074
 HIDM_PRJPOPUP                           0x10096
 HID_CANCEL_EDIT_CNTR                    0x18000
 HID_ARCH_NEW                            0x18004

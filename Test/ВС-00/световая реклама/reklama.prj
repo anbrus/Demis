@@ -1,0 +1,7 @@
+[ARCH]=00000000,reklama.arh
+[SOURCE]=00000001,reklama.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(128,38,770,372)D:\USERS\вс\Реклама\reklama.asm
+[WND.arh]=(104,1,746,335)D:\USERS\вс\Реклама\reklama.arh

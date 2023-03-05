@@ -1,0 +1,5 @@
+[ARCH]=0,Chess.arh
+[SOURCE]=1,Chess.asm
+[ROMSIZE]=4
+[WND.arh]=(46,33,764,403)D:\demis3.1\alex\Chess.arh
+[WND.asm]=(77,21,719,383)D:\demis3.1\alex\Chess.asm

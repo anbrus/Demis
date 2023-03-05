@@ -93,7 +93,7 @@ CStdEditDoc* CStdEditView::GetDocument() // non-debug version is inline
 void CStdEditView::OnInitialUpdate() 
 {
 	CEditView::OnInitialUpdate();
-	
+
   pDoc=GetDocument();
   pDoc->pView=this;
   LOGFONT LogFont;
@@ -198,6 +198,7 @@ BOOL CStdEditView::Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD d
     m_StatusBar.SetIndicators(Ind,5);
     m_StatusBar.SetPaneInfo(1,Ind[1],SBPS_NORMAL,64);
     m_StatusBar.SetPaneStyle(0,SBPS_STRETCH|SBPS_NORMAL);
+	GetEditCtrl().SetLimitText(1024 * 1024);
   }
   return Status;
 }

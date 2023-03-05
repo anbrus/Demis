@@ -1,0 +1,7 @@
+[ARCH]=00000000,burik.arh
+[SOURCE]=00000001,burik.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(66,66,708,400)D:\USERS\demis2\burik.asm
+[WND.arh]=(88,88,730,422)D:\USERS\demis2\burik.arh

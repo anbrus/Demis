@@ -1,0 +1,7 @@
+[SOURCE]=00000001,4.asm
+[ARCH]=00000000,4.arh
+[ROMSIZE]=4
+[FREQ]=1000
+[FREEPINLEVEL]=1
+[WND.asm]=(44,44,686,406)C:\Мои документы\My programs\el_bookbest\4.asm
+[WND.arh]=(88,88,730,450)C:\Мои документы\My programs\el_bookbest\4.arh

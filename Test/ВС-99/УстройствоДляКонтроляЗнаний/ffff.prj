@@ -1,0 +1,7 @@
+[ARCH]=00000000,ffff.arh
+[SOURCE]=00000001,ffff.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(27,6,1020,518)D:\USERS\Новая папка\ffff.asm
+[WND.arh]=(206,11,848,345)D:\USERS\Новая папка\ffff.arh

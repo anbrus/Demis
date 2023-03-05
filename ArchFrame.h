@@ -15,22 +15,22 @@ class CArchFrame : public CMDIChildWnd
 	DECLARE_DYNCREATE(CArchFrame)
 protected:
 	CArchFrame();           // protected constructor used by dynamic creation
-  CArray<CString,CString> MsgStr;
+	CArray<CString, CString> MsgStr;
 
-// Attributes
+	// Attributes
 public:
 
-// Operations
+	// Operations
 public:
 	void ChangeMode(BOOL bConfigMode);
 	CString MenuItemGUID[256];
 	CMenu ArchSubMenu[16];
 	CDocument* pDoc;
 	struct _ChildWndInfo ChildWndInfo;
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CArchFrame)
-	public:
+	// Overrides
+		// ClassWizard generated virtual function overrides
+		//{{AFX_VIRTUAL(CArchFrame)
+public:
 	virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle = WS_CHILD | WS_VISIBLE | WS_OVERLAPPEDWINDOW, const RECT& rect = rectDefault, CMDIFrameWnd* pParentWnd = NULL, CCreateContext* pContext = NULL);
 	virtual BOOL DestroyWindow();
 	//}}AFX_VIRTUAL
@@ -42,11 +42,11 @@ protected:
 	// Generated message map functions
 	//{{AFX_MSG(CArchFrame)
 	afx_msg void OnClose();
-  afx_msg void OnAddElement(UINT nId);
+	afx_msg void OnAddElement(UINT nId);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 public:
-  virtual void GetMessageString(UINT nID, CString& rMessage) const;
+	virtual void GetMessageString(UINT nID, CString& rMessage) const;
 };
 
 /////////////////////////////////////////////////////////////////////////////

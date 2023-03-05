@@ -1,0 +1,7 @@
+push reg reg ...
+Str
+shl al,3
+mov [si+2], 12345
+mov di[3], al
+SEGMENT use16 AT 40h - последовательность
+SIZE - отсутствует

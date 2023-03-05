@@ -1,0 +1,5 @@
+[ARCH]=0,Zvonok.arh
+[SOURCE]=1,Zvonok.asm
+[ROMSIZE]=4
+[WND.asm]=(7,-6,387,352)D:\komarNext\Zvonok.asm
+[WND.arh]=(382,-1,791,478)D:\komarNext\Zvonok.arh

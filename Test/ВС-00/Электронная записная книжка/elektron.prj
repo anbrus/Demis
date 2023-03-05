@@ -1,0 +1,6 @@
+[ARCH]=00000000,elektron.arh
+[SOURCE]=00000000,elektron.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(110,110,932,568)C:\Documents and Settings\student\Рабочий стол\книжка\elektron.arh

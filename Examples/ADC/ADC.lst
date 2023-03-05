@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/05/17 12:51:26
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:01
 ADC.asm							     Page 1 - 1
 
 
@@ -54,7 +54,7 @@ ADC.asm							     Page 1 - 1
  0FF0  EA ---- 0010 R		           jmp   Far Ptr Start
  0FF5				Code       ends
 				end
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/05/17 12:51:26
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:01
 ADC.asm							     Symbols 2 - 1
 
 

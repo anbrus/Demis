@@ -1,0 +1,6 @@
+[ARCH]=00000000,laba.arh
+[SOURCE]=00000001,laba.asm
+[ROMSIZE]=8
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(88,88,730,450)D:\USERS\Vs2-98\mike_k\laba.arh

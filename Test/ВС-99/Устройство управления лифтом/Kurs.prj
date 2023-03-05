@@ -1,0 +1,9 @@
+[SOURCE]=00000001,Kurs.asm
+[ARCH]=00000000,Kurs.arh
+[INCLUDE]=00000000,Dvig.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.arh]=(88,88,730,422)C:\Documents and Settings\student\Рабочий стол\Laba_Demis3\Kurs.arh
+[WND.asm]=(103,50,745,384)C:\Documents and Settings\student\Рабочий стол\Laba_Demis3\Dvig.asm
+[WND.asm]=(88,88,730,422)C:\Documents and Settings\student\Рабочий стол\Laba_Demis3\Kurs.asm

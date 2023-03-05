@@ -1,0 +1,7 @@
+[SOURCE]=00000001,RunStr.asm
+[ARCH]=00000000,RunStr.arh
+[ROMSIZE]=4
+[FREQ]=500000
+[FREEPINLEVEL]=0
+[WND.asm]=(88,88,892,528)D:\USERS\Kurs\RunStr.asm
+[WND.arh]=(198,198,1020,656)D:\USERS\Kurs\RunStr.arh

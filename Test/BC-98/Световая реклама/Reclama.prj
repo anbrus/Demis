@@ -1,0 +1,7 @@
+[SOURCE]=00000001,Reclama.asm
+[ARCH]=00000000,Reclama.arh
+[ROMSIZE]=4
+[FREQ]=10000000
+[FREEPINLEVEL]=0
+[WND.arh]=(66,0,708,516)D:\USERS\Vs2-98\ReclamaTemp2\Reclama.arh
+[WND.asm]=(110,0,752,516)D:\USERS\Vs2-98\ReclamaTemp2\Reclama.asm

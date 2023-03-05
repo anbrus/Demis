@@ -56,7 +56,7 @@ BOOL CPrjDoc::OnNewDocument()
 	CString Template;
 	Template += ".386\r\n";
 	Template += ";Задайте объём ПЗУ в байтах\r\n";
-	Template += "RomSize    EQU   XXXX\r\n";
+	Template += "RomSize    EQU   4096\r\n";
 	Template += "\r\n";
 	Template += "IntTable   SEGMENT use16 AT 0\r\n";
 	Template += ";Здесь размещаются адреса обработчиков прерываний\r\n";
@@ -75,7 +75,7 @@ BOOL CPrjDoc::OnNewDocument()
 	Template += "\r\n";
 	Template += "InitData   SEGMENT use16\r\n";
 	Template += "InitDataStart:\r\n";
-	Template += ";Здесь размещаются описания констант\r\n";
+	Template += ";Здесь размещается описание неизменяемых данных, которые будут храниться в ПЗУ\r\n";
 	Template += "\r\n";
 	Template += "\r\n";
 	Template += "\r\n";
@@ -83,16 +83,16 @@ BOOL CPrjDoc::OnNewDocument()
 	Template += "InitData   ENDS\r\n";
 	Template += "\r\n";
 	Template += "Code       SEGMENT use16\r\n";
-	Template += ";Здесь размещаются описания констант\r\n";
+	Template += ";Здесь размещается описание неизменяемых данных\r\n";
 	Template += "\r\n";
-	Template += "           ASSUME cs:Code,ds:Data,es:Data\r\n";
+	Template += "           ASSUME cs:Code, ds:Data, es:Data, ss: Stk\r\n";
 	Template += "Start:\r\n";
-	Template += "           mov   ax,Data\r\n";
-	Template += "           mov   ds,ax\r\n";
-	Template += "           mov   es,ax\r\n";
-	Template += "           mov   ax,Stk\r\n";
-	Template += "           mov   ss,ax\r\n";
-	Template += "           lea   sp,StkTop\r\n";
+	Template += "           mov   ax, Data\r\n";
+	Template += "           mov   ds, ax\r\n";
+	Template += "           mov   es, ax\r\n";
+	Template += "           mov   ax, Stk\r\n";
+	Template += "           mov   ss, ax\r\n";
+	Template += "           lea   sp, StkTop\r\n";
 	Template += ";Здесь размещается код программы\r\n";
 	Template += "\r\n";
 	Template += "\r\n";
@@ -214,11 +214,11 @@ void CPrjDoc::OnEmulatorCfg()
 {
 	CPrjCfgDlg CfgDlg;
 	CfgDlg.m_RomSize = RomSize;
-	CfgDlg.m_TaktFreq = TaktFreq;
+	CfgDlg.m_TaktFreq = static_cast<float>(TaktFreq)/1000000;
 	CfgDlg.m_FreePinLevel = FreePinLevel;
 	if (CfgDlg.DoModal() == IDOK) {
 		RomSize = CfgDlg.m_RomSize;
-		TaktFreq = CfgDlg.m_TaktFreq;
+		TaktFreq = std::round(CfgDlg.m_TaktFreq*1000000);
 		FreePinLevel = CfgDlg.m_FreePinLevel;
 		RedrawArch();
 		//SetModifiedFlag();
@@ -227,6 +227,9 @@ void CPrjDoc::OnEmulatorCfg()
 
 BOOL CPrjDoc::SaveDoc(CArchive &ar)
 {
+	CString PrjPathNew = ar.GetFile()->GetFilePath();
+	PrjPathNew = PrjPathNew.Left(PrjPathNew.ReverseFind('\\'));
+
 	POSITION Pos = FileList.GetHeadPosition();
 	CString Line;
 	//Сохраняем дерево
@@ -260,23 +263,44 @@ BOOL CPrjDoc::SaveDoc(CArchive &ar)
 	WINDOWPLACEMENT ChildWndPlacement;
 	ChildWndPlacement.length = sizeof(ChildWndPlacement);
 
-	Pos = pMainFrame->ChildWndList.GetHeadPosition();
-	while (Pos) {
-		pChildWndInfo = (struct _ChildWndInfo*)pMainFrame->ChildWndList.GetNext(Pos);
-		if (pChildWndInfo->pDocument) {
-			pChildWndInfo->pChildWnd->GetWindowPlacement(&ChildWndPlacement);
-			Line.Format("[WND%s]=(%d,%d,%d,%d)%s\r\n",
-				pChildWndInfo->DocType,
-				ChildWndPlacement.rcNormalPosition.left,
-				ChildWndPlacement.rcNormalPosition.top,
-				ChildWndPlacement.rcNormalPosition.right,
-				ChildWndPlacement.rcNormalPosition.bottom,
-				pChildWndInfo->pDocument->GetPathName());
-			ar.WriteString(Line);
+	if (PrjPathNew == PrjPath) {
+		Pos = pMainFrame->ChildWndList.GetHeadPosition();
+		while (Pos) {
+			pChildWndInfo = (struct _ChildWndInfo*)pMainFrame->ChildWndList.GetNext(Pos);
+			if (pChildWndInfo->pDocument) {
+				pChildWndInfo->pChildWnd->GetWindowPlacement(&ChildWndPlacement);
+				Line.Format("[WND%s]=(%d,%d,%d,%d)%s\r\n",
+					pChildWndInfo->DocType,
+					ChildWndPlacement.rcNormalPosition.left,
+					ChildWndPlacement.rcNormalPosition.top,
+					ChildWndPlacement.rcNormalPosition.right,
+					ChildWndPlacement.rcNormalPosition.bottom,
+					pChildWndInfo->pDocument->GetPathName());
+				ar.WriteString(Line);
+			}
 		}
 	}
 
+	if (PrjPathNew != PrjPath) {
+		CopyProjectFiles(PrjPath, PrjPathNew);
+		PrjPath = PrjPathNew;
+		pMainFrame->CloseAllWindows();
+	}
+
 	return TRUE;
+}
+
+void CPrjDoc::CopyProjectFiles(const CString& pathFrom, const CString& pathTo) {
+	POSITION Pos = FileList.GetHeadPosition();
+	CString Line;
+	while (Pos) {
+		PrjFile File = FileList.GetNext(Pos);
+		CString pathFileFrom = pathFrom + "\\" + File.Path;
+		if (GetFileAttributes(pathFileFrom) == INVALID_FILE_ATTRIBUTES) continue;
+		CString pathFileTo = pathTo + "\\" + File.Path;
+
+		CopyFile(pathFileFrom, pathFileTo, FALSE);
+	}
 }
 
 BOOL CPrjDoc::LoadDoc(CArchive &ar)

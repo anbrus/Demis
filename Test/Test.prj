@@ -1,0 +1,7 @@
+[ARCH]=00000000,Test.arh
+[SOURCE]=00000001,Test.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(266,180,1088,615)D:\Work\VC\Demis2k\Test\Test.asm
+[WND.arh]=(208,140,1220,759)D:\Work\VC\Demis2k\Test\Test.arh

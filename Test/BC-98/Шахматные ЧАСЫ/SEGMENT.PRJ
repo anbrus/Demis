@@ -1,0 +1,5 @@
+[SOURCE]=00000001,segment.asm
+[ARCH]=00000000,segment.arh
+[ROMSIZE]=4
+[FREQ]=100000
+[FREEPINLEVEL]=0

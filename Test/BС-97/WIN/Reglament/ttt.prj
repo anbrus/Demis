@@ -1,0 +1,5 @@
+[ARCH]=0,ttt.arh
+[SOURCE]=1,ttt.asm
+[ROMSIZE]=4
+[WND.asm]=(188,-7,830,355)D:\demis 3.1win\SOIR\ttt.asm
+[WND.arh]=(110,110,752,472)D:\demis 3.1win\SOIR\ttt.arh

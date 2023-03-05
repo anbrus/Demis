@@ -1,0 +1,644 @@
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 1
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+      1				     Name ST_MASH
+      2	0000			     data segment at 0BA00H
+      3	0000  00		      Led_nagrev     db	(?)	  ;Байт	управления индикатором "Нагрев"
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(3) Data	or code	written	to uninitialized segment
+      4	0001  00		      Led_left	     db	(?)	  ;Байт	управления индикатором "Лево"
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(4) Data	or code	written	to uninitialized segment
+      5	0002  00		      Led_right	     db	(?)	  ;Байт	управления индикатором "Право"
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(5) Data	or code	written	to uninitialized segment
+      6	0003  00		      F_temperat     db	(?)	  ;Флаг	тумблера  "Температура"
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(6) Data	or code	written	to uninitialized segment
+      7	0004  00		      F_time	     db	(?)	  ;Флаг	тумблера  "Время"
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(7) Data	or code	written	to uninitialized segment
+      8	0005  00		      F_mode	     db	(?)	  ;Флаг	тумблера  "Режим"
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(8) Data	or code	written	to uninitialized segment
+      9	0006  00		      F_pusk	     db	(?)	  ;Флаг	тумблера  "Пуск"
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(9) Data	or code	written	to uninitialized segment
+     10	0007  00		      No_kbd	     db	(?)	  ;Флаг	неактивной клавиатуры
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(10) Data or code written to uninitialized segment
+     11	0008  00		      Doub_klic	     db	(?)	  ;Флаг	двойного нажатия
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(11) Data or code written to uninitialized segment
+     12	0009  00		      Ob_kl_1	     db	(?)	  ;Образ порта 1
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(12) Data or code written to uninitialized segment
+     13	000A  00		      Ob_kl_2	     db	(?)	  ;Образ порта 2
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(13) Data or code written to uninitialized segment
+     14	000B  0000		      Chislo	     dw	(?)	  ;Число считанное из порта
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(14) Data or code written to uninitialized segment
+     15	000D  00		      Chisl_dec	     db	(?)	  ;Десятичное число
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(15) Data or code written to uninitialized segment
+     16	000E  00		      Cifra	     db	(?)	  ;Цифра считанная из порта
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(16) Data or code written to uninitialized segment
+     17	000F  00		      Ready	     db	(?)	  ;Готовность к	работе двигателя
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(17) Data or code written to uninitialized segment
+     18	0010  03*(??)		      Out_arr	     db	3 dup (?) ;Массив: (время,темрература,режим)
+     19	0013  0000		      a		     dw	(?)	  ;Переменная для хранения нажатой клавиши(процесс
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(19) Data or code written to uninitialized segment
+     20								  ;устранения дребезга)
+     21	0015  00		      sch_temp	     db	(?)	  ;Накопитель двадцати процентного охлаждения
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(21) Data or code written to uninitialized segment
+     22	0016  00		      tec_temp	     db	(?)	  ;Переменная для температура с	учетом остывания
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(22) Data or code written to uninitialized segment
+     23	0017  00		      pause1	     db	(?)	  ;;
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(23) Data or code written to uninitialized segment
+     24	0018  00		      left	     db	(?)	  ;;
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(24) Data or code written to uninitialized segment
+     25	0019  00		      pause2	     db	(?)	  ;;Переменные для управления индикаторами
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(25) Data or code written to uninitialized segment
+     26	001A  00		      right	     db	(?)	  ;;вращения двигателя
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(26) Data or code written to uninitialized segment
+     27	001B  00		      time	     db	(?)	  ;;
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(27) Data or code written to uninitialized segment
+     28
+     29
+     30	001C			     data ends
+     31
+     32				     ;Описание стека
+     33	0000			     stack segment at 0BA80H
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(33) Reserved word used as symbol: STACK
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 2
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+     34	0000  50*(????)		       dw 50H dup (?)
+     35	00A0			       StkTop label word
+     36	00A0			     stack ends
+     37
+     38	0000			     code segment
+     39				     assume cs:code,ds:data,ss:stack
+     40
+     41				     ;			   ОПИСАНИЕ ПРОГРАММНЫХ	МОДУЛЕЙ
+     42
+     43				     ;Модуль "Ввод с клавиатуры	и формирования флагов клавиатуры"
+     44	0000			     KbdInput  PROC NEAR
+     45	0000  BB 0000		       mov    bx,0h
+     46	0003  BB 0000		       mov    bx,0h
+     47	0006  C6 06 0007r 00	       mov    No_Kbd,0			 ;Взведение флагов
+     48	000B  C6 06 0008r 00	       mov    Doub_klic,0
+     49
+     50	0010  80 3E 0006r 00	       cmp    F_pusk,0
+     51	0015  75 4C		       jne    k5
+     52
+     53	0017  E4 00		       in     al,0h			 ;Чтение клавиш	из портов
+     54	0019  A2 0009r		       mov    ob_kl_1,al
+     55	001C  E4 01		       in     al,1h
+     56	001E  A2 000Ar		       mov    ob_kl_2,al
+     57
+     58	0021  8A 3E 000Ar	       mov    bh,ob_kl_2
+     59	0025  80 E7 03		       and    bh,00000011b
+     60	0028  8A 1E 0009r	       mov    bl,ob_kl_1		 ;В BX образ портов 00h	и 01h (клавиатуры)
+     61
+     62	002C  3B 1E 0013r	       cmp    bx,a
+     63	0030  74 2C		       je     k4
+     64	0032  83 FB 00		       cmp    bx,0
+     65	0035  74 21		       je     k3
+     66
+     67	0037  89 1E 0013r	       mov    a,bx
+     68	003B  32 C0		       xor    al,al
+     69	003D  B9 000B		       mov    cx,11
+     70	0040			     k1:
+     71	0040  D1 EB		       shr    bx,1h
+     72	0042  72 04		       jc     k2
+     73	0044  FE C0		       inc    al
+     74	0046  E2 F8		       loop   k1
+     75	0048			     k2:
+     76	0048  A2 000Er		       mov    cifra,al			      ;Запись теккущей цифры
+     77
+     78	004B  83 FB 00		       cmp    bx,0
+     79	004E  74 13		       je     k5
+     80	0050  C6 06 0008r FF	       mov    byte ptr doub_klic,0ffh	      ;Фиксация	двойного нажатия
+     81	0055  EB 07 90		       jmp    k4
+     82
+     83	0058			     k3:
+     84	0058  C7 06 0013r 0000	       mov  a,0h
+     85	005E			     k4:
+     86	005E  C6 06 0007r FF	       mov  no_kbd,0ffh
+     87	0063			     k5:
+     88
+     89	0063  C3		       RET
+     90	0064			     KbdInput  ENDP
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 3
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+     91
+     92				     ;Moдуль "Ввод с тумблеров"
+     93	0064			     TumbInput PROC NEAR
+     94
+     95	0064  E4 01		       in     al,1h
+     96	0066  3C 08		       cmp    al,8
+     97	0068  75 0A		       jne    t1
+     98	006A  C6 06 0006r FF	       mov    f_pusk,0ffh		    ;Тумблер "Cтарт" нажат
+     99	006F  C6 06 000Fr 00	       mov    Ready,0h
+    100	0074			     t1:
+    101
+    102	0074  3C 20		       cmp    al,32
+    103	0076  75 05		       jne    t2
+    104	0078  C6 06 0004r FF	       mov    F_time,0ffh		    ;Тумблер "Время" нажат
+    105	007D			     t2:
+    106
+    107	007D  3C 40		       cmp    al,64
+    108	007F  75 05		       jne    t3
+    109	0081  C6 06 0003r FF	       mov    F_temperat,0ffh		    ;Тумблер "Температура" нажат
+    110
+    111	0086			     t3:
+    112
+    113	0086  3C 80		       cmp    al,128
+    114	0088  75 05		       jne    t4
+    115	008A  C6 06 0005r FF	       mov    F_mode,0ffh		    ;Тумблер "Режим" нажат
+    116
+    117	008F			     t4:
+    118
+    119	008F  C3		       RET
+    120	0090			     TumbInput ENDP
+    121
+    122				     ;Модуль "Сборка числа"
+    123	0090			     MadeChislo	PROC NEAR
+    124
+    125	0090  80 3E 0007r 00	       cmp    no_kbd,0h
+    126	0095  75 21		       jne    m1
+    127	0097  80 3E 0008r 00	       cmp    doub_klic,0h
+    128	009C  75 1A		       jne    m1
+    129
+    130	009E  A1 000Br		       mov    ax,chislo		       ;Преобразование в число для вывода на экран
+    131	00A1  8A E0		       mov    ah,al
+    132	00A3  A0 000Er		       mov    al,cifra
+    133	00A6  A3 000Br		       mov    chislo,ax
+    134
+    135
+    136
+    137	00A9  8B 1E 000Br	       mov    bx,chislo		       ;Преобразование для записи в массиве
+    138	00AD  8A C7		       mov    al,bh
+    139	00AF  B4 0A		       mov    ah,0aH
+    140	00B1  F6 E4		       mul    ah
+    141	00B3  02 C3		       add    al,bl
+    142	00B5  A2 000Dr		       mov    Chisl_dec,al	       ;Запись числа
+    143
+    144	00B8			     m1:
+    145	00B8  C3		       RET
+    146	00B9			     MadeChislo	ENDP
+    147
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 4
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+    148				     ;Модуль "Формирование массива Out_Arr"
+    149	00B9			     FormArr PROC NEAR
+    150	00B9  80 3E 0008r FF	       cmp    Doub_Klic,0ffh
+    151	00BE  74 67		       je     f3
+    152	00C0  80 3E 0007r 00	       cmp    No_Kbd,0h
+    153	00C5  74 60		       je     f3
+    154
+    155	00C7  80 3E 0003r FF	       cmp    F_temperat,0ffh	 ;Запись числа в ячейку	температура
+    156	00CC  75 22		       jne    f1
+    157	00CE  A0 000Dr		       mov    al,chisl_dec
+    158				     ;	cmp    al,60
+    159
+    160	00D1  3C 14		       cmp    al,20
+    161	00D3  72 11		       jb     f0
+    162
+    163	00D5  3C 3C		       cmp    al,60
+    164	00D7  77 0D		       ja     f0
+    165
+    166	00D9  2C 14		       sub    al,20
+    167	00DB  A2 0011r		       mov    out_arr[1],al
+    168	00DE  C6 06 0003r 00	       mov    F_temperat,0
+    169	00E3  EB 0B 90		       jmp    f1
+    170
+    171	00E6			     f0:
+    172	00E6  C6 06 0008r FF	       mov    doub_klic,0ffh
+    173	00EB  C6 06 0003r 00	       mov    F_temperat,0
+    174
+    175
+    176
+    177	00F0			     f1:
+    178
+    179	00F0  80 3E 0004r FF	       cmp    F_time,0ffh	 ;Запись числа в ячейку	время
+    180	00F5  75 0B		       jne    f2
+    181	00F7  A0 000Dr		       mov    al,chisl_dec
+    182	00FA  A2 0010r		       mov    out_arr[0],al
+    183	00FD  C6 06 0004r 00	       mov    F_time,0
+    184
+    185	0102			     f2:
+    186
+    187	0102  80 3E 0005r FF	       cmp    F_mode,0ffh	 ;Запись числа в ячейку	режим работы
+    188	0107  75 1E		       jne    f3
+    189	0109  A0 000Dr		       mov    al,chisl_dec
+    190	010C  FE C8		       dec    al
+    191	010E  3C 02		       cmp    al,2		;Проверка соответствия введенного режима
+    192	0110  76 0D		       jbe    f5		;существующим
+    193	0112  C6 06 0008r FF	       mov    doub_klic,0ffh
+    194	0117  C6 06 0005r 00	       mov    F_mode,0
+    195	011C  EB 09 90		       jmp    f3
+    196	011F			     f5:
+    197	011F  A2 0012r		       mov    out_arr[2],al
+    198	0122  C6 06 0005r 00	       mov    F_mode,0
+    199	0127			     f3:
+    200
+    201	0127  C3		       RET
+    202	0128			     FormArr ENDP
+    203
+    204
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 5
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+    205				     ;Модуль "Управления нагревом"
+    206	0128			     NagrevControl PROC	NEAR
+    207	0128  80 3E 0006r FF	       cmp    f_pusk,0ffh
+    208	012D  75 48		       jne    n10
+    209
+    210	012F  80 3E 0010r 00	       cmp    out_arr[0],0
+    211	0134  74 41		       je     n10
+    212
+    213	0136  A0 0011r		       mov    al,out_arr[1]
+    214	0139  B4 14		       mov    ah,20
+    215	013B  F6 E4		       mul    ah
+    216	013D  BB 0064		       mov    bx,100
+    217	0140  F7 F3		       div    bx
+    218	0142  38 06 0015r	       cmp    sch_temp,al		;сделать больше	или равно
+    219	0146  72 04		       jb     n1
+    220	0148  28 06 0016r	       sub    tec_temp,al
+    221
+    222	014C			     n1:
+    223
+    224	014C  A0 0016r		       mov    al,tec_temp
+    225	014F  3A 06 0011r	       cmp    al,out_arr[1]
+    226	0153  72 11		       jb     n2
+    227
+    228	0155  C6 06 0000r 00	       mov    Led_nagrev,0h	       ;Нагрев не идет
+    229	015A  FE 06 0015r	       inc    sch_temp
+    230	015E  C6 06 000Fr FF	       mov    Ready,0ffh
+    231	0163  EB 21 90		       jmp    n11
+    232
+    233	0166			     n2:
+    234
+    235	0166  FE 06 0016r	       inc    tec_temp
+    236	016A  C6 06 0000r FF	       mov    Led_nagrev,0ffh	       ;Нагрев идет
+    237	016F  C6 06 0015r 00	       mov    sch_temp,0h
+    238	0174  EB 10 90		       jmp    n11
+    239
+    240	0177			     n10:
+    241	0177  C6 06 0015r 00	       mov   sch_temp,0h
+    242	017C  C6 06 0016r 00	       mov   tec_temp,0h
+    243	0181  C6 06 0006r 00	       mov   f_pusk,0h
+    244	0186			     n11:
+    245
+    246	0186  C3		       RET
+    247	0187			     NagrevControl ENDP
+    248
+    249				     ;Модуль "Управления двигателем"
+    250	0187			     Dvigatel PROC NEAR
+    251	0187  EB 0D 90		     jmp d0
+    252	018A  00 00 63 01 1E 0A	1E+   reg_arr db 0,0,99,1, 30,10,30,10,	15,5,15,5
+    253	      0A 0F 05 0F 05
+    254	0196			     d0:
+    255	0196  80 3E 0006r FF	      cmp f_pusk,0ffh
+    256	019B  75 6B		      jne d15_5
+    257	019D  80 3E 000Fr 00	      cmp Ready,0h
+    258	01A2  74 64		      je d15_5
+    259	01A4  80 3E 001Br 00	      cmp byte ptr time,0
+    260	01A9  74 5A		      je d14_4
+    261
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 6
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+    262	01AB  FE 0E 001Br	      dec byte ptr time		  ;Уменьшение времени на 1
+    263
+    264	01AF  80 3E 0019r 00	      cmp pause2,0h
+    265	01B4  74 66		      je d1
+    266
+    267	01B6  80 3E 0018r 00	      cmp left,0h		  ;Время вращения влево	истекло	?
+    268	01BB  75 15		      jne d2
+    269	01BD  80 3E 0017r 00	      cmp pause1,0h
+    270	01C2  75 47		      jne d5
+    271	01C4  80 3E 001Ar 00	      cmp right,0h		  ;Время вращения вправо истекло ?
+    272	01C9  75 29		      jne d4
+    273	01CB  80 3E 0019r 00	      cmp pause2,0h		  ;Время паузы истекло ?
+    274	01D0  75 11		      jne d3
+    275
+    276	01D2			     d2:
+    277	01D2  C6 06 0001r FF	      mov led_left,0ffh
+    278	01D7  C6 06 0002r 00	      mov led_right,0h
+    279	01DC  FE 0E 0018r	      dec byte ptr left
+    280	01E0  E9 00A0		      jmp d_exit
+    281	01E3			     d3:
+    282	01E3  C6 06 0001r 00	      mov led_left,0h
+    283	01E8  C6 06 0002r 00	      mov led_right,0h
+    284	01ED  FE 0E 0019r	      dec byte ptr pause2
+    285	01F1  E9 008F		      jmp d_exit
+    286	01F4			     d4:
+    287	01F4  C6 06 0001r 00	      mov led_left,0h
+    288	01F9  C6 06 0002r FF	      mov led_right,0ffh
+    289	01FE  FE 0E 001Ar	      dec byte ptr right
+    290	0202  EB 7F 90		      jmp d_exit
+    291	0205			     d14_4:
+    292	0205  EB 42 90		      jmp d14
+    293	0208			     d15_5:
+    294	0208  EB 66 90		      jmp d15
+    295	020B			     d5:
+    296	020B  C6 06 0001r 00	      mov led_left,0h
+    297	0210  C6 06 0002r 00	      mov led_right,0h
+    298	0215  FE 0E 0017r	      dec byte ptr pause1
+    299	0219  EB 68 90		      jmp d_exit
+    300
+    301	021C			     d1:
+    302	021C  B0 04		      mov al,4h
+    303	021E  8A 26 0012r	      mov ah,byte ptr out_arr[2]
+    304	0222  F6 E4		      mul ah
+    305	0224  8B F8		      mov di,ax
+    306
+    307	0226  2E: 8A 85	018Ar	      mov al,reg_arr[di][0]	      ;Cчитывание параметров режима работы
+    308	022B  A2 0018r		      mov left,al
+    309	022E  2E: 8A 85	018Br	      mov al,reg_arr[di][1]
+    310	0233  A2 0017r		      mov pause1,al
+    311	0236  2E: 8A 85	018Cr	      mov al,reg_arr[di][2]
+    312	023B  A2 001Ar		      mov right,al
+    313	023E  2E: 8A 85	018Dr	      mov al,reg_arr[di][3]
+    314	0243  A2 0019r		      mov pause2,al
+    315
+    316	0246  EB 3B 90		      jmp d_exit
+    317
+    318	0249			     d14:
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 7
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+    319	0249  C6 06 0001r 00	      mov led_left,0h		      ;Cброс всех флагов (т.к. время раб. истекло)
+    320	024E  C6 06 0002r 00	      mov led_right,0h
+    321	0253  C6 06 0006r 00	      mov f_pusk,0h
+    322	0258  C6 06 0000r 00	      mov led_nagrev,0h
+    323	025D  C6 06 000Fr 00	      mov ready,0h
+    324	0262  C6 06 0019r 00	      mov pause2,0h
+    325	0267  A0 0010r		      mov al,out_arr[0]
+    326	026A  A2 001Br		      mov time,al
+    327	026D  EB 14 90		      jmp d_exit
+    328
+    329	0270			     d15:
+    330	0270  C6 06 0019r 00	      mov pause2,0
+    331	0275  C6 06 0019r 00	      mov pause2,0
+    332	027A  A0 0010r		      mov al,out_arr[0]
+    333	027D  A2 001Br		      mov time,al
+    334	0280  EB 01 90		      jmp d_exit
+    335
+    336	0283			     d_exit:
+    337
+    338	0283  C3		       RET
+    339	0284			     Dvigatel ENDP
+    340
+    341
+    342				     ;Модуль "Вывод информации"
+    343	0284			     InfoOut  PROC NEAR
+    344
+    345	0284  EB 0D 90		     jmp i1
+    346	0287  3F 0C 76 5E 4D 5B	79+   tabl    db 3fh,0ch,76h,5eh,4dh,5bh,79h,0eh,7fh,5fh
+    347	      0E 7F 5F
+    348	0291  60 73		      tabl_er db 60h,73h	       ;"Er"
+    349	0293			     i1:
+    350
+    351	0293  80 3E 0008r FF	      cmp doub_klic,0ffh
+    352	0298  74 54		      je i5
+    353	029A  80 3E 0006r 00	      cmp F_pusk,0h
+    354	029F  75 1E		      jne i8
+    355	02A1  8B 1E 000Br	      mov bx,chislo
+    356	02A5  32 FF		      xor bh,bh
+    357	02A7  BF 0287r		      mov di,offset tabl
+    358	02AA  2E: 8A 01		      mov al,byte ptr cs:[di+bx]
+    359	02AD  E6 03		      out 3h,al			      ;Вывод старшей цифры
+    360
+    361	02AF  8B 1E 000Br	      mov bx,chislo
+    362	02B3  8A DF		      mov bl,bh
+    363	02B5  32 FF		      xor bh,bh
+    364	02B7  BF 0287r		      mov di,offset tabl
+    365	02BA  2E: 8A 01		      mov al,byte ptr cs:[di+bx]
+    366	02BD  E6 02		      out 2h,al			      ;Вывод младшей цифры
+    367	02BF			     i8:
+    368	02BF  32 C0		      xor al,al
+    369
+    370	02C1  80 3E 0006r FF	      cmp F_pusk,0ffh
+    371	02C6  75 0B		      jne i2
+    372	02C8  8A 1E 0000r	      mov bl,Led_nagrev
+    373	02CC  80 FB 00		      cmp bl,0h
+    374	02CF  74 02		      je i2
+    375	02D1  0C 01		      or al,1b
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 8
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+    376	02D3			     i2:
+    377
+    378	02D3  8A 1E 0001r	      mov bl,Led_left
+    379	02D7  80 FB 00		      cmp bl,0h
+    380	02DA  74 02		      je  i3
+    381	02DC  0C 02		      or  al,10b
+    382	02DE			     i3:
+    383
+    384	02DE  8A 1E 0002r	      mov bl,Led_right
+    385	02E2  80 FB 00		      cmp bl,0h
+    386	02E5  74 02		      je  i4
+    387	02E7  0C 04		      or  al,100b
+    388	02E9			     i4:
+    389	02E9  E6 04		      out 4h,al			       ;Отображение (Нагрев,Лево,Право)
+    390	02EB  EB 0D 90		      jmp i6
+    391
+    392	02EE			     i5:
+    393
+    394	02EE  2E: A0 0291r	      mov al,byte ptr tabl_er[0]
+    395	02F2  E6 03		      out 3h,al
+    396	02F4  2E: A0 0292r	      mov al,byte ptr tabl_er[1]
+    397	02F8  E6 02		      out 2h,al
+    398
+    399	02FA			     i6:
+    400
+    401
+    402	02FA  C3		       RET
+    403	02FB			     InfoOut  ENDP
+    404
+    405				     ;Модуль "Задержка"
+    406
+    407	02FB			     Pause    PROC  near
+    408	02FB  80 3E 0006r FF	       cmp    f_pusk,0ffh
+    409	0300  75 05		       jne    p1
+    410	0302  B9 1055		       mov    cx,1055h
+    411
+    412	0305			     P0:
+    413	0305  E2 FE		       loop   P0
+    414	0307			     p1:
+    415	0307  C3		       ret
+    416	0308			     Pause    ENDP
+    417
+    418				     ;				МАКРОУРОВЕНЬ ПРОГРАММЫ
+    419	0308			     begin:
+    420
+    421	0308  B8 0000s		       mov    ax,data
+    422	030B  8E D8		       mov    ds,ax
+    423	030D  B8 0000s		       mov    ax,stack
+    424	0310  8E D0		       mov    ss,ax
+    425
+    426	0312  E8 FCEB		       call   KbdInput	      ;Ввод с клавиатуры
+    427	0315  E8 FD4C		       call   TumbInput	      ;Вод с тумблеров
+    428	0318  E8 FD75		       call   MadeChislo      ;Сборка числа
+    429	031B  E8 FD9B		       call   FormArr	      ;Формировани массива Out_Arr
+    430	031E  E8 FE07		       call   NagrevControl   ;Управление нагревом воды
+    431	0321  E8 FE63		       call   Dvigatel	      ;Управление двигателем
+    432	0324  E8 FF5D		       call   InfoOut	      ;Вывод информации
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 9
+D:\DEMIS5\ST_MASH\ST_MASH.ASM
+
+
+
+    433	0327  E8 FFD1		       call   Pause	      ;Задержка
+    434
+    435
+    436				       org    07f0h
+    437
+    438	07F0			     start:
+    439	07F0  E9 FB15		      jmp begin
+    440	07F3			     code ends
+    441				     end start
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 10
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "23/12/99"
+??FILENAME			  Text	 "ST_MASH "
+??TIME				  Text	 "15:43:56"
+??VERSION			  Number 0314
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 ST_MASH
+@WORDSIZE			  Text	 2
+A				  Word	 DATA:0013
+BEGIN				  Near	 CODE:0308
+CHISLO				  Word	 DATA:000B
+CHISL_DEC			  Byte	 DATA:000D
+CIFRA				  Byte	 DATA:000E
+D0				  Near	 CODE:0196
+D1				  Near	 CODE:021C
+D14				  Near	 CODE:0249
+D14_4				  Near	 CODE:0205
+D15				  Near	 CODE:0270
+D15_5				  Near	 CODE:0208
+D2				  Near	 CODE:01D2
+D3				  Near	 CODE:01E3
+D4				  Near	 CODE:01F4
+D5				  Near	 CODE:020B
+DOUB_KLIC			  Byte	 DATA:0008
+DVIGATEL			  Near	 CODE:0187
+D_EXIT				  Near	 CODE:0283
+F0				  Near	 CODE:00E6
+F1				  Near	 CODE:00F0
+F2				  Near	 CODE:0102
+F3				  Near	 CODE:0127
+F5				  Near	 CODE:011F
+FORMARR				  Near	 CODE:00B9
+F_MODE				  Byte	 DATA:0005
+F_PUSK				  Byte	 DATA:0006
+F_TEMPERAT			  Byte	 DATA:0003
+F_TIME				  Byte	 DATA:0004
+I1				  Near	 CODE:0293
+I2				  Near	 CODE:02D3
+I3				  Near	 CODE:02DE
+I4				  Near	 CODE:02E9
+I5				  Near	 CODE:02EE
+I6				  Near	 CODE:02FA
+I8				  Near	 CODE:02BF
+INFOOUT				  Near	 CODE:0284
+K1				  Near	 CODE:0040
+K2				  Near	 CODE:0048
+K3				  Near	 CODE:0058
+K4				  Near	 CODE:005E
+K5				  Near	 CODE:0063
+KBDINPUT			  Near	 CODE:0000
+LED_LEFT			  Byte	 DATA:0001
+LED_NAGREV			  Byte	 DATA:0000
+LED_RIGHT			  Byte	 DATA:0002
+LEFT				  Byte	 DATA:0018
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 11
+Symbol Table
+
+
+
+M1				  Near	 CODE:00B8
+MADECHISLO			  Near	 CODE:0090
+N1				  Near	 CODE:014C
+N10				  Near	 CODE:0177
+N11				  Near	 CODE:0186
+N2				  Near	 CODE:0166
+NAGREVCONTROL			  Near	 CODE:0128
+NO_KBD				  Byte	 DATA:0007
+OB_KL_1				  Byte	 DATA:0009
+OB_KL_2				  Byte	 DATA:000A
+OUT_ARR				  Byte	 DATA:0010
+P0				  Near	 CODE:0305
+P1				  Near	 CODE:0307
+PAUSE				  Near	 CODE:02FB
+PAUSE1				  Byte	 DATA:0017
+PAUSE2				  Byte	 DATA:0019
+READY				  Byte	 DATA:000F
+REG_ARR				  Byte	 CODE:018A
+RIGHT				  Byte	 DATA:001A
+SCH_TEMP			  Byte	 DATA:0015
+START				  Near	 CODE:07F0
+STKTOP				  Word	 STACK:00A0
+T1				  Near	 CODE:0074
+T2				  Near	 CODE:007D
+T3				  Near	 CODE:0086
+T4				  Near	 CODE:008F
+TABL				  Byte	 CODE:0287
+TABL_ER				  Byte	 CODE:0291
+TEC_TEMP			  Byte	 DATA:0016
+TIME				  Byte	 DATA:001B
+TUMBINPUT			  Near	 CODE:0064
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  07F3 Para	  none
+DATA				  16  001C  AT BA00
+STACK				  16  00A0  AT BA80
+Turbo Assembler	 Version 3.2	    23/12/99 15:43:56	    Page 12
+Error Summary
+
+
+
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(3) Data	or code	written	to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(4) Data	or code	written	to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(5) Data	or code	written	to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(6) Data	or code	written	to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(7) Data	or code	written	to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(8) Data	or code	written	to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(9) Data	or code	written	to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(10) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(11) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(12) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(13) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(14) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(15) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(16) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(17) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(19) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(21) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(22) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(23) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(24) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(25) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(26) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(27) Data or code written to uninitialized segment
+*Warning* D:\DEMIS5\ST_MASH\ST_MASH.ASM(33) Reserved word used as symbol: STACK
+

@@ -1,0 +1,7 @@
+[SOURCE]=00000001,Kursovik.asm
+[ARCH]=00000000,Kursovik.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(44,44,866,502)D:\USERS\Код программы\Kursovik.arh
+[WND.asm]=(66,66,870,506)D:\USERS\Код программы\Kursovik.asm

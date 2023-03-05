@@ -1,0 +1,5 @@
+[ARCH]=0,telef.arh
+[SOURCE]=1,telef.asm
+[ROMSIZE]=4
+[WND.asm]=(66,66,708,428)D:\demis 3.1win\telef\telef.asm
+[WND.arh]=(110,110,752,472)D:\demis 3.1win\telef\telef.arh

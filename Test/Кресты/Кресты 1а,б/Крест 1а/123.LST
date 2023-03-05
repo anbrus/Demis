@@ -1,0 +1,46 @@
+Turbo Assembler	 Version 3.1	    18/02/12 11:17:16	    Page 1
+123.asm
+
+
+
+      1					 .386
+      2		  =0100			 RomSize    EQU	  256
+      3
+      4	    0000			 Data	    SEGMENT AT 40h use16
+      5	    0000			 Data	    ENDS
+      6
+      7	    0000			 Code	    SEGMENT use16
+      8						    ASSUME cs:Code,ds:Data,es:Data
+      9	    0000			 Start:
+     10	    0000  E4 00				    in al, 0
+     11	    0002  E6 00				    out	0, al
+     12
+     13						    org	  RomSize-16
+     14						    ASSUME cs:NOTHING
+     15	    00F0  EA 00000000sr			    jmp	  Far Ptr Start
+     16	    00F5			 Code	    ENDS
+     17					 END
+Turbo Assembler	 Version 3.1	    18/02/12 11:17:16	    Page 2
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "18/02/12"
+??FILENAME			  Text	 "123	  "
+??TIME				  Text	 "11:17:16"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 123
+@WORDSIZE			  Text	 2
+ROMSIZE				  Number 0100
+START				  Near	 CODE:0000
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  00F5 Para	  none
+DATA				  16  0000  AT 0040
+

@@ -1,0 +1,5 @@
+[ARCH]=0,kurs.arh
+[SOURCE]=1,kurs.asm
+[ROMSIZE]=4
+[WND.asm]=(22,22,992,568)C:\DEMIS_New\Alexsander\kurs.asm
+[WND.arh]=(44,44,866,502)C:\DEMIS_New\Alexsander\kurs.arh

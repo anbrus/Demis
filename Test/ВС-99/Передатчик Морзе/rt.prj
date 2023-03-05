@@ -1,0 +1,6 @@
+[ARCH]=00000000,rt.arh
+[SOURCE]=00000001,rt.asm
+[ROMSIZE]=4
+[FREQ]=200000
+[FREEPINLEVEL]=1
+[WND.asm]=(137,0,779,333)D:\USERS\ivan\copy2\Новая папка\rt.asm

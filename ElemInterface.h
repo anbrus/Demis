@@ -13,10 +13,10 @@
 #define MAX_CONNECT_POINT 32 //Максимальное число точек подключения
 
 struct _ElementId {
-  CString Name;     //Имя элемента
-  DWORD   Type;     //Тип элемента: объединение по ИЛИ констант ET_xxx
+	CString Name;     //Имя элемента
+	DWORD   Type;     //Тип элемента: объединение по ИЛИ констант ET_xxx
 	CString ClsId;
-  CBitmap Icon;    //Иконка
+	CBitmap Icon;    //Иконка
 };
 
 

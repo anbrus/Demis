@@ -1,0 +1,6 @@
+[SOURCE]=00000000,control1.asm
+[ARCH]=00000000,control1.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(73,-22,569,513)D:\USERS\DIDI\didibeta\control1.asm

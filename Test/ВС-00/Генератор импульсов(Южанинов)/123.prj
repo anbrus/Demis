@@ -1,0 +1,7 @@
+[ARCH]=00000000,123.arh
+[SOURCE]=00000001,123.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(46,140,1038,782)C:\Documents and Settings\student\Рабочий стол\UjiN\123.asm
+[WND.arh]=(36,21,978,608)C:\Documents and Settings\student\Рабочий стол\UjiN\123.arh

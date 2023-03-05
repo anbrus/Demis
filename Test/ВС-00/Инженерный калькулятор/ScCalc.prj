@@ -1,0 +1,17 @@
+[ARCH]=00000000,ScCalc.arh
+[SOURCE]=00000001,ScCalc.asm
+[INCLUDE]=00000000,IO.asm
+[INCLUDE]=00000000,define.asm
+[INCLUDE]=00000000,Service.asm
+[INCLUDE]=00000000,String.asm
+[INCLUDE]=00000000,math.asm
+[ROMSIZE]=8
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(88,88,910,546)C:\RGATA\Assembler\Scientific\define.asm
+[WND.asm]=(66,66,888,525)C:\RGATA\Assembler\Scientific\IO.asm
+[WND.asm]=(132,132,954,590)C:\RGATA\Assembler\Scientific\Service.asm
+[WND.asm]=(110,110,932,568)C:\RGATA\Assembler\Scientific\String.asm
+[WND.asm]=(44,44,866,502)C:\RGATA\Assembler\Scientific\ScCalc.asm
+[WND.arh]=(0,0,822,462)C:\RGATA\Assembler\Scientific\ScCalc.arh
+[WND.asm]=(87,132,890,572)C:\RGATA\Assembler\Scientific\math.asm

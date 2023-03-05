@@ -1,0 +1,6 @@
+[SOURCE]=00000001,anton.asm
+[ARCH]=00000000,anton.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[WND.asm]=(89,6,591,341)C:\Мои документы\док\МПС_л_р\anton.asm
+[WND.arh]=(50,29,552,293)C:\Мои документы\док\МПС_л_р\anton.arh

@@ -10,14 +10,15 @@
 #endif // _MSC_VER > 1000
 #include <Mmsystem.h>
 #include <inttypes.h>
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
 
 class CBeepArchWnd : public CElementWnd  
 {
 public:
 	virtual void Draw(CDC* pDC);
-	CBeepArchWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override {};
+	CBeepArchWnd(CElementBase* pElement);
 	virtual ~CBeepArchWnd();
 
 protected:
@@ -35,7 +36,8 @@ class CBeepConstrWnd : public CElementWnd
 {
 public:
 	virtual void Draw(CDC* pDC);
-	CBeepConstrWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override {};
+	CBeepConstrWnd(CElementBase* pElement);
 	virtual ~CBeepConstrWnd();
 
 protected:
@@ -45,18 +47,19 @@ protected:
   DECLARE_MESSAGE_MAP()
 };
 
-class CBeepElement : public CElement  
+class CBeepElement : public CElementBase  
 {
 public:
+	CBeepElement(BOOL ArchMode, int id);
+	virtual ~CBeepElement();
+
 	void OnChangeFreq();
 	virtual void SetPinState(DWORD NewState);
 	virtual void UpdateTipText();
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	virtual BOOL Reset(BOOL bEditMode,int64_t* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
-  CBeepElement(BOOL ArchMode,CElemInterface* pInterface);
-	virtual ~CBeepElement();
 protected:
 	void Beep(BOOL BeepOn);
 	void updateWave();

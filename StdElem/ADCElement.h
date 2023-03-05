@@ -9,78 +9,90 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
 
-class CADCArchWnd : public CElementWnd  
+class CADCArchWnd : public CElementWnd
 {
 public:
 	void SetRange(BOOL HiPrecision);
-	void DrawValue(CDC* pDC);
 	virtual void Draw(CDC* pDC);
-	CADCArchWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override;
+	CADCArchWnd(CElementBase* pElement);
 	virtual ~CADCArchWnd();
 
 protected:
-	CRgn ADCRgn;
-	CSliderCtrl Slider;
-  //{{AFX_MSG(CADCArchWnd)
+	//{{AFX_MSG(CADCArchWnd)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnDelay();
 	afx_msg void OnLimits();
 	afx_msg void OnHiPrecision();
 	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
+
+private:
+	std::mutex mutexDraw;
+	CSliderCtrl Slider;
+	CDC MemoryDC;
+
+	void DrawStatic(CDC* pDC);
+	void DrawDynamic(CDC* pDC);
 };
 
 
-class CADCConstrWnd : public CElementWnd  
+class CADCConstrWnd : public CElementWnd
 {
 public:
 	void SetRange(BOOL HiPrecision);
 	virtual void Draw(CDC* pDC);
-	CADCConstrWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override {};
+	CADCConstrWnd(CElementBase* pElement);
 	virtual ~CADCConstrWnd();
 
 protected:
-	CSliderCtrl Slider;
-  //{{AFX_MSG(CADCConstrWnd)
+	//{{AFX_MSG(CADCConstrWnd)
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	afx_msg void OnVScroll(UINT nSBCode, UINT nPos, CScrollBar* pScrollBar);
 	afx_msg void OnDelay();
 	afx_msg void OnLimits();
 	afx_msg void OnHiPrecision();
 	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
+
+private:
+	CSliderCtrl Slider;
 };
 
-class CADCElement : public CElement  
+class CADCElement : public CElementBase
 {
 public:
+	virtual ~CADCElement();
+	CADCElement(BOOL ArchMode, int id);
+
 	BOOL HiPrecision;
-  void OnHiPrecision();
-	virtual void OnInstrCounterEvent();
-	void OnLimits();
-	CString LoLimit,HiLimit;
-	DWORD StartState,ReadyState;
-	virtual void SetPinState(DWORD NewState);
+	CString LoLimit, HiLimit;
+	DWORD StartState, ReadyState;
 	DWORD Delay;
-	void OnDelay();
 	DWORD SliderState;
+	DWORD State = -1;
+	INT64 LastEventTakt;
+
+	void OnHiPrecision();
+	void OnTickTimer();
+	void OnLimits();
+	virtual void SetPinState(DWORD NewState);
+	void OnDelay();
 	virtual DWORD GetPinState();
-  INT64 LastEventTakt;
 	virtual void UpdateTipText();
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
-	virtual ~CADCElement();
-	CADCElement(BOOL ArchMode,CElemInterface* pInterface);
 
 protected:
 	void ChangePinConfiguration();
-	DWORD DelayTakts;
+	DWORD DelayTicks;
 };
 
 #endif // !defined(AFX_ADC_H__AC326D84_78BA_11D4_8288_E863E1351E47__INCLUDED_)
@@ -89,7 +101,7 @@ protected:
 
 class CADCDelayDlg : public CDialog
 {
-// Construction
+	// Construction
 public:
 	CADCDelayDlg(CWnd* pParent = NULL);   // standard constructor
 
@@ -103,7 +115,7 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CADCDelayDlg)
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 
@@ -121,7 +133,7 @@ protected:
 
 class CADCLimitsDlg : public CDialog
 {
-// Construction
+	// Construction
 public:
 	CADCLimitsDlg(CWnd* pParent = NULL);   // standard constructor
 
@@ -136,7 +148,7 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CADCLimitsDlg)
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
 	//}}AFX_VIRTUAL
 

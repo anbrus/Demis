@@ -6,7 +6,7 @@ Default Window=Default
 Default topic=HTML\About.htm
 Display compile progress=No
 Full-text search=Yes
-Index file="D:\1\Demis2k\Help\Index.hhk"
+Index file="Index.hhk"
 Language=0x419 Русский
 Title=Design Microsystems
 

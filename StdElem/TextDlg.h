@@ -5,7 +5,7 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "Resource.h"
 
 class CTextDlg : public CDialog
 {

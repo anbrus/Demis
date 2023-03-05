@@ -1,0 +1,11 @@
+[INCLUDE]=00000000,My_Init.asm
+[INCLUDE]=00000000,Init_Mem.asm
+[SOURCE]=00000001,Shadow.asm
+[ARCH]=00000000,Shadow.arh
+[INCLUDE]=00000000,Anove.asm
+[ROMSIZE]=6
+[FREQ]=100000
+[FREEPINLEVEL]=1
+[WND.asm]=(110,110,932,568)C:\Documents and Settings\student\Рабочий стол\Курсовик(Исправл)\Shadow.asm
+[WND.asm]=(154,154,976,612)C:\Documents and Settings\student\Рабочий стол\Курсовик(Исправл)\Anove.asm
+[WND.arh]=(0,0,804,440)C:\Documents and Settings\student\Рабочий стол\Курсовик(Исправл)\Shadow.arh

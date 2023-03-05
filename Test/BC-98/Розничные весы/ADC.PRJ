@@ -1,0 +1,7 @@
+[SOURCE]=00000001,Proj1.asm
+[ARCH]=00000000,ADC.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(39,-13,681,465)C:\Documents and Settings\student\Рабочий стол\ADC\Proj1.asm
+[WND.arh]=(44,44,686,378)C:\Documents and Settings\student\Рабочий стол\ADC\ADC.arh

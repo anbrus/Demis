@@ -1,0 +1,7 @@
+[ARCH]=00000000,MW.arh
+[SOURCE]=00000001,MW.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(132,40,774,374)C:\Documents and Settings\student\Рабочий стол\SuperDemFinalSE\MW.asm
+[WND.arh]=(110,110,752,444)C:\Documents and Settings\student\Рабочий стол\SuperDemFinalSE\MW.arh

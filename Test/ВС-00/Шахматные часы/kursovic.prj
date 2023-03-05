@@ -1,0 +1,7 @@
+[SOURCE]=00000001,kursovic.asm
+[ARCH]=00000000,kursovic.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(111,65,933,589)D:\USERS\응응\for HAB\kursovic.arh
+[WND.asm]=(110,19,932,477)D:\USERS\응응\for HAB\kursovic.asm

@@ -1,0 +1,7 @@
+[ARCH]=00000000,lock.arh
+[SOURCE]=00000001,lock.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(52,52,1593,730)D:\1\Demis2k\Test\ВС-99\Кодовый замок\lock.asm
+[WND.arh]=(104,104,1645,782)D:\1\Demis2k\Test\ВС-99\Кодовый замок\lock.arh

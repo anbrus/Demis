@@ -1,14 +1,9 @@
-#if !defined(AFX_ARCHVIEW_H__6A0AA639_E53B_11D3_AB02_D4AED9F34A62__INCLUDED_)
-#define AFX_ARCHVIEW_H__6A0AA639_E53B_11D3_AB02_D4AED9F34A62__INCLUDED_
-
-#if _MSC_VER >= 1000
 #pragma once
-#endif // _MSC_VER >= 1000
-// ArchView.h : header file
-//
 
 #include "ElemInterface.h"
 #include "StdElem.h"
+
+#include <thread>
 
 class CArchDoc;
 /////////////////////////////////////////////////////////////////////////////
@@ -17,63 +12,69 @@ class CArchDoc;
 class CArchView : public CScrollView
 {
 protected:
-  struct ConPoint{
-    CElement *pElement;
-    int PinNumber;
-  };
-  typedef CList<ConPoint,ConPoint&> PointList;
+	struct ConPoint {
+		CElement *pElement;
+		int PinNumber;
+	};
+	typedef CList<ConPoint, ConPoint&> PointList;
 
-  PointList ConData[1024][MAX_CONNECT_POINT];
+	PointList ConData[1024][MAX_CONNECT_POINT];
 	CArchView();
-	BOOL MoveMode,CopyMode;
+	BOOL MoveMode, CopyMode;
 	int SelectedCount;
 	CPoint LastMousePoint;
 	CPoint StartMousePoint;
 	DECLARE_DYNCREATE(CArchView)
 
-// Attributes
+	// Attributes
 public:
-// Operations
+	// Operations
 public:
 	BOOL CreateElementButtons();
 	void DeconnectSelected();
 	DWORD GetPinState(int ElementIndex);
 	CStatusBar m_StatusBar;
-	int XRes,YRes;
+	int XRes, YRes;
 	void ChangeMode(BOOL bConfigMode);
 	BOOL ConfigMode;
 	BOOL ArchMode;
-  CToolBar ToolBar;
-  CReBar ReBar;
-  CBitmap *BtnBmp[256];
-  CArchDoc* pDoc;
+	CToolBar ToolBar;
+	CReBar ReBar;
+	CBitmap *BtnBmp[256];
+	CArchDoc* pDoc;
 	void FindIntersections(CElement *pElement);
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CArchView)
-	public:
-  virtual BOOL OnEraseBkgnd(CDC* pDC);
-	virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = NULL);
-	protected:
-	virtual void OnInitialUpdate();     // first time after construct
-	virtual BOOL PreCreateWindow(CREATESTRUCT& cs);
-	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint);
-	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo);
-	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo);
-	virtual void OnDraw(CDC* pDC);
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
+public:
+	virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = NULL) override;
+
+	void OnPinStateChanged(DWORD PinState, int hElement);
+
+protected:
+	virtual void OnInitialUpdate() override;
+	virtual BOOL PreCreateWindow(CREATESTRUCT& cs) override;
+	virtual void OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) override;
+	virtual BOOL OnPreparePrinting(CPrintInfo* pInfo) override;
+	virtual void OnPrint(CDC* pDC, CPrintInfo* pInfo) override;
+	virtual void OnDraw(CDC* pDC) override;
 	//}}AFX_VIRTUAL
 
 // Implementation
 protected:
-	UINT Ind[2];
+	virtual ~CArchView();
+
+	UINT Ind[3];
+	std::thread threadRedraw;
+	//std::thread threadVSync;
+	int fps = 0;
+	//bool isVSyncCatched = false;
+
 	void ConnectSelected();
-	BOOL MoveSelected(int ShiftX,int ShiftY);
+	BOOL MoveSelected(int ShiftX, int ShiftY);
 	void DeconnectElement(int ElemIndex);
 	CPoint GetMinDist(CElement *pFixedElement, CElement *pMovedElement);
-	BOOL ConnectElements(CElement *pMovedElement,CElement *pFixedElement);
-	virtual ~CArchView();
+	BOOL ConnectElements(CElement *pMovedElement, CElement *pFixedElement);
+	static void redrawChangedElements(CArchView* pArchView);
+	//static void vsync(CArchView* pArchView);
 #ifdef _DEBUG
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
@@ -89,24 +90,17 @@ protected:
 	afx_msg void OnUpdateArchElemDel(CCmdUI* pCmdUI);
 	afx_msg void OnUpdateAddElement(CCmdUI* pCmdUI);
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
-	afx_msg LPARAM OnAddElementByName(WPARAM wParam,LPARAM lParam);
-	afx_msg LPARAM OnElementLButtonDown(WPARAM nFlags,LPARAM hElement);
-	afx_msg LPARAM OnElementLButtonUp(WPARAM nFlags,LPARAM hElement);
-	afx_msg LPARAM OnElementMouseMove(WPARAM nFlags,LPARAM hElement);
-	afx_msg LPARAM OnPinStateChanged(WPARAM PinState,LPARAM hElement);
-	afx_msg LPARAM OnSetInstrCounter(WPARAM Value,LPARAM hElement);
-	afx_msg LPARAM OnKillInstrCounter(WPARAM Void,LPARAM hElement);
-	afx_msg LPARAM OnGetPinState(WPARAM wParam,LPARAM hElement);
+	afx_msg LPARAM OnAddElementByName(WPARAM wParam, LPARAM lParam);
+	afx_msg LPARAM OnElementLButtonDown(WPARAM nFlags, LPARAM hElement);
+	afx_msg LPARAM OnElementLButtonUp(WPARAM nFlags, LPARAM hElement);
+	afx_msg LPARAM OnElementMouseMove(WPARAM nFlags, LPARAM hElement);
+	//afx_msg LPARAM OnKillInstrCounter(WPARAM Void, LPARAM hElement);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg void OnDestroy();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
 
-/////////////////////////////////////////////////////////////////////////////
-
-//{{AFX_INSERT_LOCATION}}
-// Microsoft Developer Studio will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_ARCHVIEW_H__6A0AA639_E53B_11D3_AB02_D4AED9F34A62__INCLUDED_)

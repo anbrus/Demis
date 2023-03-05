@@ -1,0 +1,8 @@
+[INCLUDE]=00000000,Buttons.asm
+[ARCH]=00000000,Keyboard.arh
+[SOURCE]=00000001,Keyboard.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(88,88,910,546)C:\Documents and Settings\student\Рабочий стол\Keyboard\Keyboard.asm
+[WND.arh]=(132,132,954,590)C:\Documents and Settings\student\Рабочий стол\Keyboard\Keyboard.arh

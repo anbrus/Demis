@@ -1,0 +1,738 @@
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 1
+svetofor.asm
+
+
+
+      1	      =1000		     RomSize	EQU   4096	  ;Объём ПЗУ
+      2
+      3	      =0000		     Sv1	EQU   0
+      4	      =0001		     Sv2	EQU   1
+      5	      =0002		     Ind2d	EQU   2
+      6	      =0003		     Ind2e	EQU   3
+      7	      =0004		     Ind1d	EQU   4
+      8	      =0005		     Ind1e	EQU   5
+      9	      =0008		     Revers	EQU   8
+     10	      =0009		     Kbd	EQU   9
+     11	      =0032		     NMax	EQU  50
+     12
+     13	0000			     Data Segment at 40h
+     14
+     15	0000  ??		     d1e    db	   ?
+     16	0001  ??		     d1d    db	   ?
+     17	0002  ??		     d2e    db	   ?
+     18	0003  ??		     d2d    db	   ?
+     19	0004  ??		     N1	    db	   ?
+     20	0005  ??		     N2	    db	   ?
+     21	0006  ??		     T	    db	   ?
+     22	0007  ??		     k	    db	   ?
+     23	0008  ??		     NCol db	   ?
+     24	0009  ??		     Cikl   db	   ?
+     25	000A  ??		     Col1   db	   ?
+     26	000B  ??		     Col2   db	   ?
+     27	000C  ??		     Revr   db	   ?
+     28	000D  ??		     AvtR   db	   ?
+     29
+     30	000E			     Data ENDS
+     31
+     32	0000			     Code SEGMENT
+     33
+     34				     ;Образы десятичных	цифр от	0 до 9
+     35	0000  3F 0C 76 5E 4D 5B	7B+  Image	db    03Fh,00Ch,076h,05Eh,04Dh,05Bh,07Bh,00Eh,07Fh,05Fh
+     36	      0E 7F 5F
+     37
+     38				     ASSUME cs:Code, ds:Data, es:Code
+     39
+     40
+     41
+     42	000A			     VibrDestr	PROC  NEAR
+     43	000A  8A E0		     VD1:	mov   ah,al	  ;Сохранение исходного	состояния
+     44	000C  B7 00				mov   bh,0	  ;Сброс счётчика повторений
+     45	000E  EC		     VD2:	in    al,dx	  ;Ввод	текущего состояния
+     46	000F  3A E0				cmp   ah,al	  ;Текущее состояние=исходному?
+     47	0011  75 F7				jne   VD1	  ;Переход, если нет
+     48	0013  FE C7				inc   bh	  ;Инкремент счётчика повторений
+     49	0015  80 FF 32				cmp   bh,NMax	  ;Конец дребезга?
+     50	0018  75 F4				jne   VD2	  ;Переход, если нет
+     51	001A  8A C4				mov   al,ah	  ;Восстановление местоположения данных
+     52	001C  C3				ret
+     53	001D			     VibrDestr	ENDP
+     54
+     55	001D			     PausCol	Proc  NEAR
+     56						;mov   al,T
+     57	001D  8A 1E 0006r			mov   bl,T
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 2
+svetofor.asm
+
+
+
+     58	0021  B2 01				mov   dl,01h
+     59	0023  8A C2				mov   al,dl
+     60	0025  F6 E3				mul   bl
+     61	0027  8A D0				mov   dl,al
+     62	0029  B9 02FF				mov   cx,02ffh
+     63	002C  C3				ret
+     64	002D			     PausCol	ENDP
+     65
+     66	002D			     InvCol	Proc  NEAR
+     67	002D  80 3E 000Ar 61			cmp   Col1,61h
+     68	0032  74 1A				je    ICol1
+     69	0034  C6 06 000Ar 61			mov   Col1,61h
+     70	0039  80 3E 000Dr 00			cmp   AvtR,0
+     71	003E  74 07				je    ICol2
+     72	0040  C6 06 000Br 88			mov   col2,88h
+     73	0045  EB 1F				jmp   ICEnd
+     74	0047  C6 06 000Br 48	     ICol2:	mov   col2,48h
+     75	004C  EB 18				jmp   ICEnd
+     76	004E  C6 06 000Ar 0C	     ICol1:	mov   Col1,0cH
+     77	0053  80 3E 000Dr 00			cmp   AvtR,0
+     78	0058  74 07				je    ICol3
+     79	005A  C6 06 000Br 83			mov   Col2,83h
+     80	005F  EB 05				jmp   ICEnd
+     81	0061  C6 06 000Br 43	     ICol3:	mov   Col2,43h
+     82	0066  C3		     ICEnd:	ret
+     83	0067			     InvCol	ENDP
+     84
+     85	0067			     Yellow	Proc  NEAR
+     86
+     87	0067  B0 92				mov   al,92h	  ;
+     88	0069  E6 00				out   Sv1,al	  ;  Горит желтый цвет
+     89	006B  80 3E 000Dr 00			cmp   AvtR,0h
+     90	0070  74 04				je    Yellow1
+     91	0072  B0 84				mov   al,84h
+     92	0074  EB 02				jmp   Yellow2
+     93	0076  B0 44		     Yellow1:	mov   al,44h	   ;
+     94	0078  E6 01		     Yellow2:	out   Sv2,al
+     95	007A  B3 0A				mov   bl,0ah
+     96	007C  B2 01				mov   dl,01h
+     97	007E  8A C2				mov   al,dl
+     98	0080  F6 E3				mul   bl
+     99	0082  8A D0				mov   dl,al
+    100	0084  B9 02FF				mov   cx,02ffh
+    101	0087  E8 02EC				call  Pause	 ; переход на задержку 10с
+    102	008A  C3				ret
+    103	008B			     Yellow    ENDP
+    104
+    105	008B			     Red	Proc  NEAR
+    106
+    107	008B  A0 000Ar				mov   al,Col1	  ;
+    108	008E  E6 00				out   Sv1,al	  ;  Горит красный прямо
+    109	0090  A0 000Br				mov   al,Col2	  ;
+    110	0093  E6 01				out   Sv2,al
+    111	0095  C3				ret
+    112	0096			     Red	ENDP
+    113
+    114	0096			     GreenN1	Proc  NEAR
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 3
+svetofor.asm
+
+
+
+    115	0096  A0 0001r				mov   al,d1d
+    116	0099  3A 06 0003r			cmp   al,d2d
+    117	009D  72 02				jb   GrN11
+    118	009F  EB 1A				jmp   GrN12
+    119	00A1  C6 06 000Ar 0C	     GrN11:	mov   Col1,0ch
+    120	00A6  80 3E 000Dr 00			cmp   AvtR,0
+    121	00AB  74 07				je    GrNA1
+    122	00AD  C6 06 000Br 83			mov   Col2,83h
+    123	00B2  EB 36				jmp   GrN1End
+    124	00B4  C6 06 000Br 43	     GrNA1:	mov   Col2,43h
+    125	00B9  EB 2F				jmp   GrN1End
+    126	00BB  3A 06 0003r	     GrN12:	cmp   al,d2d
+    127	00BF  75 11				jne   GrN13
+    128	00C1  A0 0000r				mov   al,d1e
+    129	00C4  3A 06 0002r			cmp   al,d2e
+    130	00C8  74 20				je    GrN1End
+    131	00CA  3A 06 0002r			cmp   al,d2e
+    132	00CE  72 D1				jb    GrN11
+    133						;cmp   al,d2e
+    134						;je    GrN1End
+    135	00D0  EB 00				jmp   GrN13
+    136	00D2  C6 06 000Ar 61	     GrN13:	mov   col1,61h
+    137	00D7  80 3E 000Dr 00			cmp   AvtR,0
+    138	00DC  74 07				je    GrNA2
+    139	00DE  C6 06 000Br 88			mov   col2,88h
+    140	00E3  EB 05				jmp   GrN1End
+    141	00E5  C6 06 000Br 48	     GrNA2:	mov   col2,48h
+    142	00EA  C3		     GrN1End:	ret
+    143	00EB			     GreenN1	ENDP
+    144
+    145	00EB			     FormZdr	Proc  NEAR
+    146	00EB  A0 0004r				mov   al,N1
+    147	00EE  3A 06 0005r			cmp   al,N2
+    148	00F2  75 0E				jne   FZ1
+    149	00F4  80 3E 0005r 00			cmp   N2,0
+    150	00F9  75 15				jne   FZ5
+    151	00FB  C6 06 0006r 28			mov   T,028h
+    152	0100  EB 41				jmp   FZEnd
+    153	0102  80 3E 0005r 00	     FZ1:	cmp   N2,0
+    154	0107  75 07				jne   FZ5
+    155	0109  C6 06 0006r 28			mov   T,028h
+    156	010E  EB 33				jmp   FZEnd
+    157	0110  A0 0004r		     FZ5:	mov   al,N1
+    158	0113  B4 00				mov   ah,0
+    159	0115  8A 1E 0005r			mov   bl,N2
+    160	0119  F6 F3				div   bl
+    161	011B  A2 0007r				mov   k,al
+    162	011E  80 3E 0007r 05			cmp   k,05h
+    163	0123  72 0B				jb    FZ2
+    164	0125  C6 06 0006r 50			mov   T,050h
+    165	012A  FE 06 0009r			inc   Cikl
+    166	012E  EB 13				jmp   FZEnd
+    167	0130  C6 06 0009r 00	     FZ2:	mov   Cikl,0
+    168	0135  A0 0007r				mov   al,k
+    169	0138  B3 0A				mov   bl,0ah
+    170	013A  F6 E3				mul   bl
+    171	013C  B3 1E				mov   bl,1Eh
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 4
+svetofor.asm
+
+
+
+    172	013E  02 C3				add   al,bl
+    173	0140  A2 0006r				mov   T,al
+    174
+    175
+    176	0143  C3		     FZEnd:	ret
+    177	0144			     FormZdr	ENDP
+    178
+    179	0144			     Main1  PROC  NEAR
+    180	0144  80 3E 000Dr 01	     Stm:	cmp   AvtR,1h
+    181	0149  75 03				jne   Stm0
+    182	014B  E9 008C				jmp   AvtoR
+    183	014E  E8 0106		     Stm0:	call  N1N2
+    184	0151  A0 0004r				mov   al,N1
+    185	0154  3A 06 0005r			cmp   al,N2
+    186	0158  75 09				jne   Stm1
+    187	015A  80 3E 0005r 00			cmp   N2,0
+    188	015F  75 14				jne   Stm2
+    189						;call  Yellow	   ;  N1=N2=0
+    190	0161  EB 12				jmp   Stm2
+    191
+    192	0163  80 3E 0005r 00	     Stm1:	cmp   N2,0	  ;  N1<>N2 и N2=0
+    193	0168  75 1F				jne   Stm4		       ;
+    194	016A  E8 FF29				call  GreenN1	  ;
+    195	016D  E8 FF1B				call  Red	  ;
+    196	0170  E8 0203				call  Pause	  ;
+    197	0173  EB CF				jmp   Stm	  ;
+    198
+    199	0175  E8 FEEF		     Stm2:	call  Yellow	  ;  N1=N2 и N2<>0
+    200	0178  E8 FEB2				call  InvCol	  ;
+    201	017B  E8 FF6D				call  FormZdr	  ;
+    202	017E  E8 FE9C				call  PausCol	  ;
+    203	0181  E8 FF07				call  red	  ;
+    204	0184  E8 01EF				Call  Pause
+    205						;call  Yellow
+    206	0187  EB BB				jmp   Stm	  ;
+    207
+    208	0189  E8 FF0A		     Stm4:	call  GreenN1	  ;
+    209	018C  E8 00C8				call  N1N2	  ;
+    210	018F  E8 FF59				call  FormZdr
+    211	0192  E8 FE88				call  PausCol
+    212	0195  E8 FEF3				call  Red
+    213	0198  E8 01DB				call  Pause
+    214	019B  80 3E 000Dr 01			cmp   AvtR,1h
+    215	01A0  74 38				je   AvtoR
+    216	01A2  80 3E 0009r 00			cmp   Cikl,0	  ;  Проверка на k>=5
+    217	01A7  74 0C				je    Stm41
+    218	01A9  80 3E 0009r 03			cmp   Cikl,3
+    219	01AE  75 94				jne   Stm
+    220	01B0  C6 06 0009r 00			mov   Cikl,0
+    221	01B5  E8 FEAF		     Stm41:	call  Yellow
+    222	01B8  E8 FE72				call  InvCol
+    223	01BB  B0 5A				mov   al,5ah
+    224	01BD  2A 06 0006r			sub   al,T
+    225	01C1  A2 0006r				mov   T,al
+    226	01C4  E8 FE56				call  PausCol
+    227	01C7  E8 FEC1				call  Red
+    228	01CA  E8 01A9				call  Pause
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 5
+svetofor.asm
+
+
+
+    229	01CD  80 3E 000Dr 01			cmp   AvtR,1h
+    230	01D2  74 06				je   AvtoR
+    231	01D4  E8 FE90				call  Yellow
+    232	01D7  E9 FF6A				jmp   Stm
+    233
+    234	01DA  E8 FEAE		     AvtoR:	call  Red
+    235	01DD  B9 0001				mov   cx,1h
+    236	01E0  B2 01				mov   dl,1h
+    237	01E2  E8 0191				call  Pause
+    238
+    239	01E5  E4 08		     AvtoR3:	in    al,Revers
+    240						;call  VibrDestr
+    241	01E7  3C FF				cmp   al,0ffh
+    242	01E9  74 EF				je    AvtoR
+    243	01EB  8A E0				mov   ah,al
+    244	01ED  E4 08		     AvtoR2:	in    al,Revers
+    245	01EF  3C FF				cmp   al,0ffh
+    246	01F1  75 FA				jne   AvtoR2
+    247	01F3  F6 C4 02				test  ah,2h
+    248	01F6  75 08				jne   AvtoR4
+    249	01F8  C6 06 000Dr 00			mov   AvtR,0
+    250						;call  InvCol
+    251						;call  Yellow
+    252	01FD  E9 FF44				jmp   Stm
+    253	0200			     AvtoR4:	;dec   d1e
+    254	0200  F6 C4 01				test  ah,1h
+    255	0203  74 02				je    AvtoR1
+    256	0205  EB D3				jmp   AvtoR
+    257	0207  E8 FE5D		     AvtoR1:	call  Yellow
+    258	020A  E8 FE20				call  InvCol
+    259	020D  EB CB				jmp   AvtoR
+    260	020F  C3				RET
+    261	0210			     Main1 ENDP
+    262
+    263	0210			     Main  PROC	 NEAR
+    264	0210  C6 06 0000r 00			mov   d1e,0h
+    265	0215  C6 06 0001r 00			mov   d1d,0h
+    266	021A  C6 06 0002r 00			mov   d2e,0h
+    267	021F  C6 06 0003r 00			mov   d2d,0h
+    268	0224  C6 06 0004r 00			mov   N1,0
+    269	0229  C6 06 0005r 00			mov   N2,0
+    270	022E  C6 06 0006r 00			mov   T,0
+    271	0233  C6 06 0007r 01			mov   k,1h
+    272	0238  C6 06 000Cr 00			mov   Revr,0
+    273	023D  C6 06 0008r 00			mov   NCol,0
+    274	0242  C6 06 0009r 00			mov   Cikl,0
+    275	0247  C6 06 000Ar 00			mov   Col1,0h
+    276	024C  C6 06 000Br 00			mov   Col2,0h
+    277	0251  C6 06 000Dr 00			mov   AvtR,0h
+    278	0256  C3				RET
+    279	0257			     Main  ENDP
+    280
+    281	0257			     N1N2  PROC	 NEAR
+    282	0257  A0 0001r				mov   al,d1d
+    283	025A  B2 0A				mov   dl,10
+    284	025C  F6 E2				mul   dl
+    285	025E  8A 26 0000r			mov   ah,d1e
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 6
+svetofor.asm
+
+
+
+    286	0262  02 C4				add   al,ah
+    287	0264  8A D8				mov   bl,al
+    288	0266  A0 0003r				mov   al,d2d
+    289	0269  B2 0A				mov   dl,10
+    290	026B  F6 E2				mul   dl
+    291	026D  8A 26 0002r			mov   ah,d2e
+    292	0271  02 C4				add   al,ah
+    293	0273  3A C3				cmp   al,bl
+    294	0275  77 04				ja    D1
+    295	0277  3A C3				cmp   al,bl
+    296	0279  72 09				jb    D2
+    297	027B  A2 0004r		     D1:	mov   N1,al
+    298	027E  88 1E 0005r			mov   N2,bl
+    299	0282  EB 07				jmp   D3
+    300	0284  88 1E 0004r	     D2:	mov   N1,bl
+    301	0288  A2 0005r				mov   N2,al
+    302	028B  C3		     D3:	ret
+    303	028C			     N1N2  ENDP
+    304
+    305	028C			     OutDigInc	Proc  NEAR
+    306	028C  80 3E 0000r 0A			cmp   d1e,0ah
+    307	0291  75 15				jnz   ODI1
+    308	0293  C6 06 0000r 00			mov   d1e,0
+    309	0298  FE 06 0001r			inc   d1d
+    310	029C  80 3E 0001r 0A			cmp   d1d,0ah
+    311	02A1  75 05				jnz   ODI1
+    312	02A3  C6 06 0001r 00			mov   d1d,0
+    313	02A8  80 3E 0002r 0A	     ODI1:	cmp   d2e,0ah
+    314	02AD  75 15				jnz   ODI2
+    315	02AF  C6 06 0002r 00			mov   d2e,0
+    316	02B4  FE 06 0003r			inc   d2d
+    317	02B8  80 3E 0003r 0A			cmp   d2d,0ah
+    318	02BD  75 05				jnz   ODI2
+    319	02BF  C6 06 0003r 00			mov   d2d,0
+    320	02C4  BB 0000r		     ODI2:	lea   bx,Image	  ;
+    321	02C7  A0 0000r				mov   al,d1e	  ;
+    322	02CA  B4 00				mov   ah,0	  ;
+    323	02CC  03 D8				add   bx,ax	  ;
+    324	02CE  26: 8A 07				MOV   AL,es:[BX]  ;
+    325	02D1  E6 05				out   Ind1e,al	  ;
+    326	02D3  BB 0000r				lea   bx,Image
+    327	02D6  A0 0001r				mov   al,d1d
+    328	02D9  B4 00				mov   ah,0
+    329	02DB  03 D8				add   bx,ax
+    330	02DD  26: 8A 07				MOV   AL,es:[BX]
+    331	02E0  E6 04				out   Ind1d,al
+    332	02E2  BB 0000r				lea   bx,Image
+    333	02E5  A0 0002r				mov   al,d2e
+    334	02E8  B4 00				mov   ah,0
+    335	02EA  03 D8				add   bx,ax
+    336	02EC  26: 8A 07				MOV   AL,es:[BX]
+    337	02EF  E6 03				out   Ind2e,al
+    338	02F1  A0 0002r				mov   al,d2e
+    339	02F4  B4 00				mov   ah,0
+    340	02F6  BB 0000r				lea   bx,Image
+    341	02F9  A0 0003r				mov   al,d2d
+    342	02FC  B4 00				mov   ah,0
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 7
+svetofor.asm
+
+
+
+    343	02FE  03 D8				add   bx,ax
+    344	0300  26: 8A 07				MOV   AL,es:[BX]
+    345	0303  E6 02				out   Ind2d,al
+    346	0305  C3				ret
+    347	0306			     OutDigInc	EndP
+    348
+    349	0306			     OutDigDec	Proc  NEAR
+    350	0306  BB 0000r				lea   bx,Image
+    351	0309  A0 0000r				mov   al,d1e
+    352	030C  B4 00				mov   ah,0
+    353	030E  03 D8				add   bx,ax
+    354	0310  26: 8A 07				MOV   AL,es:[BX]
+    355	0313  E6 05				out   Ind1e,al
+    356						;mov   al,d1d
+    357						;mov   ah,0
+    358	0315  BB 0000r				lea   bx,Image
+    359	0318  A0 0001r				mov   al,d1d
+    360	031B  B4 00				mov   ah,0
+    361	031D  03 D8				add   bx,ax
+    362	031F  26: 8A 07				MOV   AL,es:[BX]
+    363	0322  E6 04				out   Ind1d,al
+    364	0324  BB 0000r				lea   bx,Image
+    365	0327  A0 0002r				mov   al,d2e
+    366	032A  B4 00				mov   ah,0
+    367	032C  03 D8				add   bx,ax
+    368	032E  26: 8A 07				MOV   AL,es:[BX]
+    369	0331  E6 03				out   Ind2e,al
+    370	0333  BB 0000r				lea   bx,Image
+    371	0336  A0 0003r				mov   al,d2d
+    372	0339  B4 00				mov   ah,0
+    373	033B  03 D8				add   bx,ax
+    374	033D  26: 8A 07				MOV   AL,es:[BX]
+    375	0340  E6 02				out   Ind2d,al
+    376	0342  C3				ret
+    377	0343			     OutDigDec	EndP
+    378
+    379	0343			     DigInc	Proc  NEAR
+    380	0343  3C 09				cmp   al,9h
+    381	0345  74 02				je    DInc1
+    382	0347  EB 0B				jmp   DInc2
+    383	0349  80 FC 09		     DInc1:	cmp   ah,9h
+    384	034C  74 15				je    DIncEn
+    385	034E  FE C4				inc   ah
+    386	0350  B0 00				mov   al,0
+    387	0352  EB 0F				jmp   DIncEn
+    388	0354  80 FC 09		     DInc2:	cmp   ah,9h
+    389	0357  74 02				je    DInc3
+    390	0359  EB 06				jmp   DInc4
+    391	035B  B0 00		     DInc3:	mov   al,0
+    392	035D  FE C4				Inc   ah
+    393	035F  EB 02				jmp   DIncEn
+    394	0361  FE C0		     DInc4:	Inc   al
+    395	0363  C3		     DIncEn:	ret
+    396	0364			     DigInc	ENDP
+    397
+    398	0364			     DigDec	Proc  NEAR
+    399	0364  3C 00				cmp   al,0
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 8
+svetofor.asm
+
+
+
+    400	0366  74 04				je    DDec1
+    401	0368  FE C8				dec   al
+    402	036A  EB 09				jmp   EnDDec
+    403	036C  80 FC 00		     DDec1:	cmp   ah,0
+    404	036F  74 04				je    EnDDec
+    405	0371  B0 09				mov   al,9h
+    406	0373  FE CC				dec   ah
+    407	0375  C3		     EnDDec:	ret
+    408	0376			     DigDec	ENDP
+    409
+    410	0376			     Pause     Proc NEAR
+    411	0376  80 3E 000Dr 01			cmp   AvtR,1
+    412	037B  74 55				je   mm
+    413	037D  49		     m1:	dec   cx	  ; Задержка
+    414						;nop		   ;
+    415	037E  83 F9 00				cmp   cx,0	  ;
+    416	0381  75 0D				jne   Rev1
+    417	0383  FE CA				dec   dl
+    418	0385  80 FA 00				cmp   dl,0
+    419	0388  75 03				jne   mm1
+    420	038A  E9 013B				jmp   EnSv
+    421	038D  B9 02FF		     mm1:	mov   cx,02ffh
+    422	0390  E4 08		     Rev1:	in    al,Revers
+    423						;call  VibrDestr
+    424	0392  3C FF				cmp   al,0ffh
+    425	0394  74 3C				je    mm
+    426	0396  8A E0				mov   ah,al
+    427	0398  E4 08		     Rev:	in    al,Revers
+    428	039A  3C FF				cmp   al,0ffh
+    429	039C  75 FA				jne   Rev
+    430	039E  F6 C4 02				test  ah,2h
+    431	03A1  75 2F				jne   mm
+    432	03A3  C6 06 000Dr 01			mov   AvtR,1h
+    433	03A8  80 3E 000Br 48			cmp   Col2,48h
+    434	03AD  74 09				je    RR1
+    435	03AF  80 3E 000Br 43			cmp   Col2,43h
+    436	03B4  74 09				je    RR2
+    437	03B6  EB 0F				jmp   RR3
+    438	03B8  C6 06 000Br 88	     RR1:	mov   Col2,88h
+    439	03BD  EB 0D				jmp   RRSt
+    440	03BF  C6 06 000Br 83	     RR2:	mov   Col2,83h
+    441	03C4  E9 FC9F				jmp   ICEnd
+    442	03C7  C6 06 000Br 84	     RR3:	mov   Col2,84h
+    443	03CC  E8 FCBC		     RRSt:	call  red
+    444	03CF  E9 00F6				jmp   EnSv
+    445	03D2  E4 09		     mm:	in    al,kbd
+    446						;call  VibrDestr
+    447	03D4  3C FF				cmp   al,0ffh
+    448						;mov   ah,al
+    449	03D6  74 A5				je    m1
+    450	03D8  8A E0				mov   ah,al
+    451	03DA  E4 09		     m3:	in    al,kbd
+    452	03DC  3C FF				cmp   al,0ffh
+    453	03DE  75 FA				jne   m3
+    454	03E0  F6 C4 01		     Rev2:	test   ah,1h	  ; Начало Inc
+    455	03E3  75 16				jne    m5
+    456	03E5  A0 0000r				mov   al,d1e
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 9
+svetofor.asm
+
+
+
+    457	03E8  8A 26 0001r			mov   ah,d1d
+    458	03EC  E8 FF54				call  DigInc
+    459	03EF  A2 0000r				mov   d1e,al
+    460	03F2  88 26 0001r			mov   d1d,ah
+    461	03F6  E8 FE93				call  OutDigInc
+    462	03F9  EB 82				jmp   m1
+    463	03FB  F6 C4 02		     m5:	test   ah,2h
+    464	03FE  75 17				jne    m6
+    465	0400  A0 0000r				mov   al,d1e
+    466	0403  8A 26 0001r			mov   ah,d1d
+    467	0407  E8 FF39				call  DigInc
+    468	040A  A2 0000r				mov   d1e,al
+    469	040D  88 26 0001r			mov   d1d,ah
+    470	0411  E8 FE78				call OutDigInc
+    471	0414  E9 FF66				jmp   m1
+    472	0417  F6 C4 04		     m6:	test   ah,4h
+    473	041A  75 17				jne    m7
+    474	041C  A0 0002r				mov   al,d2e
+    475	041F  8A 26 0003r			mov   ah,d2d
+    476	0423  E8 FF1D				call  DigInc
+    477	0426  A2 0002r				mov   d2e,al
+    478	0429  88 26 0003r			mov   d2d,ah
+    479	042D  E8 FE5C				call OutDigInc
+    480	0430  E9 FF4A				jmp   m1
+    481	0433  F6 C4 08		     m7:	test   ah,8h
+    482	0436  75 17				jne    StDec
+    483	0438  A0 0002r				mov   al,d2e
+    484	043B  8A 26 0003r			mov   ah,d2d
+    485	043F  E8 FF01				call  DigInc
+    486	0442  A2 0002r				mov   d2e,al
+    487	0445  88 26 0003r			mov   d2d,ah
+    488	0449  E8 FE40				call OutDigInc
+    489	044C  E9 FF2E				jmp   m1
+    490	044F  F6 C4 10		     StDec:	test   ah,10h	  ; Начало Dec
+    491	0452  74 02				je    Dec5
+    492	0454  EB 17				jmp   Dec1
+    493	0456  A0 0000r		     Dec5:	mov   al,d1e
+    494	0459  8A 26 0001r			mov   ah,d1d
+    495	045D  E8 FF04				call  DigDec
+    496	0460  A2 0000r				mov   d1e,al
+    497	0463  88 26 0001r			mov   d1d,ah
+    498	0467  E8 FE9C				call OutDigDec
+    499	046A  E9 FF10				jmp   m1
+    500	046D  F6 C4 20		     Dec1:	test   ah,20h
+    501	0470  74 02				je    Dec6
+    502	0472  EB 17				jmp   Dec2
+    503	0474  A0 0000r		     Dec6:	mov   al,d1e
+    504	0477  8A 26 0001r			mov   ah,d1d
+    505	047B  E8 FEE6				call  DigDec
+    506	047E  A2 0000r				mov   d1e,al
+    507	0481  88 26 0001r			mov   d1d,ah
+    508	0485  E8 FE7E				call  OutDigDec
+    509	0488  E9 FEF2				jmp   m1
+    510	048B  F6 C4 40		     Dec2:	test  ah,40h
+    511	048E  74 02				je    Dec7
+    512	0490  EB 17				jmp   Dec3
+    513	0492  A0 0002r		     Dec7:	mov   al,d2e
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 10
+svetofor.asm
+
+
+
+    514	0495  8A 26 0003r			mov   ah,d2d
+    515	0499  E8 FEC8				call  DigDec
+    516	049C  A2 0002r				mov   d2e,al
+    517	049F  88 26 0003r			mov   d2d,ah
+    518	04A3  E8 FE60				call  OutDigDec
+    519	04A6  E9 FED4				jmp   m1
+    520	04A9  F6 C4 80		     Dec3:	test  ah,80h
+    521	04AC  74 03				je    Dec8
+    522	04AE  E9 FECC				jmp   m1
+    523	04B1  A0 0002r		     Dec8:	mov   al,d2e
+    524	04B4  8A 26 0003r			mov   ah,d2d
+    525	04B8  E8 FEA9				call  DigDec
+    526	04BB  A2 0002r				mov   d2e,al
+    527	04BE  88 26 0003r			mov   d2d,ah
+    528	04C2  E8 FE41				call  OutDigDec
+    529	04C5  E9 FEB5		     m2:	jmp   m1
+    530	04C8  C3		     EnSv:	RET
+    531	04C9			     Pause	EndP
+    532
+    533
+    534
+    535	04C9			     Start:
+    536	04C9  B8 0000s				mov   ax,Data
+    537	04CC  8E D8				mov   ds,ax
+    538	04CE  B8 0000s				mov   ax,Code
+    539	04D1  8E C0				mov   es,ax
+    540
+    541	04D3  E8 FD3A				call  Main
+    542	04D6  E8 FC6B		     Start1:	call  Main1
+    543	04D9  EB FB				jmp   Start1
+    544
+    545						org   RomSize-16
+    546						ASSUME cs:NOTHING
+    547	0FF0  EA 000004C9sr			jmp   Far Ptr Start
+    548	0FF5			     Code	ENDS
+    549				     END
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 11
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "04/04/05"
+??FILENAME			  Text	 "svetofor"
+??TIME				  Text	 "23:37:42"
+??VERSION			  Number 030A
+@CPU				  Text	 0101H
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 SVETOFOR
+@WORDSIZE			  Text	 2
+AVTOR				  Near	 CODE:01DA
+AVTOR1				  Near	 CODE:0207
+AVTOR2				  Near	 CODE:01ED
+AVTOR3				  Near	 CODE:01E5
+AVTOR4				  Near	 CODE:0200
+AVTR				  Byte	 DATA:000D
+CIKL				  Byte	 DATA:0009
+COL1				  Byte	 DATA:000A
+COL2				  Byte	 DATA:000B
+D1				  Near	 CODE:027B
+D1D				  Byte	 DATA:0001
+D1E				  Byte	 DATA:0000
+D2				  Near	 CODE:0284
+D2D				  Byte	 DATA:0003
+D2E				  Byte	 DATA:0002
+D3				  Near	 CODE:028B
+DDEC1				  Near	 CODE:036C
+DEC1				  Near	 CODE:046D
+DEC2				  Near	 CODE:048B
+DEC3				  Near	 CODE:04A9
+DEC5				  Near	 CODE:0456
+DEC6				  Near	 CODE:0474
+DEC7				  Near	 CODE:0492
+DEC8				  Near	 CODE:04B1
+DIGDEC				  Near	 CODE:0364
+DIGINC				  Near	 CODE:0343
+DINC1				  Near	 CODE:0349
+DINC2				  Near	 CODE:0354
+DINC3				  Near	 CODE:035B
+DINC4				  Near	 CODE:0361
+DINCEN				  Near	 CODE:0363
+ENDDEC				  Near	 CODE:0375
+ENSV				  Near	 CODE:04C8
+FORMZDR				  Near	 CODE:00EB
+FZ1				  Near	 CODE:0102
+FZ2				  Near	 CODE:0130
+FZ5				  Near	 CODE:0110
+FZEND				  Near	 CODE:0143
+GREENN1				  Near	 CODE:0096
+GRN11				  Near	 CODE:00A1
+GRN12				  Near	 CODE:00BB
+GRN13				  Near	 CODE:00D2
+GRN1END				  Near	 CODE:00EA
+GRNA1				  Near	 CODE:00B4
+GRNA2				  Near	 CODE:00E5
+ICEND				  Near	 CODE:0066
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 12
+Symbol Table
+
+
+
+ICOL1				  Near	 CODE:004E
+ICOL2				  Near	 CODE:0047
+ICOL3				  Near	 CODE:0061
+IMAGE				  Byte	 CODE:0000
+IND1D				  Number 0004
+IND1E				  Number 0005
+IND2D				  Number 0002
+IND2E				  Number 0003
+INVCOL				  Near	 CODE:002D
+K				  Byte	 DATA:0007
+KBD				  Number 0009
+M1				  Near	 CODE:037D
+M2				  Near	 CODE:04C5
+M3				  Near	 CODE:03DA
+M5				  Near	 CODE:03FB
+M6				  Near	 CODE:0417
+M7				  Near	 CODE:0433
+MAIN				  Near	 CODE:0210
+MAIN1				  Near	 CODE:0144
+MM				  Near	 CODE:03D2
+MM1				  Near	 CODE:038D
+N1				  Byte	 DATA:0004
+N1N2				  Near	 CODE:0257
+N2				  Byte	 DATA:0005
+NCOL				  Byte	 DATA:0008
+NMAX				  Number 0032
+ODI1				  Near	 CODE:02A8
+ODI2				  Near	 CODE:02C4
+OUTDIGDEC			  Near	 CODE:0306
+OUTDIGINC			  Near	 CODE:028C
+PAUSCOL				  Near	 CODE:001D
+PAUSE				  Near	 CODE:0376
+RED				  Near	 CODE:008B
+REV				  Near	 CODE:0398
+REV1				  Near	 CODE:0390
+REV2				  Near	 CODE:03E0
+REVERS				  Number 0008
+REVR				  Byte	 DATA:000C
+ROMSIZE				  Number 1000
+RR1				  Near	 CODE:03B8
+RR2				  Near	 CODE:03BF
+RR3				  Near	 CODE:03C7
+RRST				  Near	 CODE:03CC
+START				  Near	 CODE:04C9
+START1				  Near	 CODE:04D6
+STDEC				  Near	 CODE:044F
+STM				  Near	 CODE:0144
+STM0				  Near	 CODE:014E
+STM1				  Near	 CODE:0163
+STM2				  Near	 CODE:0175
+STM4				  Near	 CODE:0189
+STM41				  Near	 CODE:01B5
+SV1				  Number 0000
+SV2				  Number 0001
+T				  Byte	 DATA:0006
+VD1				  Near	 CODE:000A
+VD2				  Near	 CODE:000E
+Turbo Assembler	 Version 3.1	    04/04/05 23:37:42	    Page 13
+Symbol Table
+
+
+
+VIBRDESTR			  Near	 CODE:000A
+YELLOW				  Near	 CODE:0067
+YELLOW1				  Near	 CODE:0076
+YELLOW2				  Near	 CODE:0078
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+DATA				  16  000E  AT 0040
+

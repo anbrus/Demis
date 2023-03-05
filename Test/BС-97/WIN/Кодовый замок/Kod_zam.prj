@@ -1,0 +1,4 @@
+[SOURCE]=0,Kod_zam.asm
+[SOURCE]=1,Kod_zam1.asm
+[ARCH]=0,Kod_zam1.arh
+[ROMSIZE]=4

@@ -1,0 +1,7 @@
+[SOURCE]=00000001,kursovic.asm
+[ARCH]=00000000,kursovic.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(66,66,708,400)D:\USERS\Istomin\kursovic.arh
+[WND.asm]=(88,88,730,422)D:\USERS\Istomin\kursovic.asm

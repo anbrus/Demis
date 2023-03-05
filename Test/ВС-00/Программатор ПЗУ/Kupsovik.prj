@@ -1,0 +1,7 @@
+[ARCH]=00000000,Kupsovik.arh
+[SOURCE]=00000001,Kupsovik.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(66,66,708,400)C:\Documents and Settings\student\Рабочий стол\Krasavec\Kupsovik.asm
+[WND.arh]=(88,88,730,422)C:\Documents and Settings\student\Рабочий стол\Krasavec\Kupsovik.arh

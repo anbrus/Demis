@@ -9,36 +9,38 @@
 #pragma once
 #endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
 
 class CLabelWnd : public CElementWnd
 {
 public:
-  CLabelWnd(CElement* pElement) : CElementWnd(pElement) {};
+	CLabelWnd(CElementBase* pElement) : CElementWnd(pElement) {};
 	virtual void Draw(CDC* pDC);
-  void UpdateSize();
+	void UpdateSize();
+	virtual void Redraw(int64_t ticks) override {};
 
 protected:
-  //{{AFX_MSG(CLabelWnd)
+	//{{AFX_MSG(CLabelWnd)
 	afx_msg void OnLabelText();
 	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
 };
 
-class CLabel : public CElement  
+class CLabel : public CElementBase
 {
 public:
+	CLabel(BOOL ArchMode, int id);
+	virtual ~CLabel();
+
 	CFont Font;
-  CLabelWnd* pLabelWnd;
-  BOOL OnArch;
+	CLabelWnd* pLabelWnd;
+	BOOL OnArch;
 	CString Text;
-  virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
-	CLabel(BOOL ArchMode,CElemInterface* pInterface);
-	virtual ~CLabel();
 };
 
 #endif // !defined(AFX_LABEL_H__70976933_77EB_11D4_8287_8B580A7A1447__INCLUDED_)

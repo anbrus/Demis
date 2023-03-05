@@ -1,0 +1,7 @@
+[SOURCE]=00000001,Keyboard.asm
+[ARCH]=00000000,Keyboard.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(62,11,704,345)D:\USERS\Vanger\Keyboard\Keyboard.asm
+[WND.arh]=(53,83,695,417)D:\USERS\Vanger\Keyboard\Keyboard.arh

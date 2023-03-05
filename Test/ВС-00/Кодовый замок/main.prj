@@ -1,0 +1,7 @@
+[ARCH]=00000000,main.arh
+[SOURCE]=00000001,main.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(88,88,910,546)C:\Documents and Settings\student\Рабочий стол\Кодовый замок\main.asm
+[WND.arh]=(22,22,826,462)C:\Documents and Settings\student\Рабочий стол\Кодовый замок\main.arh

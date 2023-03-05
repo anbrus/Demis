@@ -1,5 +1,5 @@
-[ARCH]=00000000,Keyboard.arh
 [SOURCE]=00000001,Keyboard.asm
+[ARCH]=00000000,Keyboard.arh
 [ROMSIZE]=4
 [FREQ]=1000000
 [FREEPINLEVEL]=1

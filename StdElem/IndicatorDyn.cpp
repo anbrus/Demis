@@ -3,12 +3,12 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "stdelem.h"
 #include "IndicatorDyn.h"
+#include "utils.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
+static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
@@ -16,115 +16,113 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CIndicatorDyn::CIndicatorDyn(BOOL ArchMode,CElemInterface* pInterface)
-  : CElement(ArchMode,pInterface)
-  , PinState(0)
+CIndicatorDyn::CIndicatorDyn(BOOL ArchMode, int id)
+	: CElementBase(ArchMode, id)
+	, PinState(0)
 {
-  int IndWidth=34;
-  int IndHeight=44;
+	int IndWidth = 34;
+	int IndHeight = 44;
 
-  POINT TempImg[8][6]={
-    {//0
-      { 2,          2 },
-      { 4,          4 },
-      { 4,          IndHeight/2-2 },
-      { 2,          IndHeight/2 },
-      { 0,          IndHeight/2-2 },
-      { 0,          4 }
-    },
-    {//1
-      { 2,          2 },
-      { 4,          0 },
-      { IndWidth-14,0 },
-      { IndWidth-12,2 },
-      { IndWidth-14,4 },
-      { 4,          4 }
-    },
-    {//2
-      { IndWidth-12,2 },
-      { IndWidth-10,4 },
-      { IndWidth-10,IndHeight/2-2 },
-      { IndWidth-12,IndHeight/2 },
-      { IndWidth-14,IndHeight/2-2 },
-      { IndWidth-14,4 }
-    },
-    {//3
-      { IndWidth-12,IndHeight/2 },
-      { IndWidth-10,IndHeight/2+2 },
-      { IndWidth-10,IndHeight-4 },
-      { IndWidth-12,IndHeight-2 },
-      { IndWidth-14,IndHeight-4 },
-      { IndWidth-14,IndHeight/2+2 }
-    },
-    {//4
-      { 2,          IndHeight-2 },
-      { 4,          IndHeight-4 },
-      { IndWidth-14,IndHeight-4 },
-      { IndWidth-12,IndHeight-2 },
-      { IndWidth-14,IndHeight-0 },
-      { 4,          IndHeight-0 }
-    },
-    {//5
-      { 2,          IndHeight/2 },
-      { 4,          IndHeight/2+2 },
-      { 4,          IndHeight-4 },
-      { 2,          IndHeight-2 },
-      { 0,          IndHeight-4 },
-      { 0,          IndHeight/2+2 }
-    },
-    {//6
-      { 2,          IndHeight/2 },
-      { 4,          IndHeight/2-2 },
-      { IndWidth-14,IndHeight/2-2 },
-      { IndWidth-12,IndHeight/2 },
-      { IndWidth-14,IndHeight/2+2 },
-      { 4,          IndHeight/2+2 }
-    },
-    {//7
-      { IndWidth-5, IndHeight-5 },
-      { IndWidth-0, IndHeight-5 },
-      { IndWidth-0, IndHeight-0 },
-      { IndWidth-5, IndHeight-0 },
-      { IndWidth-5, IndHeight-0 },
-      { IndWidth-5, IndHeight-0 },
-    }
-  };
+	POINT TempImg[8][6] = {
+	  {//0
+		{ 2,          2 },
+		{ 4,          4 },
+		{ 4,          IndHeight / 2 - 2 },
+		{ 2,          IndHeight / 2 },
+		{ 0,          IndHeight / 2 - 2 },
+		{ 0,          4 }
+	  },
+	  {//1
+		{ 2,          2 },
+		{ 4,          0 },
+		{ IndWidth - 14,0 },
+		{ IndWidth - 12,2 },
+		{ IndWidth - 14,4 },
+		{ 4,          4 }
+	  },
+	  {//2
+		{ IndWidth - 12,2 },
+		{ IndWidth - 10,4 },
+		{ IndWidth - 10,IndHeight / 2 - 2 },
+		{ IndWidth - 12,IndHeight / 2 },
+		{ IndWidth - 14,IndHeight / 2 - 2 },
+		{ IndWidth - 14,4 }
+	  },
+	  {//3
+		{ IndWidth - 12,IndHeight / 2 },
+		{ IndWidth - 10,IndHeight / 2 + 2 },
+		{ IndWidth - 10,IndHeight - 4 },
+		{ IndWidth - 12,IndHeight - 2 },
+		{ IndWidth - 14,IndHeight - 4 },
+		{ IndWidth - 14,IndHeight / 2 + 2 }
+	  },
+	  {//4
+		{ 2,          IndHeight - 2 },
+		{ 4,          IndHeight - 4 },
+		{ IndWidth - 14,IndHeight - 4 },
+		{ IndWidth - 12,IndHeight - 2 },
+		{ IndWidth - 14,IndHeight - 0 },
+		{ 4,          IndHeight - 0 }
+	  },
+	  {//5
+		{ 2,          IndHeight / 2 },
+		{ 4,          IndHeight / 2 + 2 },
+		{ 4,          IndHeight - 4 },
+		{ 2,          IndHeight - 2 },
+		{ 0,          IndHeight - 4 },
+		{ 0,          IndHeight / 2 + 2 }
+	  },
+	  {//6
+		{ 2,          IndHeight / 2 },
+		{ 4,          IndHeight / 2 - 2 },
+		{ IndWidth - 14,IndHeight / 2 - 2 },
+		{ IndWidth - 12,IndHeight / 2 },
+		{ IndWidth - 14,IndHeight / 2 + 2 },
+		{ 4,          IndHeight / 2 + 2 }
+	  },
+	  {//7
+		{ IndWidth - 5, IndHeight - 5 },
+		{ IndWidth - 0, IndHeight - 5 },
+		{ IndWidth - 0, IndHeight - 0 },
+		{ IndWidth - 5, IndHeight - 0 },
+		{ IndWidth - 5, IndHeight - 0 },
+		{ IndWidth - 5, IndHeight - 0 },
+	  }
+	};
 
-  memcpy(IndImage,TempImg,sizeof(TempImg));
+	memcpy(IndImage, TempImg, sizeof(TempImg));
 
-  TipText="Семисегм. дин. индикатор";
-  IdIndex=6;
-  ActiveHigh=TRUE; HighLight=0; AfterLightTime=3;
+	TipText = "Семисегм. дин. индикатор";
+	IdIndex = 6;
+	ActiveHigh = TRUE;
+	memset(HighLighted, 0, sizeof(HighLighted));
+	ActiveHigh = TRUE; ticksAfterLight = 0;
 
-  pArchElemWnd=new CIndDArchWnd(this);
-  pConstrElemWnd=new CIndDConstrWnd(this);
+	pArchElemWnd = new CIndDArchWnd(this);
+	pConstrElemWnd = new CIndDConstrWnd(this);
 
-  PointCount=9;
-  for(int n=0; n<8; n++) {
-    ConPoint[n].x=2;
-    ConPoint[n].y=10+n*15;
-    ConPin[n]=FALSE;
-    PinType[n]=PT_INPUT;
-  }
+	PointCount = 9;
+	for (int n = 0; n < 8; n++) {
+		ConPoint[n].x = 2;
+		ConPoint[n].y = 10 + n * 15;
+		ConPin[n] = FALSE;
+		PinType[n] = PT_INPUT;
+	}
 
-  ConPoint[8].x=30;
-  ConPoint[8].y=128;
-  ConPin[8]=FALSE;
-  PinType[8]=PT_INPUT;
+	ConPoint[8].x = 30;
+	ConPoint[8].y = 128;
+	ConPin[8] = FALSE;
+	PinType[8] = PT_INPUT;
 
-  PinState=0;
-  for(int n=0; n<8; n++) {
-    TimeToOff[n]=0;
-  }
-
+	PinState = 0;
 
 	HINSTANCE hInstOld = AfxGetResourceHandle();
-  HMODULE hDll=GetModuleHandle(theApp.m_pszAppName);
+	HMODULE hDll = GetModuleHandle(theApp.m_pszAppName);
 	AfxSetResourceHandle(hDll);
-  PopupMenu.LoadMenu(IDR_IND_MENU);
+	PopupMenu.LoadMenu(IDR_IND_MENU);
 	AfxSetResourceHandle(hInstOld);
-	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH,MF_BYCOMMAND|MF_CHECKED);
-	PopupMenu.CheckMenuItem(ID_ACTIVE_LOW,MF_BYCOMMAND|MF_UNCHECKED);
+	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH, MF_BYCOMMAND | MF_CHECKED);
+	PopupMenu.CheckMenuItem(ID_ACTIVE_LOW, MF_BYCOMMAND | MF_UNCHECKED);
 }
 
 CIndicatorDyn::~CIndicatorDyn()
@@ -133,69 +131,64 @@ CIndicatorDyn::~CIndicatorDyn()
 
 BOOL CIndicatorDyn::Load(HANDLE hFile)
 {
-  CFile File(hFile);
-  
-  DWORD Version;
-  File.Read(&Version,4);
-  if(Version!=0x00010000) {
-    MessageBox(NULL,"Индикатор динамический: неизвестная версия элемента","Ошибка",MB_ICONSTOP|MB_OK);
-    return FALSE;
-  }
+	CFile File(hFile);
 
-  File.Read(&ActiveHigh,4);
-  if(ActiveHigh) {
-  	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH,MF_BYCOMMAND|MF_CHECKED);
-	  PopupMenu.CheckMenuItem(ID_ACTIVE_LOW,MF_BYCOMMAND|MF_UNCHECKED);
-  }else {
-  	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH,MF_BYCOMMAND|MF_UNCHECKED);
-	  PopupMenu.CheckMenuItem(ID_ACTIVE_LOW,MF_BYCOMMAND|MF_CHECKED);
-  }
+	DWORD Version;
+	File.Read(&Version, 4);
+	if (Version != 0x00010000) {
+		MessageBox(NULL, "Индикатор динамический: неизвестная версия элемента", "Ошибка", MB_ICONSTOP | MB_OK);
+		return FALSE;
+	}
 
-  return CElement::Load(hFile);
+	File.Read(&ActiveHigh, 4);
+	if (ActiveHigh) {
+		PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH, MF_BYCOMMAND | MF_CHECKED);
+		PopupMenu.CheckMenuItem(ID_ACTIVE_LOW, MF_BYCOMMAND | MF_UNCHECKED);
+	}
+	else {
+		PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH, MF_BYCOMMAND | MF_UNCHECKED);
+		PopupMenu.CheckMenuItem(ID_ACTIVE_LOW, MF_BYCOMMAND | MF_CHECKED);
+	}
+
+	return CElementBase::Load(hFile);
 }
 
 BOOL CIndicatorDyn::Save(HANDLE hFile)
 {
-  CFile File(hFile);
+	CFile File(hFile);
 
-  DWORD Version=0x00010000;
-  File.Write(&Version,4);
+	DWORD Version = 0x00010000;
+	File.Write(&Version, 4);
 
-  File.Write(&ActiveHigh,4);
+	File.Write(&ActiveHigh, 4);
 
-  return CElement::Save(hFile);
+	return CElementBase::Save(hFile);
 }
 
 BOOL CIndicatorDyn::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 {
-  if(!CElement::Show(hArchParentWnd,hConstrParentWnd)) return FALSE;
+	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
-  CString ClassName=AfxRegisterWndClass(CS_DBLCLKS,
-    ::LoadCursor(NULL,IDC_ARROW));
-  pArchElemWnd->Create(ClassName,"Дин. индикатор",WS_VISIBLE|WS_OVERLAPPED|WS_CHILD|WS_CLIPSIBLINGS,
-    CRect(0,0,pArchElemWnd->Size.cx,pArchElemWnd->Size.cy),pArchParentWnd,0);
-  pConstrElemWnd->Create(ClassName,"Дин. индикатор",WS_VISIBLE|WS_OVERLAPPED|WS_CHILD|WS_CLIPSIBLINGS,
-    CRect(0,0,pConstrElemWnd->Size.cx,pConstrElemWnd->Size.cy),pConstrParentWnd,0);
+	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW));
+	pArchElemWnd->Create(ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
+	pConstrElemWnd->Create(ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
 
-  return TRUE;
+	return TRUE;
 }
 
-BOOL CIndicatorDyn::Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel)
+BOOL CIndicatorDyn::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel)
 {
-  CElement::Reset(bEditMode,pTickCounter,TaktFreq,FreePinLevel);
+	CElementBase::Reset(bEditMode, pTickCounter, TaktFreq, FreePinLevel);
 
-  HighLight=0;
-  //if(ActiveHigh) HighLight=0;
-  //else HighLight=0xFFFFFFFF;
-  if(bEditMode) HighLight=0;
+	memset(HighLighted, 0, sizeof(HighLighted));
+	PinState = 0;
+	this->pTickCounter = pTickCounter;
+	ticksAfterLight = 20 * TaktFreq / 1000;
 
-  for(int n=0; n<8; n++) TimeToOff[n]=0;
-  if(pArchElemWnd->m_hWnd) {
-    if(bEditMode) pArchElemWnd->KillTimer(1);
-    else pArchElemWnd->SetTimer(1,40,NULL);
-  }
-
-  return TRUE;
+	return TRUE;
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -206,7 +199,7 @@ BEGIN_MESSAGE_MAP(CIndDArchWnd, CElementWnd)
 	//{{AFX_MSG_MAP(CIndDArchWnd)
 	ON_COMMAND(ID_ACTIVE_HIGH, OnActiveHigh)
 	ON_COMMAND(ID_ACTIVE_LOW, OnActiveLow)
-	ON_WM_TIMER()
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -214,10 +207,10 @@ END_MESSAGE_MAP()
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CIndDArchWnd::CIndDArchWnd(CElement* pElement) : CElementWnd(pElement)
+CIndDArchWnd::CIndDArchWnd(CElementBase* pElement) : CElementWnd(pElement)
 {
-  Size.cx=60;
-  Size.cy=131;
+	Size.cx = 60;
+	Size.cy = 131;
 }
 
 CIndDArchWnd::~CIndDArchWnd()
@@ -232,6 +225,7 @@ BEGIN_MESSAGE_MAP(CIndDConstrWnd, CElementWnd)
 	//{{AFX_MSG_MAP(CIndDConstrWnd)
 	ON_COMMAND(ID_ACTIVE_HIGH, OnActiveHigh)
 	ON_COMMAND(ID_ACTIVE_LOW, OnActiveLow)
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -239,276 +233,323 @@ END_MESSAGE_MAP()
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CIndDConstrWnd::CIndDConstrWnd(CElement* pElement) : CElementWnd(pElement)
+CIndDConstrWnd::CIndDConstrWnd(CElementBase* pElement) : CElementWnd(pElement)
 {
-  Size.cx=35;
-  Size.cy=45;
+	Size.cx = 35;
+	Size.cy = 45;
 }
 
 CIndDConstrWnd::~CIndDConstrWnd()
 {
 }
 
-void CIndicatorDyn::OnActiveHigh() 
+void CIndicatorDyn::OnActiveHigh()
 {
-	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH,MF_BYCOMMAND|MF_CHECKED);
-	PopupMenu.CheckMenuItem(ID_ACTIVE_LOW,MF_BYCOMMAND|MF_UNCHECKED);
-  ActiveHigh=TRUE;
-  ModifiedFlag=TRUE;
+	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH, MF_BYCOMMAND | MF_CHECKED);
+	PopupMenu.CheckMenuItem(ID_ACTIVE_LOW, MF_BYCOMMAND | MF_UNCHECKED);
+	ActiveHigh = TRUE;
+	ModifiedFlag = TRUE;
 }
 
-void CIndicatorDyn::OnActiveLow() 
+void CIndicatorDyn::OnActiveLow()
 {
-	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH,MF_BYCOMMAND|MF_UNCHECKED);
-	PopupMenu.CheckMenuItem(ID_ACTIVE_LOW,MF_BYCOMMAND|MF_CHECKED);
-  ActiveHigh=FALSE;
-  ModifiedFlag=TRUE;
+	PopupMenu.CheckMenuItem(ID_ACTIVE_HIGH, MF_BYCOMMAND | MF_UNCHECKED);
+	PopupMenu.CheckMenuItem(ID_ACTIVE_LOW, MF_BYCOMMAND | MF_CHECKED);
+	ActiveHigh = FALSE;
+	ModifiedFlag = TRUE;
 }
 
-void CIndDArchWnd::OnActiveHigh() 
+void CIndDArchWnd::OnActiveHigh()
 {
 	((CIndicatorDyn*)pElement)->OnActiveHigh();
 }
 
-void CIndDArchWnd::OnActiveLow() 
+void CIndDArchWnd::OnActiveLow()
 {
 	((CIndicatorDyn*)pElement)->OnActiveLow();
 }
 
-void CIndDConstrWnd::OnActiveHigh() 
+void CIndDConstrWnd::OnActiveHigh()
 {
 	((CIndicatorDyn*)pElement)->OnActiveHigh();
 }
 
-void CIndDConstrWnd::OnActiveLow() 
+void CIndDConstrWnd::OnActiveLow()
 {
 	((CIndicatorDyn*)pElement)->OnActiveLow();
 }
 
-void CIndicatorDyn::DrawSegments(CDC *pDC,CBrush* pBkBrush,CPoint Pos,DWORD OldHighLight)
+void CIndicatorDyn::DrawSegments(CDC* pDC, bool isSelected, bool isArchMode, CPoint Pos)
 {
-  CBrush LightBrush(RGB(255,0,0));
-  CGdiObject *pOldPen,*pOldBrush=pDC->SelectObject(pBkBrush);
-  CPen Pen(PS_SOLID,0,GetSysColor(COLOR_3DSHADOW));
-  if(!EditMode) pOldPen=pDC->SelectObject(&Pen);
-  for(int n=0; n<8; n++) {
-    BOOL NewBit=(HighLight>>n)&1;
-    BOOL OldBit=(OldHighLight>>n)&1;
-    if(NewBit==OldBit) continue;
+	CGdiObject *pOldPen, *pOldBrush;
+	CPen Pen;
+	if (EditMode) {
+		if (isSelected) {
+			pOldPen = pDC->SelectObject(&theApp.SelectPen);
+		}
+		else {
+			Pen.CreatePen(PS_SOLID, 0, RGB(72, 72, 72));
+			pOldPen = pDC->SelectObject(&Pen);
+		}
+	}
+	else {
+		Pen.CreatePen(PS_SOLID, 0, RGB(72, 72, 72));
+		pOldPen = pDC->SelectObject(&Pen);
+	}
+	COLORREF colorBackground;
+	if (isArchMode) {
+		colorBackground = RGB(0, 0, 0);
+	}
+	else {
+		colorBackground = RGB(0, 0, 0);
+	}
+	for (int n = 0; n < 8; n++) {
+		BOOL isOn = HighLighted[n] != 0;
+		COLORREF c;
+		if (EditMode) {
+			c = colorBackground;
+		}
+		else {
+			if (isOn) {
+				float lum = luminance2(HighLighted[n], *pTickCounter, ticksAfterLight);
+				c = RGB(round(255.0 * lum), 0, 0);
+			}
+			else {
+				c = colorBackground;
+			}
+		}
 
-    if(NewBit) pDC->SelectObject(&LightBrush);
-    else pDC->SelectObject(pBkBrush);
-    CPoint SegImage[6];
-    memcpy(SegImage,IndImage[n],sizeof(SegImage));
-    for(int i=0; i<6; i++) SegImage[i]+=Pos;
-    pDC->Polygon(SegImage,6);
-  }
-  pDC->SelectObject(pOldBrush);
-  if(!EditMode) pDC->SelectObject(pOldPen);
+		CBrush brush(c);
+		pOldBrush=pDC->SelectObject(&brush);
+		CPoint SegImage[6];
+		memcpy(SegImage, IndImage[n], sizeof(SegImage));
+		for (int i = 0; i < 6; i++) SegImage[i] += Pos;
+		pDC->Polygon(SegImage, 6);
+		pDC->SelectObject(pOldBrush);
+	}
+	pDC->SelectObject(pOldPen);
 }
 
-void CIndDArchWnd::DrawValue(CDC *pDC,DWORD OldPinState,DWORD OldHighLight)
+void CIndDArchWnd::DrawDynamic(CDC* pDC)
 {
-  CGdiObject* pOldPen,*pOldFont;
-  CBrush BkBrush(GetSysColor(COLOR_BTNFACE));
-  CFont Font;
-  Font.CreatePointFont(80,"Arial Cyr");
-  pOldFont=pDC->SelectObject(&Font);
-  pDC->SetBkColor(theApp.BkColor);
-  if(pElement->ArchSelected) pDC->SetTextColor(theApp.SelectColor);
-  else pDC->SetTextColor(theApp.DrawColor);
-  CString Temp;
-  DWORD PinState=((CIndicatorDyn*)pElement)->GetPinState();
-  for(int n=0; n<8; n++) {
-    BOOL NewBit=PinState&1;
-    BOOL OldBit=(OldPinState>>n)&1;
-    if(NewBit==OldBit) continue;
+	CIndicatorDyn* pIndElement = reinterpret_cast<CIndicatorDyn*>(pElement);
 
-    Temp.Format("%c",'a'+n);
+	CString Temp;
+	DWORD PinState = pIndElement->GetPinState();
+	for (int n = 0; n < 8; n++) {
+		BOOL NewBit = PinState & 1;
 
-    if(!pElement->EditMode) {
-      if(NewBit) pDC->SetTextColor(theApp.SelectColor);
-      else pDC->SetTextColor(theApp.DrawColor);
-    }
-    pDC->DrawText(Temp,CRect(8,3+n*15,16,15+n*15),DT_SINGLELINE);
-    PinState>>=1;
-  }
-  if(pElement->ArchSelected)
-    pOldPen=pDC->SelectObject(&theApp.SelectPen);
-	else pOldPen=pDC->SelectObject(&theApp.DrawPen);
-  ((CIndicatorDyn*)pElement)->DrawSegments(pDC,&BkBrush,CPoint(21,40),OldHighLight);
+		CDC* pCharsDc;
+		if (pIndElement->EditMode) {
+			pCharsDc = &theApp.DrawOnWhiteChar;
+		}else {
+			if (NewBit)
+				pCharsDc = &theApp.SelOnWhiteChar;
+			else
+				pCharsDc = &theApp.DrawOnWhiteChar;
+		}
+		pDC->BitBlt(8, 3 + n * 15, 8, 8, pCharsDc, n * 8, 0, SRCCOPY);
+		PinState >>= 1;
+	}
 
-  pDC->SelectObject(pOldPen);
-  pDC->SelectObject(pOldFont);
+	pIndElement->DrawSegments(pDC, pIndElement->ArchSelected, true, CPoint(21, 40));
 }
 
-void CIndDConstrWnd::DrawValue(CDC *pDC,DWORD OldPinState,DWORD OldHighLight)
+void CIndDConstrWnd::DrawDynamic(CDC* pDC)
 {
-  CGdiObject *pOldPen;
-  if(pElement->ConstrSelected)
-    pOldPen=pDC->SelectObject(&theApp.SelectPen);
-	else pOldPen=pDC->SelectObject(&theApp.DrawPen);
-  ((CIndicatorDyn*)pElement)->DrawSegments(pDC,&theApp.BkBrush,CPoint(0,0),OldHighLight);
+	CIndicatorDyn* pIndElement = reinterpret_cast<CIndicatorDyn*>(pElement);
 
-  pDC->SelectObject(pOldPen);
+	pIndElement->DrawSegments(pDC, pIndElement->ConstrSelected, false, CPoint(0, 0));
 }
 
-void CIndDConstrWnd::Draw(CDC *pDC)
-{
-  CGdiObject *pOldPen;
-  CPen BluePen(PS_SOLID,0,RGB(0,0,255));
-  CBrush SelectBrush(theApp.SelectColor);
-  CBrush NormalBrush(theApp.DrawColor);
+void CIndDConstrWnd::Redraw(int64_t ticks) {
+	CIndicatorDyn* pIndElement = reinterpret_cast<CIndicatorDyn*>(pElement);
 
-  if(pElement->ConstrSelected)
-    pOldPen=pDC->SelectObject(&theApp.SelectPen);
-	else pOldPen=pDC->SelectObject(&theApp.DrawPen);
-  DrawValue(pDC,~((CIndicatorDyn*)pElement)->GetPinState(),~((CIndicatorDyn*)pElement)->HighLight);
+	std::lock_guard<std::mutex> lock(pIndElement->mutexDraw);
 
-  /*if(pElement->ElementInfo.ConstrElem.bSelected)
-    pDC->FrameRect(&MainRect,&SelectBrush);
-  else pDC->FrameRect(&MainRect,&NormalBrush);*/
+	CClientDC DC(this);
 
-  //Восстанавливаем контекст
-  pDC->SelectObject(pOldPen);
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	DC.BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+
+	m_isRedrawRequired = pIndElement->IsRedrawRequired();
 }
 
-void CIndDArchWnd::Draw(CDC *pDC)
-{
-  CGdiObject *pOldPen;
-  CPen BluePen(PS_SOLID,0,RGB(0,0,255));
-  CBrush SelectBrush(theApp.SelectColor);
-  CBrush NormalBrush(theApp.DrawColor);
+int CIndDConstrWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+	CClientDC dc(this);
+	createCompatibleDc(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
 
-  if(pElement->ArchSelected)
-    pDC->FrameRect(CRect(6,0,Size.cx,Size.cy-6),&SelectBrush);
-  else pDC->FrameRect(CRect(6,0,Size.cx,Size.cy-6),&NormalBrush);
-
-  CBrush GrayBrush(GetSysColor(COLOR_BTNFACE));
-  CGdiObject* pOldBrush=pDC->SelectObject(&GrayBrush);
-  pDC->PatBlt(17,1,Size.cx-18,Size.cy-8,PATCOPY);
-  pDC->SelectObject(pOldBrush);
-
-  CPen* pTempPen;
-  if(pElement->ArchSelected) pTempPen=&theApp.SelectPen;
-	else pTempPen=&theApp.DrawPen;
-  pOldPen=pDC->SelectObject(pTempPen);
-
-  pDC->MoveTo(16,0);
-  pDC->LineTo(16,Size.cy-6);
-  
-  DrawValue(pDC,~((CIndicatorDyn*)pElement)->GetPinState(),~((CIndicatorDyn*)pElement)->HighLight);
-
-  //Рисуем проводки
-  for(int n=0; n<8; n++) {
-    pDC->MoveTo(pElement->ConPoint[n].x,pElement->ConPoint[n].y);
-    pDC->LineTo(pElement->ConPoint[n].x+4,pElement->ConPoint[n].y);
-  }
-  pDC->MoveTo(pElement->ConPoint[8].x,pElement->ConPoint[8].y);
-  pDC->LineTo(pElement->ConPoint[8].x,pElement->ConPoint[8].y-4);
-
-  for(int n=0; n<8; n++) {
-    //Рисуем палочку или крестик
-    if(pElement->ConPin[n]) {
-      pDC->SelectObject(pTempPen);
-      pDC->MoveTo(0,pElement->ConPoint[n].y);
-      pDC->LineTo(6,pElement->ConPoint[n].y);
-    }else {
-      pDC->SelectObject(&BluePen);
-      pDC->MoveTo(pElement->ConPoint[n].x-2,pElement->ConPoint[n].y-2);
-      pDC->LineTo(pElement->ConPoint[n].x+3,pElement->ConPoint[n].y+3);
-      pDC->MoveTo(pElement->ConPoint[n].x-2,pElement->ConPoint[n].y+2);
-      pDC->LineTo(pElement->ConPoint[n].x+3,pElement->ConPoint[n].y-3);
-    }
-  }
-  if(pElement->ConPin[8]) {
-    pDC->SelectObject(pTempPen);
-    pDC->MoveTo(pElement->ConPoint[8].x,pElement->ConPoint[8].y+2);
-    pDC->LineTo(pElement->ConPoint[8].x,pElement->ConPoint[8].y-3);
-  }else {
-    pDC->SelectObject(&BluePen);
-    pDC->MoveTo(pElement->ConPoint[8].x-2,pElement->ConPoint[8].y-2);
-    pDC->LineTo(pElement->ConPoint[8].x+3,pElement->ConPoint[8].y+3);
-    pDC->MoveTo(pElement->ConPoint[8].x-2,pElement->ConPoint[8].y+2);
-    pDC->LineTo(pElement->ConPoint[8].x+3,pElement->ConPoint[8].y-3);
-  }
-
-  //Восстанавливаем контекст
-  pDC->SelectObject(pOldPen);
+	return 0;
 }
 
-void CIndicatorDyn::OnTimer(UINT idEvent)
+void CIndDConstrWnd::Draw(CDC* pDC) {
+	CIndicatorDyn* pIndElement = reinterpret_cast<CIndicatorDyn*>(pElement);
+	std::lock_guard<std::mutex> lock(pIndElement->mutexDraw);
+
+	DrawStatic(&MemoryDC);
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void CIndDConstrWnd::DrawStatic(CDC* pDC)
 {
-  DWORD OldHighLight=HighLight;
+	pDC->PatBlt(0, 0, Size.cx, Size.cy, BLACKNESS);
+}
 
-  if(ActiveHigh) {
-    HighLight=PinState&0x000000FF;
-    if(PinState&0x00000100) HighLight=0x00000000;
-  }else {
-    HighLight=~(PinState&0x000000FF);
-    if((PinState&0x00000100)==0) HighLight=0x00000000;
-  }
+void CIndDArchWnd::Redraw(int64_t ticks) {
+	CIndicatorDyn* pIndElement = reinterpret_cast<CIndicatorDyn*>(pElement);
 
-  for(int n=0; n<8; n++) {
-    if(HighLight&(1<<n)) { TimeToOff[n]=AfterLightTime; continue; }
-    if(TimeToOff[n]==0) continue;
+	std::lock_guard<std::mutex> lock(pIndElement->mutexDraw);
 
-    TimeToOff[n]--;
-    HighLight|=(1<<n);
-  }
+	CClientDC DC(this);
 
-  if(HighLight!=OldHighLight) {
-    if(pArchElemWnd->IsWindowEnabled()) {
-      CClientDC ArchDC(pArchElemWnd);
-      ((CIndDArchWnd*)pArchElemWnd)->DrawValue(&ArchDC,PinState,OldHighLight);
-    }
-    if(pConstrElemWnd->IsWindowEnabled()) {
-      CClientDC ConstrDC(pConstrElemWnd);
-      ((CIndDConstrWnd*)pConstrElemWnd)->DrawValue(&ConstrDC,PinState,OldHighLight);
-    }
-  }
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	DC.BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+
+	m_isRedrawRequired = pIndElement->IsRedrawRequired();
+}
+
+int CIndDArchWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+	CClientDC dc(this);
+	createCompatibleDc(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
+
+	return 0;
+}
+
+void CIndDArchWnd::Draw(CDC* pDC) {
+	CIndicatorDyn* pIndElement = reinterpret_cast<CIndicatorDyn*>(pElement);
+	std::lock_guard<std::mutex> lock(pIndElement->mutexDraw);
+
+	DrawStatic(&MemoryDC);
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void CIndDArchWnd::DrawStatic(CDC* pDC)
+{
+	CGdiObject* pOldPen;
+	CPen BluePen(PS_SOLID, 0, RGB(0, 0, 255));
+	CBrush SelectBrush(theApp.SelectColor);
+	CBrush NormalBrush(theApp.DrawColor);
+
+	if (pElement->ArchSelected)
+		pDC->FrameRect(CRect(6, 0, Size.cx, Size.cy - 6), &SelectBrush);
+	else pDC->FrameRect(CRect(6, 0, Size.cx, Size.cy - 6), &NormalBrush);
+
+	CBrush BackBrush(RGB(0, 0, 0));
+	CGdiObject* pOldBrush = pDC->SelectObject(&BackBrush);
+	pDC->PatBlt(17, 1, Size.cx - 18, Size.cy - 8, PATCOPY);
+	pDC->SelectObject(pOldBrush);
+
+	CPen* pTempPen;
+	if (pElement->ArchSelected) pTempPen = &theApp.SelectPen;
+	else pTempPen = &theApp.DrawPen;
+	pOldPen = pDC->SelectObject(pTempPen);
+
+	pDC->MoveTo(16, 0);
+	pDC->LineTo(16, Size.cy - 6);
+
+	//Рисуем проводки
+	for (int n = 0; n < 8; n++) {
+		pDC->MoveTo(pElement->ConPoint[n].x, pElement->ConPoint[n].y);
+		pDC->LineTo(pElement->ConPoint[n].x + 4, pElement->ConPoint[n].y);
+	}
+	pDC->MoveTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y);
+	pDC->LineTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y - 4);
+
+	for (int n = 0; n < 8; n++) {
+		pDC->PatBlt(pElement->ConPoint[n].x - 2, pElement->ConPoint[n].y - 2, 5, 5, WHITENESS);
+		//Рисуем палочку или крестик
+		if (pElement->ConPin[n]) {
+			pDC->SelectObject(pTempPen);
+			pDC->MoveTo(0, pElement->ConPoint[n].y);
+			pDC->LineTo(6, pElement->ConPoint[n].y);
+		}
+		else {
+			pDC->SelectObject(&BluePen);
+			pDC->MoveTo(pElement->ConPoint[n].x - 2, pElement->ConPoint[n].y - 2);
+			pDC->LineTo(pElement->ConPoint[n].x + 3, pElement->ConPoint[n].y + 3);
+			pDC->MoveTo(pElement->ConPoint[n].x - 2, pElement->ConPoint[n].y + 2);
+			pDC->LineTo(pElement->ConPoint[n].x + 3, pElement->ConPoint[n].y - 3);
+		}
+	}
+	pDC->PatBlt(pElement->ConPoint[8].x - 2, pElement->ConPoint[8].y - 2, 5, 5, WHITENESS);
+	if (pElement->ConPin[8]) {
+		pDC->SelectObject(pTempPen);
+		pDC->MoveTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y + 2);
+		pDC->LineTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y - 3);
+	}
+	else {
+		pDC->SelectObject(&BluePen);
+		pDC->MoveTo(pElement->ConPoint[8].x - 2, pElement->ConPoint[8].y - 2);
+		pDC->LineTo(pElement->ConPoint[8].x + 3, pElement->ConPoint[8].y + 3);
+		pDC->MoveTo(pElement->ConPoint[8].x - 2, pElement->ConPoint[8].y + 2);
+		pDC->LineTo(pElement->ConPoint[8].x + 3, pElement->ConPoint[8].y - 3);
+	}
+
+	//Восстанавливаем контекст
+	pDC->SelectObject(pOldPen);
+}
+
+bool CIndicatorDyn::IsRedrawRequired() {
+	for (int n = 0; n < 8; n++) {
+		if (HighLighted[n] >= 0) {
+			return true;
+		}
+	}
+
+	return false;
 }
 
 void CIndicatorDyn::SetPinState(DWORD NewState)
 {
-  PinState=NewState;
-  DWORD OldHighLight=HighLight;
+	if (NewState == PinState) return;
 
-  if(ActiveHigh) {
-    HighLight=NewState&0x000000FF;
-    if(NewState&0x00000100) HighLight=0x00000000;
-  }else {
-    HighLight=~(NewState&0x000000FF);
-    if((NewState&0x00000100)==0) HighLight=0x00000000;
-  }
+	PinState = NewState;
 
-  HighLight=HighLight;
+	std::lock_guard<std::mutex> lock(mutexDraw);
 
-  for(int n=0; n<8; n++) {
-    if(HighLight&(1<<n)) { TimeToOff[n]=AfterLightTime; continue; }
-    if(TimeToOff[n]==0) continue;
+	DWORD bitsOn = 0;
+	if (ActiveHigh) {
+		bitsOn = NewState & 0x000000FF;
+		if (NewState & 0x00000100) bitsOn=0;
+	}
+	else {
+		bitsOn = ~(NewState & 0x000000FF);
+		if ((NewState & 0x00000100) == 0) bitsOn = 0;
+	}
 
-    HighLight|=(1<<n);
-  }
+	for (int n = 0; n < 8; n++) {
+		if (bitsOn & 1)
+			HighLighted[n] = -1;
+		else {
+			if (HighLighted[n] == -1)
+				HighLighted[n] = *pTickCounter + ticksAfterLight;
+		}
+		bitsOn >>= 1;
+	}
 
-  if(OldHighLight==HighLight) return;
-
-  if(pArchElemWnd->IsWindowEnabled()) {
-    CClientDC ArchDC(pArchElemWnd);
-    ((CIndDArchWnd*)pArchElemWnd)->DrawValue(&ArchDC,NewState,OldHighLight);
-  }
-  if(pConstrElemWnd->IsWindowEnabled()) {
-    CClientDC ConstrDC(pConstrElemWnd);
-    ((CIndDConstrWnd*)pConstrElemWnd)->DrawValue(&ConstrDC,NewState,OldHighLight);
-  }
+	if (pArchElemWnd->IsWindowEnabled()) {
+		pArchElemWnd->scheduleRedraw();
+	}
+	if (pConstrElemWnd->IsWindowEnabled()) {
+		pConstrElemWnd->scheduleRedraw();
+	}
 }
 
 DWORD CIndicatorDyn::GetPinState()
 {
-  return PinState;
-}
-
-void CIndDArchWnd::OnTimer(UINT nIDEvent) 
-{
-	((CIndicatorDyn*)pElement)->OnTimer(nIDEvent);
+	return PinState;
 }

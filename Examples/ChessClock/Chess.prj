@@ -1,7 +1,5 @@
-[SOURCE]=00000001,Chess.asm
 [ARCH]=00000000,Chess.arh
+[SOURCE]=00000001,Chess.asm
 [ROMSIZE]=4
 [FREQ]=1000000
 [FREEPINLEVEL]=0
-[WND.asm]=(52,52,1587,730)D:\1\Demis2k\Examples\ChessClock\Chess.asm
-[WND.arh]=(78,78,1613,756)D:\1\Demis2k\Examples\ChessClock\Chess.arh

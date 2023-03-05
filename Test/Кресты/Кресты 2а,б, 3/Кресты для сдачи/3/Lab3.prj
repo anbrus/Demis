@@ -1,0 +1,6 @@
+[SOURCE]=00000001,Lab3.asm
+[ARCH]=00000000,Lab3.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(234,234,1769,912)D:\1\Demis2k\Test\Кресты\Кресты 2а,б, 3\Кресты для сдачи\3\Lab3.arh

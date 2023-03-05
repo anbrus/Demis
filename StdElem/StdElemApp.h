@@ -1,31 +1,35 @@
 
 #include "..\ElemInterface.h"
+#include "..\definitions.h"
 #include "resource.h"
+#include "../StdElem.h"
 
 #pragma once
 
 extern "C" class CStdElemApp : public CWinApp
 {
 public:
-	CPen DrawPen,SelectPen;
-  COLORREF DrawColor,BkColor,SelectColor;
-  CBrush BkBrush;
-  CDC DrawOnWhiteNumb,DrawOnGrayNumb,SelOnWhiteNumb,SelOnGrayNumb;
-  CDC DrawOnWhiteChar,SelOnWhiteChar;
+	HostInterface* pHostInterface;
+
+	CPen DrawPen, SelectPen;
+	COLORREF DrawColor, BkColor, SelectColor, BlackColor, OnColor;
+	CBrush BkBrush;
+	CDC DrawOnWhiteNumb, DrawOnGrayNumb, SelOnWhiteNumb, SelOnGrayNumb;
+	CDC DrawOnWhiteChar, SelOnWhiteChar;
 	int m_ElementsCount;
 	struct _ElementId ElementId[11];
 	CStdElemApp();
 
 private:
-  CBitmap DrawOnWhiteNumbBmp,DrawOnGrayNumbBmp,SelOnWhiteNumbBmp,SelOnGrayNumbBmp;
-  CBitmap DrawOnWhiteCharBmp,SelOnWhiteCharBmp;
+	CBitmap DrawOnWhiteNumbBmp, DrawOnGrayNumbBmp, SelOnWhiteNumbBmp, SelOnGrayNumbBmp;
+	CBitmap DrawOnWhiteCharBmp, SelOnWhiteCharBmp;
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CStdElemApp)
-	public:
+	// Overrides
+		// ClassWizard generated virtual function overrides
+		//{{AFX_VIRTUAL(CStdElemApp)
+public:
 	virtual BOOL InitInstance();
-  virtual int ExitInstance();
+	virtual int ExitInstance();
 	//}}AFX_VIRTUAL
 
 	//{{AFX_MSG(CStdElemApp)
@@ -33,4 +37,21 @@ private:
 		//    DO NOT EDIT what you see in these blocks of generated code !
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-}theApp;
+};
+
+extern "C" CStdElemApp theApp;
+
+class CStdElemLib : CElemLib {
+public:
+	CStdElemLib() {};
+	virtual ~CStdElemLib() override {};
+
+	HostInterface* pHostInterface=nullptr;
+	
+	virtual CString getLibraryName() override;
+	virtual DWORD getElementsCount() override;
+	virtual CString GetElementName(DWORD Index) override;
+	virtual DWORD GetElementType(DWORD Index) override;
+	virtual HBITMAP GetElementIcon(DWORD Index) override;
+	virtual CElement* CreateElement(const CString& name, bool isArchMode, int id) override;
+};

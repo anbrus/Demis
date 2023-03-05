@@ -3,13 +3,12 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "stdelem.h"
 #include "Label.h"
 #include "TextDlg.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
+static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
@@ -17,24 +16,24 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CLabel::CLabel(BOOL ArchMode,CElemInterface* pInterface)
-  : CElement(ArchMode,pInterface)
+CLabel::CLabel(BOOL ArchMode, int id)
+	: CElementBase(ArchMode, id)
 {
-  pArchElemWnd=NULL;
-  pConstrElemWnd=NULL;
-  
-  TipText="Текстовая метка";
-  IdIndex=4;
-  OnArch=ArchMode;
-  Text="Метка";
-  Font.CreatePointFont(90,"Arial Cyr");
+	pArchElemWnd = NULL;
+	pConstrElemWnd = NULL;
 
-  PointCount=0;
+	TipText = "Текстовая метка";
+	IdIndex = 4;
+	OnArch = ArchMode;
+	Text = "Метка";
+	Font.CreatePointFont(90, "Arial Cyr");
+
+	PointCount = 0;
 
 	HINSTANCE hInstOld = AfxGetResourceHandle();
-  HMODULE hDll=GetModuleHandle(theApp.m_pszAppName);
+	HMODULE hDll = GetModuleHandle(theApp.m_pszAppName);
 	AfxSetResourceHandle(hDll);
-  PopupMenu.LoadMenu(IDR_LABEL_MENU);
+	PopupMenu.LoadMenu(IDR_LABEL_MENU);
 	AfxSetResourceHandle(hInstOld);
 }
 
@@ -44,65 +43,65 @@ CLabel::~CLabel()
 
 BOOL CLabel::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 {
-  pLabelWnd=new CLabelWnd(this);
-  if(OnArch) pArchElemWnd=pLabelWnd;
-  else pConstrElemWnd=pLabelWnd;
+	pLabelWnd = new CLabelWnd(this);
+	if (OnArch) pArchElemWnd = pLabelWnd;
+	else pConstrElemWnd = pLabelWnd;
 
-  if(!CElement::Show(hArchParentWnd,hConstrParentWnd)) return FALSE;
+	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
-  CString ClassName=AfxRegisterWndClass(CS_DBLCLKS,
-    ::LoadCursor(NULL,IDC_ARROW));
+	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW));
 
-  pLabelWnd->Create(ClassName,"Метка",WS_VISIBLE|WS_OVERLAPPED|WS_CHILD|WS_CLIPSIBLINGS,
-    CRect(0,0,15,15),pArchParentWnd,0);
-  
-  pLabelWnd->UpdateSize();
+	pLabelWnd->Create(ClassName, "Метка", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, 15, 15), pArchParentWnd, 0);
 
-  return TRUE;
+	pLabelWnd->UpdateSize();
+
+	return TRUE;
 }
 
 BOOL CLabel::Save(HANDLE hFile)
 {
-  CFile File(hFile);
+	CFile File(hFile);
 
-  DWORD Version=0x00010000;
-  File.Write(&Version,4);
+	DWORD Version = 0x00010000;
+	File.Write(&Version, 4);
 
-  File.Write(&OnArch,4);
-  int TextLen=Text.GetLength();
-  File.Write(&TextLen,4);
-  File.Write((LPCTSTR)Text,TextLen);
+	File.Write(&OnArch, 4);
+	int TextLen = Text.GetLength();
+	File.Write(&TextLen, 4);
+	File.Write((LPCTSTR)Text, TextLen);
 
-  return CElement::Save(hFile);
+	return CElementBase::Save(hFile);
 }
 
 BOOL CLabel::Load(HANDLE hFile)
 {
-  CFile File(hFile);
-  DWORD Version;
-  File.Read(&Version,4);
-  if(Version!=0x00010000) {
-    MessageBox(NULL,"Метка: неизвестная версия элемента","Ошибка",MB_ICONSTOP|MB_OK);
-    return FALSE;
-  }
+	CFile File(hFile);
+	DWORD Version;
+	File.Read(&Version, 4);
+	if (Version != 0x00010000) {
+		MessageBox(NULL, "Метка: неизвестная версия элемента", "Ошибка", MB_ICONSTOP | MB_OK);
+		return FALSE;
+	}
 
-  File.Read(&OnArch,4);
-  int TextLen;
-  File.Read(&TextLen,4);
-  char* NewText=(char*)malloc(TextLen+1);
-  File.Read(NewText,TextLen);
-  NewText[TextLen]=0;
-  Text=NewText;
-  free(NewText);
+	File.Read(&OnArch, 4);
+	int TextLen;
+	File.Read(&TextLen, 4);
+	char* NewText = (char*)malloc(TextLen + 1);
+	File.Read(NewText, TextLen);
+	NewText[TextLen] = 0;
+	Text = NewText;
+	free(NewText);
 
-  return CElement::Load(hFile);
+	return CElementBase::Load(hFile);
 }
 
-BOOL CLabel::Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel)
+BOOL CLabel::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel)
 {
-  CElement::Reset(bEditMode,pTickCounter,TaktFreq,FreePinLevel);
+	CElementBase::Reset(bEditMode, pTickCounter, TaktFreq, FreePinLevel);
 
-  return TRUE;
+	return TRUE;
 }
 
 BEGIN_MESSAGE_MAP(CLabelWnd, CElementWnd)
@@ -114,69 +113,66 @@ END_MESSAGE_MAP()
 
 void CLabelWnd::UpdateSize()
 {
-  if(((CLabel*)pElement)->Text.IsEmpty()) {
-    Size.cx=15; Size.cy=15;
-  }else {
-    CClientDC DC(this);
+	if (((CLabel*)pElement)->Text.IsEmpty()) {
+		Size.cx = 15; Size.cy = 15;
+	}
+	else {
+		CClientDC DC(this);
 
-    CGdiObject* pOldFont=DC.SelectObject(&((CLabel*)pElement)->Font);
+		CGdiObject* pOldFont = DC.SelectObject(&((CLabel*)pElement)->Font);
 
-    CRect DrawRect(0,0,1000,1000);
-    DC.DrawText(((CLabel*)pElement)->Text,DrawRect,DT_CENTER|DT_CALCRECT);
-    DrawRect.right=5*(DrawRect.right/5)+5;
-    DrawRect.bottom=5*(DrawRect.bottom/5)+5;
+		CRect DrawRect(0, 0, 1000, 1000);
+		DC.DrawText(((CLabel*)pElement)->Text, DrawRect, DT_CENTER | DT_CALCRECT);
+		DrawRect.right = 5 * (DrawRect.right / 5) + 5;
+		DrawRect.bottom = 5 * (DrawRect.bottom / 5) + 5;
 
-    Size.cx=DrawRect.Width()+10;
-    Size.cy=DrawRect.Height()+10;
+		Size.cx = DrawRect.Width() + 10;
+		Size.cy = DrawRect.Height() + 10;
 
-    DC.SelectObject(pOldFont);
-  }
+		DC.SelectObject(pOldFont);
+	}
 
-  WINDOWPLACEMENT Pls;
-  Pls.length=sizeof(Pls);
-  ::GetWindowPlacement(m_hWnd,&Pls);
-  CRect Rect(Pls.rcNormalPosition);
-  Rect.right=Rect.left+Size.cx;
-  Rect.bottom=Rect.top+Size.cy;
-  MoveWindow(Rect);
-  RedrawWindow();
+	WINDOWPLACEMENT Pls;
+	Pls.length = sizeof(Pls);
+	::GetWindowPlacement(m_hWnd, &Pls);
+	CRect Rect(Pls.rcNormalPosition);
+	Rect.right = Rect.left + Size.cx;
+	Rect.bottom = Rect.top + Size.cy;
+	MoveWindow(Rect);
+	RedrawWindow();
 }
 
-void CLabelWnd::OnLabelText() 
+void CLabelWnd::OnLabelText()
 {
-	HINSTANCE hInstOld=AfxGetResourceHandle();
-  HMODULE hDll=GetModuleHandle(AfxGetAppName());
-	AfxSetResourceHandle(hDll);
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	CTextDlg Dlg(this);
-  Dlg.SetText((char*)(LPCTSTR)((CLabel*)pElement)->Text);
-  if(Dlg.DoModal()==IDOK) {
-    ((CLabel*)pElement)->Text=Dlg.GetText();
-    UpdateSize();
-    pElement->ModifiedFlag=TRUE;
-  }
-	
-  AfxSetResourceHandle(hInstOld);
+	Dlg.SetText((char*)(LPCTSTR)((CLabel*)pElement)->Text);
+	if (Dlg.DoModal() == IDOK) {
+		((CLabel*)pElement)->Text = Dlg.GetText();
+		UpdateSize();
+		pElement->ModifiedFlag = TRUE;
+	}
 }
 
-void CLabelWnd::Draw(CDC *pDC)
+void CLabelWnd::Draw(CDC* pDC)
 {
-  CGdiObject *pOldFont;
-  CBrush SelectBrush(theApp.SelectColor);
-  CBrush NormalBrush(theApp.DrawColor);
+	CGdiObject* pOldFont;
+	CBrush SelectBrush(theApp.SelectColor);
+	CBrush NormalBrush(theApp.DrawColor);
 
-  BOOL Sel=((CLabel*)pElement)->OnArch ? pElement->ArchSelected :
-    pElement->ConstrSelected;
+	BOOL Sel = ((CLabel*)pElement)->OnArch ? pElement->ArchSelected :
+		pElement->ConstrSelected;
 
-  if(Sel) pDC->FrameRect(CRect(0,0,Size.cx,Size.cy),&SelectBrush);
-  else pDC->FrameRect(CRect(0,0,Size.cx,Size.cy),&NormalBrush);
+	if (Sel) pDC->FrameRect(CRect(0, 0, Size.cx, Size.cy), &SelectBrush);
+	else pDC->FrameRect(CRect(0, 0, Size.cx, Size.cy), &NormalBrush);
 
-  pOldFont=pDC->SelectObject(&((CLabel*)pElement)->Font);
-  pDC->SetBkColor(theApp.BkColor);
-  if(Sel) pDC->SetTextColor(theApp.SelectColor);
-  else pDC->SetTextColor(theApp.DrawColor);
-  pDC->DrawText(((CLabel*)pElement)->Text,CRect(5,5,Size.cx-5,Size.cy-5),
-    DT_CENTER);
+	pOldFont = pDC->SelectObject(&((CLabel*)pElement)->Font);
+	pDC->SetBkColor(theApp.BkColor);
+	if (Sel) pDC->SetTextColor(theApp.SelectColor);
+	else pDC->SetTextColor(theApp.DrawColor);
+	pDC->DrawText(((CLabel*)pElement)->Text, CRect(5, 5, Size.cx - 5, Size.cy - 5),
+		DT_CENTER);
 
-  pDC->SelectObject(pOldFont);
+	pDC->SelectObject(pOldFont);
 }

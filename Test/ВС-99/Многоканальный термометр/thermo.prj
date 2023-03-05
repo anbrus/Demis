@@ -1,0 +1,7 @@
+[SOURCE]=00000001,thermo.asm
+[ARCH]=00000000,thermo.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(186,41,1008,499)C:\Documents and Settings\student\Рабочий стол\thermo\thermo.asm
+[WND.arh]=(22,22,844,480)C:\Documents and Settings\student\Рабочий стол\thermo\thermo.arh

@@ -1,0 +1,6 @@
+[ARCH]=00000000,proekt.arh
+[SOURCE]=00000001,proekt.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(147,258,1119,768)C:\Documents and Settings\это я\Рабочий стол\Новая папка (2)\kursovoi\proekt.asm

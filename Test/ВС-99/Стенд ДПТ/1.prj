@@ -1,0 +1,6 @@
+[ARCH]=00000000,1.arh
+[SOURCE]=00000001,1.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(34,-27,1015,529)D:\Program Files\Demis_labu\Examples_1\1.asm

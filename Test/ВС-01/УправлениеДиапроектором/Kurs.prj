@@ -1,0 +1,7 @@
+[SOURCE]=00000001,Kurs.asm
+[ARCH]=00000000,Kurs.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(26,26,1561,704)D:\1\Demis2k\Test\ВС-01\УправлениеДиапроектором\Kurs.asm
+[WND.arh]=(78,78,1613,756)D:\1\Demis2k\Test\ВС-01\УправлениеДиапроектором\Kurs.arh

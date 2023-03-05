@@ -33,25 +33,24 @@ CPrjCfgDlg::CPrjCfgDlg(CWnd* pParent /*=NULL*/)
 void CPrjCfgDlg::DoDataExchange(CDataExchange* pDX)
 {
 	CDialog::DoDataExchange(pDX);
-  if(!pDX->m_bSaveAndValidate) {
-    if((m_RomSize>0)&&(m_RomSize<1024)) {
-      m_RamStart="00000h";
-      m_RomStart.Format("%05Xh",1024*1024-m_RomSize*1024);
-      m_RamSize.Format("%d",1024-m_RomSize);
-      m_sRomSize.Format("%d",m_RomSize);
-    }
-  }
+	if (!pDX->m_bSaveAndValidate) {
+		if ((m_RomSize > 0) && (m_RomSize < 1024)) {
+			m_RamStart = "00000h";
+			m_RomStart.Format("%05Xh", 1024 * 1024 - m_RomSize * 1024);
+			m_RamSize.Format("%d", 1024 - m_RomSize);
+			m_sRomSize.Format("%d", m_RomSize);
+		}
+	}
 
-  //{{AFX_DATA_MAP(CPrjCfgDlg)
+	//{{AFX_DATA_MAP(CPrjCfgDlg)
 	DDX_Text(pDX, IDC_RAMSIZE, m_RamSize);
 	DDX_Text(pDX, IDC_RAMSTART, m_RamStart);
 	DDX_Text(pDX, IDC_ROMSTART, m_RomStart);
 	DDX_Text(pDX, IDC_ROMSIZE, m_sRomSize);
 	DDX_Text(pDX, IDC_TAKTFREQ, m_TaktFreq);
+	DDV_MinMaxFloat(pDX, m_TaktFreq, 0.001f, 1E9f);
 	DDX_Radio(pDX, IDC_FREEPIN_0, m_FreePinLevel);
 	//}}AFX_DATA_MAP
-
-  if(pDX->m_bSaveAndValidate&&(m_TaktFreq==0)) pDX->Fail();
 }
 
 
@@ -64,17 +63,17 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CPrjCfgDlg message handlers
 
-void CPrjCfgDlg::OnChangeRomSize() 
+void CPrjCfgDlg::OnChangeRomSize()
 {
-  UpdateData();
-  int NewSize;
-  if(sscanf(m_sRomSize,"%d",&NewSize)!=1) return;
-  m_RomSize=NewSize;
-  UpdateData(FALSE);
+	UpdateData();
+	int NewSize;
+	if (sscanf(m_sRomSize, "%d", &NewSize) != 1) return;
+	m_RomSize = NewSize;
+	UpdateData(FALSE);
 }
 
 void CPrjCfgDlg::OnOK()
 {
-  if(m_sRomSize.GetLength()!=0) CDialog::OnOK();
-  else MessageBeep(-1);
+	if (m_sRomSize.GetLength() != 0) CDialog::OnOK();
+	else MessageBeep(-1);
 }

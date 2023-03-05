@@ -1,9 +1,4 @@
-#if !defined(AFX_PRJDOC_H__CE29D6B3_0B71_11D4_AB96_9B6B5A91A566__INCLUDED_)
-#define AFX_PRJDOC_H__CE29D6B3_0B71_11D4_AB96_9B6B5A91A566__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 // PrjDoc.h : header file
 //
 #include <afxtempl.h>
@@ -69,9 +64,11 @@ protected:
 	//{{AFX_MSG(CPrjDoc)
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+private:
+	void CopyProjectFiles(const CString& pathFrom, const CString& pathTo);
 };
+
 
 //{{AFX_INSERT_LOCATION}}
 // Microsoft Visual C++ will insert additional declarations immediately before the previous line.
-
-#endif // !defined(AFX_PRJDOC_H__CE29D6B3_0B71_11D4_AB96_9B6B5A91A566__INCLUDED_)

@@ -1,0 +1,7 @@
+[ARCH]=00000000,Morze.arh
+[SOURCE]=00000001,Morze.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(44,44,686,378)D:\USERS\Morze\Morze.asm
+[WND.arh]=(0,0,642,334)D:\USERS\Morze\Morze.arh

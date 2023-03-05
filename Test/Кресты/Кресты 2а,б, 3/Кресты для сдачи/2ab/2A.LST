@@ -1,0 +1,109 @@
+Turbo Assembler	 Version 3.1	    01/03/12 12:38:28	    Page 1
+2a.asm
+
+
+
+      1					 .386
+      2		  =1000			 RomSize    EQU	  4096
+      3
+      4	    0000			 Code	    SEGMENT use16
+      5						    ASSUME cs:Code,ds:Code,es:Code
+      6
+      7	    0000  3F 0C	76 5E 4D 5B 7B+	 Numbers    db 3Fh,0Ch,76h,5Eh,4Dh,5Bh,7Bh,0Eh
+      8		  0E
+      9
+     10	    0008  B8 0000s		 Start:	    mov	  ax,Code
+     11	    000B  8E D8				    mov	  ds,ax
+     12	    000D  8E C0				    mov	  es,ax
+     13						    ;call  Lab2a
+     14	    000F  E8 001B			    call  Lab2b
+     15	    0012  EB F4				    jmp	  Start
+     16
+     17
+     18	    0014  E4 00			 Lab2a:	    in	  al,0
+     19	    0016  34 00				    xor	  al,0
+     20	    0018  74 12				    jz	  exita
+     21	    001A  8A C8				    mov	  cl,al
+     22	    001C  32 C0				    xor	  al,al
+     23	    001E  FE C0			 counta:    inc	  al
+     24	    0020  D0 E9				    shr	  cl,1
+     25	    0022  73 FA				    jnc	  counta
+     26	    0024  FE C8				    dec	  al
+     27	    0026  BB 0000r			    lea	  bx,Numbers
+     28	    0029  D7				    xlat
+     29	    002A  E6 00				    out	  0,al
+     30	    002C  C3			 exita:	    RET
+     31
+     32	    002D  E4 00			 Lab2b:	    in	  al,0
+     33	    002F  34 00				    xor	  al,0
+     34	    0031  74 36				    jz	  exitb
+     35	    0033  BB 0049r			    lea	  bx,base
+     36	    0036  8A C8				    mov	  cl,al
+     37	    0038  33 C0				    xor	  ax,ax
+     38	    003A  FE C0			 countb:    inc	  al
+     39	    003C  D0 E9				    shr	  cl,1
+     40	    003E  73 FA				    jnc	  countb
+     41	    0040  FE C8				    dec	  al
+     42	    0042  C1 E0	02			    shl	  ax,2
+     43	    0045  03 C3				    add	  ax,bx
+     44	    0047  FF E0				    jmp	  ax
+     45	    0049  B0 3F			 base:	    mov	  al,3Fh
+     46	    004B  EB 1A				    jmp	  exit
+     47	    004D  B0 0C				    mov	  al,0Ch
+     48	    004F  EB 16				    jmp	  exit
+     49	    0051  B0 76				    mov	  al,76h
+     50	    0053  EB 12				    jmp	  exit
+     51	    0055  B0 5E				    mov	  al,5Eh
+     52	    0057  EB 0E				    jmp	  exit
+     53	    0059  B0 4D				    mov	  al,4Dh
+     54	    005B  EB 0A				    jmp	  exit
+     55	    005D  B0 5B				    mov	  al,5Bh
+     56	    005F  EB 06				    jmp	  exit
+     57	    0061  B0 7B				    mov	  al,7Bh
+Turbo Assembler	 Version 3.1	    01/03/12 12:38:28	    Page 2
+2a.asm
+
+
+
+     58	    0063  EB 02				    jmp	  exit
+     59	    0065  B0 0E				    mov	  al,0Eh
+     60	    0067  E6 00			 exit:	    out	  0,al
+     61	    0069  C3			 exitb:	    RET
+     62
+     63						    org	  RomSize-16
+     64						    ASSUME cs:NOTHING
+     65	    0FF0  EA 00000008sr			    jmp	  Far Ptr Start
+     66	    0FF5			 Code	    ENDS
+     67					 END
+Turbo Assembler	 Version 3.1	    01/03/12 12:38:28	    Page 3
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "01/03/12"
+??FILENAME			  Text	 "2a	  "
+??TIME				  Text	 "12:38:28"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 2A
+@WORDSIZE			  Text	 2
+BASE				  Near	 CODE:0049
+COUNTA				  Near	 CODE:001E
+COUNTB				  Near	 CODE:003A
+EXIT				  Near	 CODE:0067
+EXITA				  Near	 CODE:002C
+EXITB				  Near	 CODE:0069
+LAB2A				  Near	 CODE:0014
+LAB2B				  Near	 CODE:002D
+NUMBERS				  Byte	 CODE:0000
+ROMSIZE				  Number 1000
+START				  Near	 CODE:0008
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+

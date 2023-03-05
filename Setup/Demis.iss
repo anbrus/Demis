@@ -2,10 +2,11 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Design Microsystems"
-#define MyAppVersion "3.5"
+#define MyAppVersion "3.5.2"
 #define MyAppPublisher "РГАТУ"
 #define MyAppURL "http://www.rsatu.ru/"
 #define MyAppExeName "Demis.exe"
+#define Demis2kDir "C:\Projects\Demis2k"
 
 [Setup]
 ; NOTE: The value of AppId uniquely identifies this application.
@@ -32,64 +33,64 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
 
 [Files]
-Source: "D:\1\Demis2k\Release\vc_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; AfterInstall: InstallRedist;
+Source: "{#Demis2kDir}\Release\VC_redist.x86.exe"; DestDir: "{tmp}"; Flags: deleteafterinstall; AfterInstall: InstallRedist;
 
-Source: "D:\1\Demis2k\Examples\ADC\ADC.arh"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\ADC\ADC.asm"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\ADC\ADC.dms"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\ADC\ADC.prj"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\ADC\ADC.arh"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\ADC\ADC.asm"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\ADC\ADC.dms"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\ADC\ADC.prj"; DestDir: "{app}\Examples\ADC"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Examples\Beep\Beep.arh"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Beep\Beep.asm"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Beep\BEEP.DMS"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Beep\Beep.prj"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Beep\Beep.arh"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Beep\Beep.asm"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Beep\BEEP.DMS"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Beep\Beep.prj"; DestDir: "{app}\Examples\Beep"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Examples\Button\Button.arh"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Button\Button.asm"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Button\BUTTON.DMS"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Button\Button.prj"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Button\Button.arh"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Button\Button.asm"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Button\BUTTON.DMS"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Button\Button.prj"; DestDir: "{app}\Examples\Button"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Examples\Calc\BOUND.ASM"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\Calc.arh"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\Calc.asm"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\CALC.DMS"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\Calc.prj"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\CONVS.ASM"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\IO.ASM"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\Math.asm"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Calc\Test.asm"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\BOUND.ASM"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\Calc.arh"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\Calc.asm"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\CALC.DMS"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\Calc.prj"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\CONVS.ASM"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\IO.ASM"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\Math.asm"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Calc\Test.asm"; DestDir: "{app}\Examples\Calc"; Flags: ignoreversion
 
 
-Source: "D:\1\Demis2k\Examples\Keyboard\Keyboard.arh"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Keyboard\Keyboard.asm"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Keyboard\KEYBOARD.DMS"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Keyboard\Keyboard.prj"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Keyboard\Keyboard.arh"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Keyboard\Keyboard.asm"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Keyboard\KEYBOARD.DMS"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Keyboard\Keyboard.prj"; DestDir: "{app}\Examples\Keyboard"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Examples\Matrix\Matrix.arh"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Matrix\Matrix.asm"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Matrix\MATRIX.DMS"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Matrix\Matrix.prj"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Matrix\Matrix.arh"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Matrix\Matrix.asm"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Matrix\MATRIX.DMS"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Matrix\Matrix.prj"; DestDir: "{app}\Examples\Matrix"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Examples\RunStr\RunStr.arh"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\RunStr\RunStr.asm"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\RunStr\RUNSTR.DMS"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\RunStr\RunStr.prj"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\RunStr\RunStr.arh"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\RunStr\RunStr.asm"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\RunStr\RUNSTR.DMS"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\RunStr\RunStr.prj"; DestDir: "{app}\Examples\RunStr"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Examples\Simple\Simple.arh"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Simple\Simple.asm"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Simple\SIMPLE.DMS"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Examples\Simple\Simple.prj"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Simple\Simple.arh"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Simple\Simple.asm"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Simple\SIMPLE.DMS"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Simple\Simple.prj"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Release\Assm.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Release\Dasm.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Help\Demis.chm"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Release\Demis.exe"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Release\Emulator.dll"; DestDir: "{app}"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Release\StdElem.dll"; DestDir: "{app}"; Flags: ignoreversion regserver
+Source: "{#Demis2kDir}\Release\Assm.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Release\Dasm.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Help\Demis.chm"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Release\Demis.exe"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Release\Emulator.dll"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Release\StdElem.dll"; DestDir: "{app}"; Flags: ignoreversion
 
-Source: "D:\1\Demis2k\Release\link16.exe"; DestDir: "C:/MASM32"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Release\ml.exe"; DestDir: "C:/MASM32"; Flags: ignoreversion
-Source: "D:\1\Demis2k\Release\ml.err"; DestDir: "C:/MASM32"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Release\link16.exe"; DestDir: "C:/MASM32"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Release\ml.exe"; DestDir: "C:/MASM32"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Release\ml.err"; DestDir: "C:/MASM32"; Flags: ignoreversion
 
 [Icons]
 Name: "{commonprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"
@@ -101,7 +102,7 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChang
 
 [Registry]
 Root: HKLM; Subkey: "Software\RGATA\Design Microsystems\Settings\Elements Libraries"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\RGATA\Design Microsystems\Settings\Elements Libraries"; ValueType: string; ValueName: "{{6B4C02AF-DC58-4935-B438-552DEBB72761}"; ValueData: "{{508879A8-2F6F-421E-A852-385411F84874}"; Flags: uninsdeletevalue
+Root: HKLM; Subkey: "Software\RGATA\Design Microsystems\Settings\Elements Libraries"; ValueType: string; ValueName: "{{6B4C02AF-DC58-4935-B438-552DEBB72761}"; ValueData: "{app}\StdElem.dll"; Flags: uninsdeletevalue
 
 [Code]
 procedure InstallRedist;
@@ -110,10 +111,10 @@ var
   StatusText: string;
 begin
   StatusText := WizardForm.StatusLabel.Caption;
-  WizardForm.StatusLabel.Caption := 'Установка компонентов Visual Studio 2015...';
+  WizardForm.StatusLabel.Caption := 'Установка компонентов Visual Studio 2022...';
   WizardForm.ProgressGauge.Style := npbstMarquee;
-  if not Exec(ExpandConstant('{tmp}\vc_redist.x86.exe'), '/install /q', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
-    MsgBox('Не удалось установить компоненты Visual Studio 2015. Код ошибки: ' + IntToStr(ResultCode) + '.', mbError, MB_OK);
+  if not Exec(ExpandConstant('{tmp}\VC_redist.x86.exe'), '/install /q', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then begin
+    MsgBox('Не удалось установить компоненты Visual Studio 2022. Код ошибки: ' + IntToStr(ResultCode) + '.', mbError, MB_OK);
   end;
   WizardForm.StatusLabel.Caption := StatusText;
   WizardForm.ProgressGauge.Style := npbstNormal;

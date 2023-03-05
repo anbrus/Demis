@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/05/17 11:06:37
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:51:20
 RunStr.asm						     Page 1 - 1
 
 
@@ -73,68 +73,79 @@ RunStr.asm						     Page 1 - 1
 				;Здесь размещаются описания констант
 
 				           ASSUME cs:Code,ds:Data,es:InitData
- 0000				Start:
- 0000  B8 ---- R		           mov   ax,Data
- 0003  8E D8			           mov   ds,ax
- 0005  B8 ---- R		           mov   ax,InitData
- 0008  8E C0			           mov   es,ax
- 000A  B8 ---- R		           mov   ax,Stk
- 000D  8E D0			           mov   ss,ax
- 000F  8D 26 00C8 R		           lea   sp,StkTop
+
+ 0000				Display    PROC  NEAR
+				           ;ax   Смещение от начала Image
+				           
+ 0000  53			           push  bx
+ 0001  51			           push  cx
+				           
+ 0002  8D 1E 0000 R		           lea   bx,Image
+ 0006  03 D8			           add   bx,ax
+ 0008  B5 01			           mov   ch,1        ;Indicator Counter
+ 000A				OutNextInd:
+ 000A  B0 00			           mov   al,0
+ 000C  E6 01			           out   1,al        ;Turn off cols
+ 000E  8A C5			           mov   al,ch
+ 0010  E6 02			           out   2,al        ;Turn on current matrix
+ 0012  B1 01			           mov   cl,1        ;Col Counter
+ 0014				OutNextCol:
+ 0014  B0 00			           mov   al,0
+ 0016  E6 01			           out   1,al        ;Turn off cols
+ 0018  26: 8A 07		           mov   al,es:[bx]
+ 001B  F6 D0			           not   al
+ 001D  E6 00			           out   0,al        ;Set rows
+ 001F  8A C1			           mov   al,cl
+ 0021  E6 01			           out   1,al        ;Turn on current col
+				           
+ 0023  D0 E1			           shl   cl,1
+ 0025  43			           inc   bx
+ 0026  73 EC			           jnc   OutNextCol
+ 0028  D0 E5			           shl   ch,1
+ 002A  80 FD 10			           cmp   ch,16
+ 002D  75 DB			           jnz   OutNextInd
+				           
+ 002F  32 C0			           xor   al, al
+ 0031  E6 02			           out   2, al
+
+ 0033  59			           pop   cx
+ 0034  5B			           pop   bx
+ 0035  C3			           ret
+ 0036				Display    ENDP
+
+ 0036				Start:
+ 0036  B8 ---- R		           mov   ax,Data
+ 0039  8E D8			           mov   ds,ax
+ 003B  B8 ---- R		           mov   ax,InitData
+ 003E  8E C0			           mov   es,ax
+ 0040  B8 ---- R		           mov   ax,Stk
+ 0043  8E D0			           mov   ss,ax
+ 0045  8D 26 00C8 R		           lea   sp,StkTop
 				;Здесь размещается код программы
- 0013  BA 0000			           mov   dx,0
- 0016				InfLoop:
- 0016  E8 0038			           call  Delay
- 0019  8D 1E 0000 R		           lea   bx,Image
- 001D  03 DA			           add   bx,dx
- 001F  B5 01			           mov   ch,1        ;Indicator Counter
- 0021				OutNextInd:
- 0021  B0 00			           mov   al,0
- 0023  E6 01			           out   1,al        ;Turn off cols
- 0025  8A C5			           mov   al,ch
- 0027  E6 02			           out   2,al        ;Turn on current matrix
- 0029  B1 01			           mov   cl,1        ;Col Counter
- 002B				OutNextCol:
- 002B  B0 00			           mov   al,0
- 002D  E6 01			           out   1,al        ;Turn off cols
- 002F  26: 8A 07		           mov   al,es:[bx]
- 0032  F6 D0			           not   al
- 0034  E6 00			           out   0,al        ;Set rows
- 0036  8A C1			           mov   al,cl
- 0038  E6 01			           out   1,al        ;Turn on current col
+ 0049  BA 0032			           mov   dx,50
+ 004C				InfLoop:
+ 004C  B9 001E			           mov   cx, 30
+ 004F				LoopDisplay:
+ 004F  8B C2			           mov   ax, dx
+ 0051  E8 FFAC			           call  Display
+ 0054  49			           dec   cx
+ 0055				LoopDisplay1:
+ 0055  75 F8			           jnz   LoopDisplay
 				           
- 003A  D0 E1			           shl   cl,1
- 003C  43			           inc   bx
- 003D  73 EC			           jnc   OutNextCol
- 003F  D0 E5			           shl   ch,1
- 0041  80 FD 10			           cmp   ch,16
- 0044  75 DB			           jnz   OutNextInd
- 0046  42			           inc   dx
- 0047  81 FA 00B0		           cmp   dx,11*16
- 004B  75 C9			           jnz   InfLoop
- 004D  33 D2			           xor   dx,dx
- 004F  EB C5			           jmp   InfLoop
+ 0057  42			           inc   dx
+ 0058  81 FA 00B0		           cmp   dx,11*16
+ 005C  75 EE			           jnz   InfLoop
+ 005E  33 D2			           xor   dx,dx
+ 0060  EB EA			           jmp   InfLoop
 				           
- 0051				Delay      proc  near
- 0051  51			           push  cx
- 0052  B9 EA60			           mov   cx,60000
- 0055				DelayLoop:
- 0055  41			           inc   cx
- 0056  49			           dec cx
- 0057  41			           inc   cx
- 0058  49			           dec cx
- 0059  E2 FA			           loop  DelayLoop
- 005B  59			           pop   cx
- 005C  C3			           ret
- 005D				Delay      endp
 
 				;В следующей строке необходимо указать смещение стартовой точки
 				           org   RomSize-16-((InitDataEnd-InitDataStart+15) AND 0FFF0h)
 				           ASSUME cs:NOTHING
- 0F20  EA ---- 0000 R		           jmp   Far Ptr Start
+ 0F20  EA ---- 0036 R		           jmp   Far Ptr Start
  0F25				Code       ENDS
 				END
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/05/17 11:06:37
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:51:20
 RunStr.asm						     Symbols 2 - 1
 
 
@@ -155,8 +166,9 @@ Procedures,  parameters and locals:
 
                 N a m e                 Type     Value    Attr
 
-Delay  . . . . . . . . . . . . .	P Near	 0051	  Code	Length= 000C Public
-  DelayLoop  . . . . . . . . . .	L Near	 0055	  Code	
+Display  . . . . . . . . . . . .	P Near	 0000	  Code	Length= 0036 Public
+  OutNextInd . . . . . . . . . .	L Near	 000A	  Code	
+  OutNextCol . . . . . . . . . .	L Near	 0014	  Code	
 
 
 Symbols:
@@ -164,13 +176,13 @@ Symbols:
                 N a m e                 Type     Value    Attr
 
 Image  . . . . . . . . . . . . .	L Near	 0000	  InitData	
-InfLoop  . . . . . . . . . . . .	L Near	 0016	  Code	
+InfLoop  . . . . . . . . . . . .	L Near	 004C	  Code	
 InitDataEnd  . . . . . . . . . .	L Near	 00D0	  InitData	
 InitDataStart  . . . . . . . . .	L Near	 0000	  InitData	
-OutNextCol . . . . . . . . . . .	L Near	 002B	  Code	
-OutNextInd . . . . . . . . . . .	L Near	 0021	  Code	
+LoopDisplay1 . . . . . . . . . .	L Near	 0055	  Code	
+LoopDisplay  . . . . . . . . . .	L Near	 004F	  Code	
 RomSize  . . . . . . . . . . . .	Number	 1000h	 
-Start  . . . . . . . . . . . . .	L Near	 0000	  Code	
+Start  . . . . . . . . . . . . .	L Near	 0036	  Code	
 StkTop . . . . . . . . . . . . .	Word	 00C8	  Stk	
 
 	   0 Warnings

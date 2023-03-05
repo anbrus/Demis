@@ -1,7 +1,7 @@
 "DeployProject"
 {
-"VSVersion" = "3:700"
-"ProjectType" = "8:{5443560c-dbb4-11d2-8724-00a0c9a8b90c}"
+"VSVersion" = "3:800"
+"ProjectType" = "8:{978C614F-708E-4E1A-B201-565925725DBA}"
 "IsWebType" = "8:FALSE"
 "ProjectName" = "8:Setup"
 "LanguageId" = "3:0"
@@ -17,223 +17,223 @@
         {
         "MsmKey" = "8:_17AC126AE1FF4CBF9EEA8D1DF62DFF29"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:C:\\WINDOWS\\SYSTEM32\\MFC70.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_19195EA94E4C4B70893A2D733DC09AC5"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:C:\\WINDOWS\\SYSTEM32\\ATL70.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_194A985A4A8045248509A2FD9634AB19"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\MATRIX\\MATRIX.ASM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_1A9D32D1A94447FB9E6DD1291D1125FD"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\EMULATOR.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_26732ADA356348F58CC09F01B859C734"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\BUTTON\\BUTTON.ASM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_280946CB0EE44223B126047D43B3DDC4"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\DEMIS.CHM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_2E1A6E92BD524DF795C6D7AECA6E5404"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\SIMPLE\\SIMPLE.PRJ"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_2EED613E168A44ACAEC0F0537300CB89"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\TASM.EXE"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_33CF29FE4C0F433594AE09786608A69E"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\MATRIX\\MATRIX.PRJ"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_3E9133CB16C14771B1E5FAB96FFF722B"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\RUNSTR\\RUNSTR.PRJ"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_48DB1D5ECBCD476092C14722C0E2C547"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\DIRECTBEEP\\BIN\\I386\\FREE\\DIRECTBEEP.SYS"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_51D0A8A61CA14876A0255B3BE88C6B3D"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\RUNSTR\\RUNSTR.ASM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_539D0D8B812B43AA9EE934668689A010"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\DPMILOAD.EXE"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_60E110AF8003488FA0F6B33FFB32F851"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\KEYBOARD\\KEYBOARD.PRJ"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_61A8CE695CA84296832C341D4B31CBE6"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\ADC\\ADC.ASM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_639D1AE0AF04440AAEC1A031B2731698"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\MATRIX\\MATRIX.ARH"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_64472E93F5DC48568CD5ECC5030E00BF"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\DASM.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_6926B3EA3DA84DBD8470AC09EFEE23C0"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\BEEP\\BEEP.ARH"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_6DDE02A4B8964F80A0714DDEB584F5D1"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\ASSM.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_772538B7213741969455984A16FF66F4"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:C:\\WINDOWS\\SYSTEM32\\MSVCR70.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_78B6A09D788E4CBBB73E1BEF88B55765"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\BUTTON\\BUTTON.ARH"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_87B95C914ABB476095B5D2764875C0CC"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\KEYBOARD\\KEYBOARD.ASM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_906EE8B96127454C93551C277BD0899F"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\ADC\\ADC.ARH"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_92FDD1D1D256400ABFD24CBEA4A4E82B"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\DPMIMEM.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_9C8F20002D964E55A4C0216A51122F5F"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\TLINK.EXE"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_A9F1E06956054C3F9785817C8F67209C"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\SIMPLE\\SIMPLE.ASM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_AD0D5FFC3DF843D9834FE53C2AE9F5D2"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\ADC\\ADC.PRJ"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_B5BCB07DBB284646B58DB414180A6ADF"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\RUNTLINK.EXE"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_B95FE1AB7F114B5DA57F3D50E79C9485"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\BUTTON\\BUTTON.PRJ"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_BD16FBC3328A4331AE27556113C7A2F6"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\RUNTASM.EXE"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_C67B745BFA0D4AAD80E4FCBA1916FE1A"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\STDELEM.DLL"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_C6FBA3B8454E4603BF744DB69B92C8A6"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\RELEASE\\DEMIS.EXE"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_C85BB1E847324A82AF9B82A64D44594D"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\SIMPLE\\SIMPLE.ARH"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_D351CD2D42494C5FB00824DA6241CCE7"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\BEEP\\BEEP.ASM"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_DDAFEC34AECB49E99D5F0EF4801FC99F"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\RUNSTR\\RUNSTR.ARH"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_DE13ACF9A5E6452EB414FD2557FF9592"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\BEEP\\BEEP.PRJ"
+        "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_E9A14FB78E494CBBA5A3A0331FF51F0D"
         "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:D:\\WORK\\VC\\DEMIS2K\\EXAMPLES\\KEYBOARD\\KEYBOARD.ARH"
+        "MsmSig" = "8:_UNDEFINED"
         }
     }
     "Configurations"
@@ -253,6 +253,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
         "Release"
         {
@@ -269,6 +277,14 @@
         "PrivateKeyFile" = "8:"
         "TimeStampServer" = "8:"
         "InstallerBootstrapper" = "3:2"
+            "BootstrapperCfg:{63ACBE69-63AA-4F98-B2B6-99F9E24495F2}"
+            {
+            "Enabled" = "11:TRUE"
+            "PromptEnabled" = "11:TRUE"
+            "PrerequisitesLocation" = "2:1"
+            "Url" = "8:"
+            "ComponentsUrl" = "8:"
+            }
         }
     }
     "Deployable"
@@ -282,12 +298,15 @@
         "Title" = "8:"
         "Description" = "8:"
         }
-        "Feature"
+        "ExternalPersistence"
         {
+            "LaunchCondition"
+            {
+            }
         }
         "File"
         {
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_17AC126AE1FF4CBF9EEA8D1DF62DFF29"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_17AC126AE1FF4CBF9EEA8D1DF62DFF29"
             {
             "SourcePath" = "8:C:\\WINDOWS\\system32\\mfc70.dll"
             "TargetName" = "8:mfc70.dll"
@@ -307,7 +326,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_19195EA94E4C4B70893A2D733DC09AC5"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_19195EA94E4C4B70893A2D733DC09AC5"
             {
             "SourcePath" = "8:C:\\WINDOWS\\system32\\atl70.dll"
             "TargetName" = "8:atl70.dll"
@@ -327,7 +346,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_194A985A4A8045248509A2FD9634AB19"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_194A985A4A8045248509A2FD9634AB19"
             {
             "SourcePath" = "8:..\\Examples\\Matrix\\Matrix.asm"
             "TargetName" = "8:Matrix.asm"
@@ -347,7 +366,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_1A9D32D1A94447FB9E6DD1291D1125FD"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_1A9D32D1A94447FB9E6DD1291D1125FD"
             {
             "SourcePath" = "8:..\\Release\\Emulator.dll"
             "TargetName" = "8:Emulator.dll"
@@ -367,7 +386,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_26732ADA356348F58CC09F01B859C734"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_26732ADA356348F58CC09F01B859C734"
             {
             "SourcePath" = "8:..\\Examples\\Button\\Button.asm"
             "TargetName" = "8:Button.asm"
@@ -387,7 +406,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_280946CB0EE44223B126047D43B3DDC4"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_280946CB0EE44223B126047D43B3DDC4"
             {
             "SourcePath" = "8:..\\Release\\Demis.chm"
             "TargetName" = "8:Demis.chm"
@@ -407,7 +426,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_2E1A6E92BD524DF795C6D7AECA6E5404"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2E1A6E92BD524DF795C6D7AECA6E5404"
             {
             "SourcePath" = "8:..\\Examples\\Simple\\Simple.prj"
             "TargetName" = "8:Simple.prj"
@@ -427,7 +446,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_2EED613E168A44ACAEC0F0537300CB89"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2EED613E168A44ACAEC0F0537300CB89"
             {
             "SourcePath" = "8:..\\Release\\tasm.exe"
             "TargetName" = "8:tasm.exe"
@@ -447,7 +466,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_33CF29FE4C0F433594AE09786608A69E"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_33CF29FE4C0F433594AE09786608A69E"
             {
             "SourcePath" = "8:..\\Examples\\Matrix\\Matrix.prj"
             "TargetName" = "8:Matrix.prj"
@@ -467,7 +486,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_3E9133CB16C14771B1E5FAB96FFF722B"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3E9133CB16C14771B1E5FAB96FFF722B"
             {
             "SourcePath" = "8:..\\Examples\\RunStr\\RunStr.prj"
             "TargetName" = "8:RunStr.prj"
@@ -487,7 +506,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_48DB1D5ECBCD476092C14722C0E2C547"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_48DB1D5ECBCD476092C14722C0E2C547"
             {
             "SourcePath" = "8:..\\DirectBeep\\bin\\i386\\free\\DirectBeep.sys"
             "TargetName" = "8:DirectBeep.sys"
@@ -507,7 +526,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_51D0A8A61CA14876A0255B3BE88C6B3D"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_51D0A8A61CA14876A0255B3BE88C6B3D"
             {
             "SourcePath" = "8:..\\Examples\\RunStr\\RunStr.asm"
             "TargetName" = "8:RunStr.asm"
@@ -527,7 +546,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_539D0D8B812B43AA9EE934668689A010"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_539D0D8B812B43AA9EE934668689A010"
             {
             "SourcePath" = "8:..\\Release\\DPMILOAD.EXE"
             "TargetName" = "8:DPMILOAD.EXE"
@@ -547,7 +566,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_60E110AF8003488FA0F6B33FFB32F851"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_60E110AF8003488FA0F6B33FFB32F851"
             {
             "SourcePath" = "8:..\\Examples\\Keyboard\\Keyboard.prj"
             "TargetName" = "8:Keyboard.prj"
@@ -567,7 +586,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_61A8CE695CA84296832C341D4B31CBE6"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_61A8CE695CA84296832C341D4B31CBE6"
             {
             "SourcePath" = "8:..\\Examples\\ADC\\ADC.asm"
             "TargetName" = "8:ADC.asm"
@@ -587,7 +606,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_639D1AE0AF04440AAEC1A031B2731698"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_639D1AE0AF04440AAEC1A031B2731698"
             {
             "SourcePath" = "8:..\\Examples\\Matrix\\Matrix.arh"
             "TargetName" = "8:Matrix.arh"
@@ -607,7 +626,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_64472E93F5DC48568CD5ECC5030E00BF"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_64472E93F5DC48568CD5ECC5030E00BF"
             {
             "SourcePath" = "8:..\\Release\\Dasm.dll"
             "TargetName" = "8:Dasm.dll"
@@ -627,7 +646,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_6926B3EA3DA84DBD8470AC09EFEE23C0"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6926B3EA3DA84DBD8470AC09EFEE23C0"
             {
             "SourcePath" = "8:..\\Examples\\Beep\\Beep.arh"
             "TargetName" = "8:Beep.arh"
@@ -647,7 +666,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_6DDE02A4B8964F80A0714DDEB584F5D1"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6DDE02A4B8964F80A0714DDEB584F5D1"
             {
             "SourcePath" = "8:..\\Release\\Assm.dll"
             "TargetName" = "8:Assm.dll"
@@ -667,7 +686,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_772538B7213741969455984A16FF66F4"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_772538B7213741969455984A16FF66F4"
             {
             "SourcePath" = "8:C:\\WINDOWS\\system32\\msvcr70.dll"
             "TargetName" = "8:msvcr70.dll"
@@ -687,7 +706,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_78B6A09D788E4CBBB73E1BEF88B55765"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_78B6A09D788E4CBBB73E1BEF88B55765"
             {
             "SourcePath" = "8:..\\Examples\\Button\\Button.arh"
             "TargetName" = "8:Button.arh"
@@ -707,7 +726,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_87B95C914ABB476095B5D2764875C0CC"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_87B95C914ABB476095B5D2764875C0CC"
             {
             "SourcePath" = "8:..\\Examples\\Keyboard\\Keyboard.asm"
             "TargetName" = "8:Keyboard.asm"
@@ -727,7 +746,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_906EE8B96127454C93551C277BD0899F"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_906EE8B96127454C93551C277BD0899F"
             {
             "SourcePath" = "8:..\\Examples\\ADC\\ADC.arh"
             "TargetName" = "8:ADC.arh"
@@ -747,7 +766,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_92FDD1D1D256400ABFD24CBEA4A4E82B"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_92FDD1D1D256400ABFD24CBEA4A4E82B"
             {
             "SourcePath" = "8:..\\Release\\DPMIMEM.DLL"
             "TargetName" = "8:DPMIMEM.DLL"
@@ -767,7 +786,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_9C8F20002D964E55A4C0216A51122F5F"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9C8F20002D964E55A4C0216A51122F5F"
             {
             "SourcePath" = "8:..\\Release\\TLINK.EXE"
             "TargetName" = "8:TLINK.EXE"
@@ -787,7 +806,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_A9F1E06956054C3F9785817C8F67209C"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A9F1E06956054C3F9785817C8F67209C"
             {
             "SourcePath" = "8:..\\Examples\\Simple\\Simple.asm"
             "TargetName" = "8:Simple.asm"
@@ -807,7 +826,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_AD0D5FFC3DF843D9834FE53C2AE9F5D2"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_AD0D5FFC3DF843D9834FE53C2AE9F5D2"
             {
             "SourcePath" = "8:..\\Examples\\ADC\\ADC.prj"
             "TargetName" = "8:ADC.prj"
@@ -827,7 +846,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_B5BCB07DBB284646B58DB414180A6ADF"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B5BCB07DBB284646B58DB414180A6ADF"
             {
             "SourcePath" = "8:..\\Release\\RUNTLINK.EXE"
             "TargetName" = "8:RUNTLINK.EXE"
@@ -847,7 +866,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_B95FE1AB7F114B5DA57F3D50E79C9485"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B95FE1AB7F114B5DA57F3D50E79C9485"
             {
             "SourcePath" = "8:..\\Examples\\Button\\Button.prj"
             "TargetName" = "8:Button.prj"
@@ -867,7 +886,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_BD16FBC3328A4331AE27556113C7A2F6"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_BD16FBC3328A4331AE27556113C7A2F6"
             {
             "SourcePath" = "8:..\\Release\\RUNTASM.EXE"
             "TargetName" = "8:RUNTASM.EXE"
@@ -887,7 +906,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_C67B745BFA0D4AAD80E4FCBA1916FE1A"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C67B745BFA0D4AAD80E4FCBA1916FE1A"
             {
             "SourcePath" = "8:..\\Release\\StdElem.dll"
             "TargetName" = "8:StdElem.dll"
@@ -907,7 +926,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_C6FBA3B8454E4603BF744DB69B92C8A6"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C6FBA3B8454E4603BF744DB69B92C8A6"
             {
             "SourcePath" = "8:..\\Release\\Demis.exe"
             "TargetName" = "8:Demis.exe"
@@ -927,7 +946,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_C85BB1E847324A82AF9B82A64D44594D"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C85BB1E847324A82AF9B82A64D44594D"
             {
             "SourcePath" = "8:..\\Examples\\Simple\\Simple.arh"
             "TargetName" = "8:Simple.arh"
@@ -947,7 +966,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_D351CD2D42494C5FB00824DA6241CCE7"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D351CD2D42494C5FB00824DA6241CCE7"
             {
             "SourcePath" = "8:..\\Examples\\Beep\\Beep.asm"
             "TargetName" = "8:Beep.asm"
@@ -967,7 +986,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_DDAFEC34AECB49E99D5F0EF4801FC99F"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DDAFEC34AECB49E99D5F0EF4801FC99F"
             {
             "SourcePath" = "8:..\\Examples\\RunStr\\RunStr.arh"
             "TargetName" = "8:RunStr.arh"
@@ -987,7 +1006,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_DE13ACF9A5E6452EB414FD2557FF9592"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DE13ACF9A5E6452EB414FD2557FF9592"
             {
             "SourcePath" = "8:..\\Examples\\Beep\\Beep.prj"
             "TargetName" = "8:Beep.prj"
@@ -1007,7 +1026,7 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{54DA9790-1474-11D3-8E00-00C04F6837D0}:_E9A14FB78E494CBBA5A3A0331FF51F0D"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_E9A14FB78E494CBBA5A3A0331FF51F0D"
             {
             "SourcePath" = "8:..\\Examples\\Keyboard\\Keyboard.arh"
             "TargetName" = "8:Keyboard.arh"
@@ -1033,7 +1052,7 @@
         }
         "Folder"
         {
-            "{777C097F-0ED8-11D3-8D6C-00A0C9CFCEE6}:_20AC9419C23D4832A20A3AD19702E80D"
+            "{1525181F-901A-416C-8A58-119130FE478E}:_20AC9419C23D4832A20A3AD19702E80D"
             {
             "Name" = "8:#1916"
             "AlwaysCreate" = "11:FALSE"
@@ -1044,7 +1063,7 @@
                 {
                 }
             }
-            "{EE62640D-12F2-11D3-8D6C-00A0C9CFCEE6}:_28A7CD73904F4D6EAAF328B8C6AF63C0"
+            "{3C67513D-01DD-4637-8A68-80971EB9504F}:_28A7CD73904F4D6EAAF328B8C6AF63C0"
             {
             "DefaultLocation" = "8:[ProgramFilesFolder]RGATA\\Design Microsystems"
             "Name" = "8:#1925"
@@ -1054,7 +1073,7 @@
             "Property" = "8:TARGETDIR"
                 "Folders"
                 {
-                    "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_E16A15BCE54A474FA41958668B0A08FD"
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_E16A15BCE54A474FA41958668B0A08FD"
                     {
                     "Name" = "8:Examples"
                     "AlwaysCreate" = "11:TRUE"
@@ -1063,7 +1082,7 @@
                     "Property" = "8:_D1B83BDA52C1415091E6F284FE088EE9"
                         "Folders"
                         {
-                            "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_233CD3D88B2342299C24BC7237C964CD"
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_233CD3D88B2342299C24BC7237C964CD"
                             {
                             "Name" = "8:Simple"
                             "AlwaysCreate" = "11:FALSE"
@@ -1074,7 +1093,7 @@
                                 {
                                 }
                             }
-                            "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_41162346713D454EA74AA204461FD051"
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_41162346713D454EA74AA204461FD051"
                             {
                             "Name" = "8:ADC"
                             "AlwaysCreate" = "11:FALSE"
@@ -1085,7 +1104,7 @@
                                 {
                                 }
                             }
-                            "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_4806DD4A9B3F407C8AE7122050244D1E"
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_4806DD4A9B3F407C8AE7122050244D1E"
                             {
                             "Name" = "8:RunStr"
                             "AlwaysCreate" = "11:FALSE"
@@ -1096,7 +1115,7 @@
                                 {
                                 }
                             }
-                            "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_B1B085AE2813464CB0CFA882D67CE502"
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_B1B085AE2813464CB0CFA882D67CE502"
                             {
                             "Name" = "8:Button"
                             "AlwaysCreate" = "11:FALSE"
@@ -1107,7 +1126,7 @@
                                 {
                                 }
                             }
-                            "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_BC538CB68FB24770866A6CCDA30EA864"
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_BC538CB68FB24770866A6CCDA30EA864"
                             {
                             "Name" = "8:Matrix"
                             "AlwaysCreate" = "11:FALSE"
@@ -1118,7 +1137,7 @@
                                 {
                                 }
                             }
-                            "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_C86C3C45B4F74BCA95C9F4D5627A7EDE"
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_C86C3C45B4F74BCA95C9F4D5627A7EDE"
                             {
                             "Name" = "8:Keyboard"
                             "AlwaysCreate" = "11:FALSE"
@@ -1129,7 +1148,7 @@
                                 {
                                 }
                             }
-                            "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_F984EE0C29D54EBD9DC075D47FEA84A0"
+                            "{9EF0B969-E518-4E46-987F-47570745A589}:_F984EE0C29D54EBD9DC075D47FEA84A0"
                             {
                             "Name" = "8:Beep"
                             "AlwaysCreate" = "11:FALSE"
@@ -1144,7 +1163,7 @@
                     }
                 }
             }
-            "{777C097F-0ED8-11D3-8D6C-00A0C9CFCEE6}:_43304D099950436BAC68202944CDF079"
+            "{1525181F-901A-416C-8A58-119130FE478E}:_43304D099950436BAC68202944CDF079"
             {
             "Name" = "8:#1919"
             "AlwaysCreate" = "11:FALSE"
@@ -1153,7 +1172,7 @@
             "Property" = "8:ProgramMenuFolder"
                 "Folders"
                 {
-                    "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_885598E6C91C42A9AD537E023446441E"
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_885598E6C91C42A9AD537E023446441E"
                     {
                     "Name" = "8:Design Microsystems"
                     "AlwaysCreate" = "11:TRUE"
@@ -1166,7 +1185,7 @@
                     }
                 }
             }
-            "{777C097F-0ED8-11D3-8D6C-00A0C9CFCEE6}:_A73144D9C38641D08E8846863C7C1410"
+            "{1525181F-901A-416C-8A58-119130FE478E}:_A73144D9C38641D08E8846863C7C1410"
             {
             "Name" = "8:#1914"
             "AlwaysCreate" = "11:FALSE"
@@ -1175,7 +1194,7 @@
             "Property" = "8:SystemFolder"
                 "Folders"
                 {
-                    "{461E96AF-1495-11D3-8D6C-00A0C9CFCEE6}:_74CEE13F11D24F84BB1804515FB27735"
+                    "{9EF0B969-E518-4E46-987F-47570745A589}:_74CEE13F11D24F84BB1804515FB27735"
                     {
                     "Name" = "8:drivers"
                     "AlwaysCreate" = "11:FALSE"
@@ -1195,25 +1214,41 @@
         "Locator"
         {
         }
-        "Shortcut"
+        "MsiBootstrapper"
         {
-            "{D0C99CFE-1238-11D3-8E00-00C04F6837D0}:_AB887451BA004178A33D9576410FE9DE"
-            {
-            "Name" = "8:Design Microsystems v3.4"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:128"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_C6FBA3B8454E4603BF744DB69B92C8A6"
-            "Folder" = "8:_885598E6C91C42A9AD537E023446441E"
-            "WorkingFolder" = "8:_28A7CD73904F4D6EAAF328B8C6AF63C0"
-            "Icon" = "8:_C6FBA3B8454E4603BF744DB69B92C8A6"
-            "Feature" = "8:"
-            }
+        "LangId" = "3:0"
+        "RequiresElevation" = "11:FALSE"
         }
-        "Sequences"
+        "Product"
         {
+        "Name" = "8:Microsoft Visual Studio"
+        "ProductName" = "8:Design Microsystems v3.4"
+        "ProductCode" = "8:{9FD15680-34E3-47C8-88E2-D17E611E87AC}"
+        "PackageCode" = "8:{F75C0B8C-8E45-4925-9B80-AC184BF37C72}"
+        "UpgradeCode" = "8:{6C33C05A-1576-42B2-9806-AF0C97FE00B8}"
+        "AspNetVersion" = "8:4.0.30319.0"
+        "RestartWWWService" = "11:FALSE"
+        "RemovePreviousVersions" = "11:TRUE"
+        "DetectNewerInstalledVersion" = "11:TRUE"
+        "InstallAllUsers" = "11:FALSE"
+        "ProductVersion" = "8:3.4"
+        "Manufacturer" = "8:RGATA"
+        "ARPHELPTELEPHONE" = "8:"
+        "ARPHELPLINK" = "8:"
+        "Title" = "8:Design Microsystems v3.4"
+        "Subject" = "8:"
+        "ARPCONTACT" = "8:RGATA"
+        "Keywords" = "8:"
+        "ARPCOMMENTS" = "8:Design Microsystems v3.4"
+        "ARPURLINFOABOUT" = "8:"
+        "ARPPRODUCTICON" = "8:"
+        "ARPIconIndex" = "3:0"
+        "SearchPath" = "8:"
+        "UseSystemSearchPath" = "11:TRUE"
+        "TargetPlatform" = "3:0"
+        "PreBuildEvent" = "8:"
+        "PostBuildEvent" = "8:"
+        "RunPostBuildEvent" = "3:0"
         }
         "Registry"
         {
@@ -1221,7 +1256,7 @@
             {
                 "Keys"
                 {
-                    "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_6C44173AE20D4122B1825D3DF04E2352"
+                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_6C44173AE20D4122B1825D3DF04E2352"
                     {
                     "Name" = "8:System"
                     "Condition" = "8:"
@@ -1230,7 +1265,7 @@
                     "Transitive" = "11:FALSE"
                         "Keys"
                         {
-                            "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_03931DCA17DD42C992700CC75DD2B1D5"
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_03931DCA17DD42C992700CC75DD2B1D5"
                             {
                             "Name" = "8:CurrentControlSet"
                             "Condition" = "8:"
@@ -1239,7 +1274,7 @@
                             "Transitive" = "11:FALSE"
                                 "Keys"
                                 {
-                                    "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_115F3EC18300414B967C635C5CE8731E"
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_115F3EC18300414B967C635C5CE8731E"
                                     {
                                     "Name" = "8:Services"
                                     "Condition" = "8:"
@@ -1248,7 +1283,7 @@
                                     "Transitive" = "11:FALSE"
                                         "Keys"
                                         {
-                                            "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_B819C4382F6746D88D04271909A27AA8"
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_B819C4382F6746D88D04271909A27AA8"
                                             {
                                             "Name" = "8:DirectBeep"
                                             "Condition" = "8:VersionNT"
@@ -1260,7 +1295,7 @@
                                                 }
                                                 "Values"
                                                 {
-                                                    "{B73D4F5A-FF29-11D2-8D6B-00A0C9CFCEE6}:_271B9EE6A72B4549B99AE014F75DA01A"
+                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_271B9EE6A72B4549B99AE014F75DA01A"
                                                     {
                                                     "Name" = "8:Group"
                                                     "Condition" = "8:"
@@ -1268,7 +1303,7 @@
                                                     "ValueTypes" = "3:1"
                                                     "Value" = "8:Base"
                                                     }
-                                                    "{B73D4F5A-FF29-11D2-8D6B-00A0C9CFCEE6}:_2B201A2834044AF3A79E8D79265E80DF"
+                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_2B201A2834044AF3A79E8D79265E80DF"
                                                     {
                                                     "Name" = "8:Type"
                                                     "Condition" = "8:"
@@ -1276,7 +1311,7 @@
                                                     "ValueTypes" = "3:3"
                                                     "Value" = "3:1"
                                                     }
-                                                    "{B73D4F5A-FF29-11D2-8D6B-00A0C9CFCEE6}:_3F60468815AE4B7C8D0AA2CFEA89E202"
+                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_3F60468815AE4B7C8D0AA2CFEA89E202"
                                                     {
                                                     "Name" = "8:ImagePath"
                                                     "Condition" = "8:"
@@ -1284,7 +1319,7 @@
                                                     "ValueTypes" = "3:1"
                                                     "Value" = "8:\\SystemRoot\\system32\\drivers\\DirectBeep.sys"
                                                     }
-                                                    "{B73D4F5A-FF29-11D2-8D6B-00A0C9CFCEE6}:_DF699847E28148258D918D112EBF6DE2"
+                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_DF699847E28148258D918D112EBF6DE2"
                                                     {
                                                     "Name" = "8:Start"
                                                     "Condition" = "8:"
@@ -1292,7 +1327,7 @@
                                                     "ValueTypes" = "3:3"
                                                     "Value" = "3:0"
                                                     }
-                                                    "{B73D4F5A-FF29-11D2-8D6B-00A0C9CFCEE6}:_F8EE96FA47C140BFBA6D4D3380F8FFF7"
+                                                    "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_F8EE96FA47C140BFBA6D4D3380F8FFF7"
                                                     {
                                                     "Name" = "8:ErrorControl"
                                                     "Condition" = "8:"
@@ -1317,7 +1352,7 @@
                         {
                         }
                     }
-                    "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_F9449521C80D4CD390857DCFC9F47E13"
+                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_F9449521C80D4CD390857DCFC9F47E13"
                     {
                     "Name" = "8:Software"
                     "Condition" = "8:"
@@ -1326,7 +1361,7 @@
                     "Transitive" = "11:FALSE"
                         "Keys"
                         {
-                            "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_AF51246908464EDD8197E8819CCF7096"
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_AF51246908464EDD8197E8819CCF7096"
                             {
                             "Name" = "8:RGATA"
                             "Condition" = "8:"
@@ -1335,7 +1370,7 @@
                             "Transitive" = "11:FALSE"
                                 "Keys"
                                 {
-                                    "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_9B30B902ABC14814AB2D0DCC10B4750D"
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_9B30B902ABC14814AB2D0DCC10B4750D"
                                     {
                                     "Name" = "8:Design Microsystems"
                                     "Condition" = "8:"
@@ -1344,7 +1379,7 @@
                                     "Transitive" = "11:FALSE"
                                         "Keys"
                                         {
-                                            "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_C93047EFDD034283ACB66E2C66303404"
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_C93047EFDD034283ACB66E2C66303404"
                                             {
                                             "Name" = "8:Settings"
                                             "Condition" = "8:"
@@ -1353,7 +1388,7 @@
                                             "Transitive" = "11:FALSE"
                                                 "Keys"
                                                 {
-                                                    "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_B30172D2D6AC4245A1658E7A04BEEFC7"
+                                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_B30172D2D6AC4245A1658E7A04BEEFC7"
                                                     {
                                                     "Name" = "8:Elements Libraries"
                                                     "Condition" = "8:"
@@ -1365,7 +1400,7 @@
                                                         }
                                                         "Values"
                                                         {
-                                                            "{B73D4F5A-FF29-11D2-8D6B-00A0C9CFCEE6}:_C5C6A06F93E24D22A2ACC3818D320F17"
+                                                            "{ADCFDA98-8FDD-45E4-90BC-E3D20B029870}:_C5C6A06F93E24D22A2ACC3818D320F17"
                                                             {
                                                             "Name" = "8:{6B4C02AF-DC58-4935-B438-552DEBB72761}"
                                                             "Condition" = "8:"
@@ -1401,7 +1436,7 @@
             {
                 "Keys"
                 {
-                    "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_C4B6C0ADDE574FAAB6331BF8ED6F8B7C"
+                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_C4B6C0ADDE574FAAB6331BF8ED6F8B7C"
                     {
                     "Name" = "8:Software"
                     "Condition" = "8:"
@@ -1410,7 +1445,7 @@
                     "Transitive" = "11:FALSE"
                         "Keys"
                         {
-                            "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_DD64C8BCDA284B038CB5698849B8F483"
+                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_DD64C8BCDA284B038CB5698849B8F483"
                             {
                             "Name" = "8:RGATA"
                             "Condition" = "8:"
@@ -1419,7 +1454,7 @@
                             "Transitive" = "11:FALSE"
                                 "Keys"
                                 {
-                                    "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_B3E7AE4A082E4BAAA729F766A645BD47"
+                                    "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_B3E7AE4A082E4BAAA729F766A645BD47"
                                     {
                                     "Name" = "8:Design Microsystems"
                                     "Condition" = "8:"
@@ -1428,7 +1463,7 @@
                                     "Transitive" = "11:FALSE"
                                         "Keys"
                                         {
-                                            "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_0D5901AC127C43F9905BFCFDD5042D78"
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_0D5901AC127C43F9905BFCFDD5042D78"
                                             {
                                             "Name" = "8:Settings"
                                             "Condition" = "8:"
@@ -1442,7 +1477,7 @@
                                                 {
                                                 }
                                             }
-                                            "{7DF0CD0A-FF27-11D2-8D6B-00A0C9CFCEE6}:_98158BB491494F698351F3783C3BF3DD"
+                                            "{60EA8692-D2D5-43EB-80DC-7906BF13D6EF}:_98158BB491494F698351F3783C3BF3DD"
                                             {
                                             "Name" = "8:Recent File List"
                                             "Condition" = "8:"
@@ -1492,58 +1527,42 @@
                 }
             }
         }
-        "ProjectOutput"
+        "Sequences"
         {
         }
-        "Product"
+        "Shortcut"
         {
-        "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:Design Microsystems v3.4"
-        "ProductCode" = "8:{9FD15680-34E3-47C8-88E2-D17E611E87AC}"
-        "PackageCode" = "8:{F75C0B8C-8E45-4925-9B80-AC184BF37C72}"
-        "UpgradeCode" = "8:{6C33C05A-1576-42B2-9806-AF0C97FE00B8}"
-        "RestartWWWService" = "11:FALSE"
-        "RemovePreviousVersions" = "11:TRUE"
-        "DetectNewerInstalledVersion" = "11:TRUE"
-        "ProductVersion" = "8:3.4"
-        "Manufacturer" = "8:RGATA"
-        "ARPHELPTELEPHONE" = "8:"
-        "ARPHELPLINK" = "8:"
-        "Title" = "8:Design Microsystems v3.4"
-        "Subject" = "8:"
-        "ARPCONTACT" = "8:RGATA"
-        "Keywords" = "8:"
-        "ARPCOMMENTS" = "8:Design Microsystems v3.4"
-        "ARPURLINFOABOUT" = "8:"
-        "ARPPRODUCTICON" = "8:"
-        "ARPIconIndex" = "3:0"
-        "SearchPath" = "8:"
-        "UseSystemSearchPath" = "11:TRUE"
-        }
-        "MsiBootstrapper"
-        {
-        "LangId" = "3:0"
-        }
-        "MergeModule"
-        {
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_AB887451BA004178A33D9576410FE9DE"
+            {
+            "Name" = "8:Design Microsystems v3.4"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:128"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_C6FBA3B8454E4603BF744DB69B92C8A6"
+            "Folder" = "8:_885598E6C91C42A9AD537E023446441E"
+            "WorkingFolder" = "8:_28A7CD73904F4D6EAAF328B8C6AF63C0"
+            "Icon" = "8:_C6FBA3B8454E4603BF744DB69B92C8A6"
+            "Feature" = "8:"
+            }
         }
         "UserInterface"
         {
-            "{7DFFC192-4ABE-11D3-8D78-00A0C9CFCEE6}:_0CD45DA18BFA483FAADBCF4A2B2941A3"
+            "{DF760B10-853B-4699-99F2-AFF7185B4A62}:_0CD45DA18BFA483FAADBCF4A2B2941A3"
             {
             "Name" = "8:#1902"
             "Sequence" = "3:2"
             "Attributes" = "3:3"
                 "Dialogs"
                 {
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_9B4A172CE10E4601814F11A3B4288EFE"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_9B4A172CE10E4601814F11A3B4288EFE"
                     {
                     "Sequence" = "3:100"
                     "DisplayName" = "8:Finished"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminFinishedDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.83D22742_1B79_46f6_9A99_DF0F2BD4C077"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1561,21 +1580,20 @@
                     }
                 }
             }
-            "{7DFFC192-4ABE-11D3-8D78-00A0C9CFCEE6}:_62A76475F6E04B7CB6450F290E308396"
+            "{DF760B10-853B-4699-99F2-AFF7185B4A62}:_62A76475F6E04B7CB6450F290E308396"
             {
             "Name" = "8:#1901"
             "Sequence" = "3:1"
             "Attributes" = "3:2"
                 "Dialogs"
                 {
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_69FD99C660BB42F78D63B914C55FC538"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_69FD99C660BB42F78D63B914C55FC538"
                     {
                     "Sequence" = "3:100"
                     "DisplayName" = "8:Progress"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdProgressDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.4FB12620_0D15_42D0_8677_2766FFA6923F"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1606,21 +1624,20 @@
                     }
                 }
             }
-            "{7DFFC192-4ABE-11D3-8D78-00A0C9CFCEE6}:_7BAB25DEF3AF4899B370CC0296EF3575"
+            "{DF760B10-853B-4699-99F2-AFF7185B4A62}:_7BAB25DEF3AF4899B370CC0296EF3575"
             {
             "Name" = "8:#1902"
             "Sequence" = "3:1"
             "Attributes" = "3:3"
                 "Dialogs"
                 {
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_08E8DDE26374468186C5FEFE3317EB70"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_08E8DDE26374468186C5FEFE3317EB70"
                     {
                     "Sequence" = "3:100"
                     "DisplayName" = "8:Finished"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdFinishedDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.1DB77F5A_BA5C_4470_89B6_0B0EC07E3A10"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1634,25 +1651,37 @@
                             "Setting" = "3:1"
                             "UsePlugInResources" = "11:TRUE"
                             }
+                            "UpdateText"
+                            {
+                            "Name" = "8:UpdateText"
+                            "DisplayName" = "8:#1058"
+                            "Description" = "8:#1158"
+                            "Type" = "3:15"
+                            "ContextData" = "8:"
+                            "Attributes" = "3:0"
+                            "Setting" = "3:1"
+                            "Value" = "8:#1258"
+                            "DefaultValue" = "8:#1258"
+                            "UsePlugInResources" = "11:TRUE"
+                            }
                         }
                     }
                 }
             }
-            "{7DFFC192-4ABE-11D3-8D78-00A0C9CFCEE6}:_7E80A323CC5C4DC1BE604CCAE76F570E"
+            "{DF760B10-853B-4699-99F2-AFF7185B4A62}:_7E80A323CC5C4DC1BE604CCAE76F570E"
             {
             "Name" = "8:#1900"
             "Sequence" = "3:2"
             "Attributes" = "3:1"
                 "Dialogs"
                 {
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_827EC03B0649433DAA754BE517FB82B8"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_827EC03B0649433DAA754BE517FB82B8"
                     {
                     "Sequence" = "3:300"
                     "DisplayName" = "8:Confirm Installation"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminConfirmDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.FA58E60A_A1E8_4876_95FC_2AC3B5AAA5F8"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1668,14 +1697,13 @@
                             }
                         }
                     }
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_A0CCC87BDBE945B6BB0C01F46D5C4085"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_A0CCC87BDBE945B6BB0C01F46D5C4085"
                     {
                     "Sequence" = "3:200"
                     "DisplayName" = "8:Installation Folder"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminFolderDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.2DED2424_5429_4616_A1AD_4D62837C2ADA"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1691,14 +1719,13 @@
                             }
                         }
                     }
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_F3EE197F44474366A2EAAC7988E514F9"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_F3EE197F44474366A2EAAC7988E514F9"
                     {
                     "Sequence" = "3:100"
                     "DisplayName" = "8:Welcome"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminWelcomeDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.E35A0E2C_F131_4B57_B946_59A1A2A8F45F"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1742,21 +1769,20 @@
                     }
                 }
             }
-            "{7DFFC192-4ABE-11D3-8D78-00A0C9CFCEE6}:_9ABC5FA5E5C241D5BFEDB6DE1B797B0E"
+            "{DF760B10-853B-4699-99F2-AFF7185B4A62}:_9ABC5FA5E5C241D5BFEDB6DE1B797B0E"
             {
             "Name" = "8:#1900"
             "Sequence" = "3:1"
             "Attributes" = "3:1"
                 "Dialogs"
                 {
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_8A5F2777715A4A688A13D91DAE4A1F93"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_8A5F2777715A4A688A13D91DAE4A1F93"
                     {
                     "Sequence" = "3:200"
                     "DisplayName" = "8:Installation Folder"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdFolderDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.C113BC36_2532_4D45_8099_4818B1133B2F"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1770,16 +1796,28 @@
                             "Setting" = "3:1"
                             "UsePlugInResources" = "11:TRUE"
                             }
+                            "InstallAllUsersVisible"
+                            {
+                            "Name" = "8:InstallAllUsersVisible"
+                            "DisplayName" = "8:#1059"
+                            "Description" = "8:#1159"
+                            "Type" = "3:5"
+                            "ContextData" = "8:1;True=1;False=0"
+                            "Attributes" = "3:0"
+                            "Setting" = "3:0"
+                            "Value" = "3:1"
+                            "DefaultValue" = "3:1"
+                            "UsePlugInResources" = "11:TRUE"
+                            }
                         }
                     }
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_F044237613054EBC8FC5ABADAA069F4B"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_F044237613054EBC8FC5ABADAA069F4B"
                     {
                     "Sequence" = "3:100"
                     "DisplayName" = "8:Welcome"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdWelcomeDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.68F69290_BB7C_474E_A153_6679845F3DDF"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1821,14 +1859,13 @@
                             }
                         }
                     }
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_F59067EFC3C8486C96BD43D95DD1C2E7"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_F59067EFC3C8486C96BD43D95DD1C2E7"
                     {
                     "Sequence" = "3:300"
                     "DisplayName" = "8:Confirm Installation"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdConfirmDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.6DBC9783_3677_4D68_8BF5_D749558A0AC1"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1846,21 +1883,20 @@
                     }
                 }
             }
-            "{7DFFC192-4ABE-11D3-8D78-00A0C9CFCEE6}:_CD90F7633EA046009281F27534F828B8"
+            "{DF760B10-853B-4699-99F2-AFF7185B4A62}:_CD90F7633EA046009281F27534F828B8"
             {
             "Name" = "8:#1901"
             "Sequence" = "3:2"
             "Attributes" = "3:2"
                 "Dialogs"
                 {
-                    "{E4ECAB24-4AB7-11D3-8D78-00A0C9CFCEE6}:_4BEB603982924890BD7D441FCBB2FA50"
+                    "{688940B3-5CA9-4162-8DEE-2993FA9D8CBC}:_4BEB603982924890BD7D441FCBB2FA50"
                     {
                     "Sequence" = "3:100"
                     "DisplayName" = "8:Progress"
                     "UseDynamicProperties" = "11:TRUE"
                     "IsDependency" = "11:FALSE"
                     "SourcePath" = "8:<VsdDialogDir>\\VsdAdminProgressDlg.wid"
-                    "ModuleSignature" = "8:VsdDialogs.EE9A1AFA_41DD_4514_B727_DF0ACA1D7389"
                         "Properties"
                         {
                             "BannerBitmap"
@@ -1891,20 +1927,24 @@
                     }
                 }
             }
-            "{E4ECAB26-4AB7-11D3-8D78-00A0C9CFCEE6}:_E197208A9ED34BD1AAD40859FB7CAD68"
+            "{2479F3F5-0309-486D-8047-8187E2CE5BA0}:_E197208A9ED34BD1AAD40859FB7CAD68"
             {
             "UseDynamicProperties" = "11:FALSE"
             "IsDependency" = "11:FALSE"
             "SourcePath" = "8:<VsdDialogDir>\\VsdUserInterface.wim"
-            "ModuleSignature" = "8:VsdUserInterface.524F4245_5254_5341_4C45_534153783400"
             }
-            "{E4ECAB26-4AB7-11D3-8D78-00A0C9CFCEE6}:_E417CBDF310B4B66B8CFA506002901E1"
+            "{2479F3F5-0309-486D-8047-8187E2CE5BA0}:_E417CBDF310B4B66B8CFA506002901E1"
             {
             "UseDynamicProperties" = "11:FALSE"
             "IsDependency" = "11:FALSE"
             "SourcePath" = "8:<VsdDialogDir>\\VsdBasicDialogs.wim"
-            "ModuleSignature" = "8:VsdDialogs.CE4B864F_F1C1_4B85_98D4_2A2BF5FFB12B"
             }
+        }
+        "MergeModule"
+        {
+        }
+        "ProjectOutput"
+        {
         }
     }
 }

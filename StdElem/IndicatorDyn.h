@@ -4,66 +4,82 @@
 
 #pragma once
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
+
+#include <mutex>
 
 class CIndicatorDyn;
 
-class CIndDArchWnd : public CElementWnd  
+class CIndDArchWnd : public CElementWnd
 {
 public:
 	virtual void Draw(CDC* pDC);
-	void DrawValue(CDC *pDC,DWORD OldPinState,DWORD OldHighLight);
-	CIndDArchWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override;
+	CIndDArchWnd(CElementBase* pElement);
 	virtual ~CIndDArchWnd();
 
 protected:
-  //{{AFX_MSG(CIndDArchWnd)
+	CDC MemoryDC;
+
+	//{{AFX_MSG(CIndDArchWnd)
 	afx_msg void OnActiveHigh();
 	afx_msg void OnActiveLow();
-	afx_msg void OnTimer(UINT nIDEvent);
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
+
+	void DrawStatic(CDC* pDC);
+	void DrawDynamic(CDC* pDC);
 };
 
 
-class CIndDConstrWnd : public CElementWnd  
+class CIndDConstrWnd : public CElementWnd
 {
 public:
 	virtual void Draw(CDC* pDC);
-	void DrawValue(CDC *pDC,DWORD OldPinState,DWORD OldHighLight);
-	CIndDConstrWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override;
+	CIndDConstrWnd(CElementBase* pElement);
 	virtual ~CIndDConstrWnd();
 
 protected:
-  //{{AFX_MSG(CIndConstrWnd)
+	CDC MemoryDC;
+
+	//{{AFX_MSG(CIndConstrWnd)
 	afx_msg void OnActiveHigh();
 	afx_msg void OnActiveLow();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
+
+	void DrawStatic(CDC* pDC);
+	void DrawDynamic(CDC* pDC);
 };
 
-class CIndicatorDyn : public CElement  
+class CIndicatorDyn : public CElementBase
 {
 public:
-  void OnTimer(UINT idEvent);
+	CIndicatorDyn(BOOL ArchMode, int id);
+	virtual ~CIndicatorDyn();
+
+	std::mutex mutexDraw;
+	int64_t* pTickCounter = nullptr;
+	int64_t ticksAfterLight;
+	DWORD PinState;
+	BOOL ActiveHigh;
+	int64_t HighLighted[8];
+
 	virtual DWORD GetPinState();
 	virtual void SetPinState(DWORD NewState);
-	void DrawSegments(CDC *pDC,CBrush* pBkBrush,CPoint Pos,DWORD OldHighLight);
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	void DrawSegments(CDC* pDC, bool isSelected, bool isArchMode, CPoint Pos);
+	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
-	BOOL ActiveHigh;
-	DWORD HighLight,AfterLightTime;
 	virtual BOOL Load(HANDLE hFile);
-	CIndicatorDyn(BOOL ArchMode,CElemInterface* pInterface);
-	virtual ~CIndicatorDyn();
 	void OnActiveHigh();
 	void OnActiveLow();
+	bool IsRedrawRequired();
 
-  DWORD TimeToOff[8];
 protected:
-  POINT IndImage[8][6];
-
-  DWORD PinState;
+	POINT IndImage[8][6];
 };

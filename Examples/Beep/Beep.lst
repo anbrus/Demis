@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    02/23/17 15:22:43
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:13
 Beep.asm						     Page 1 - 1
 
 
@@ -21,7 +21,7 @@ Beep.asm						     Page 1 - 1
  0FF0  EA ---- 0000 R		           jmp   Far Ptr Start
  0FF5				Code       ENDS
 				END
-Microsoft (R) Macro Assembler Version 6.14.8444		    02/23/17 15:22:43
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:13
 Beep.asm						     Symbols 2 - 1
 
 

@@ -24,7 +24,7 @@ public:
 	CString	m_RamStart;
 	CString	m_RomStart;
 	CString	m_sRomSize;
-	UINT	m_TaktFreq;
+	float	m_TaktFreq;
 	int		m_FreePinLevel;
 	//}}AFX_DATA
 

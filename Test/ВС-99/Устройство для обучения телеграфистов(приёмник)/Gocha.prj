@@ -1,0 +1,9 @@
+[ARCH]=00000000,Gocha.arh
+[SOURCE]=00000000,Gocha.asm
+[INCLUDE]=00000000,G_1.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(58,30,700,392)C:\Documents and Settings\student\Рабочий стол\Курс_МПС\Gocha.asm
+[WND.arh]=(122,35,764,397)C:\Documents and Settings\student\Рабочий стол\Курс_МПС\Gocha.arh
+[WND.asm]=(22,22,664,384)C:\Documents and Settings\student\Рабочий стол\Курс_МПС\G_1.asm

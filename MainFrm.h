@@ -11,16 +11,16 @@
 
 #include "definitions.h"
 
-struct _ChildWndInfo  
+struct _ChildWndInfo
 {
 public:
 	int BtnCount;
 	TBBUTTON Btn[16];
 	CDocument* pDocument;
 	int MenuIndex;
-  CString DocType;
-  CMDIChildWnd* pChildWnd;
-  CMenu Menu;
+	CString DocType;
+	CMDIChildWnd* pChildWnd;
+	CMenu Menu;
 };
 
 #include "DebugFrame.h"
@@ -29,7 +29,7 @@ class CDebugFrame;
 
 class CInfoBar : public CMDIChildWnd
 {
-  DECLARE_DYNCREATE(CInfoBar);
+	DECLARE_DYNCREATE(CInfoBar);
 public:
 	CInfoBar();
 	~CInfoBar();
@@ -37,15 +37,15 @@ public:
 	CMDIFrameWnd* pParentFrame;
 	virtual BOOL Create(CMDIFrameWnd* pParent);
 	CFont m_Font;
-  void ClearInfo();
-  void AddText(CString Add);
+	void ClearInfo();
+	void AddText(CString Add);
 	//CString InfoText;
-  void SetSize(CSize NewSize) {};
+	void SetSize(CSize NewSize) {};
 	//virtual CSize CalcDynamicLayout(int nLength,DWORD dwMode);
   //{{AFX_VIRTUAL(CInfoBar)
-	public:
+public:
 	virtual BOOL DestroyWindow();
-	protected:
+protected:
 	//}}AFX_VIRTUAL
 
 protected:
@@ -62,32 +62,26 @@ class CMainFrame : public CMDIFrameWnd
 public:
 	CMainFrame();
 
-// Attributes
+	// Attributes
 public:
 
-// Operations
+	// Operations
 public:
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CMainFrame)
-	public:
 	virtual BOOL DestroyWindow();
-	protected:
-	virtual LRESULT WindowProc(UINT message, WPARAM wParam, LPARAM lParam);
-	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	void ClearMessages();
-	void AddMessage(const char* MesText,BOOL SetFocus);
+	void AddMessage(const char* MesText, BOOL SetFocus);
 	int MenuCounter[7];
 	BOOL DeleteChildWindow(struct _ChildWndInfo* pChildWndInfo);
 	CPtrList ChildWndList;
 	BOOL AddChildWindow(struct _ChildWndInfo* pChildWndInfo);
 	BOOL InfoBarPresent;
 	void RestoreInfoBar();
-	BOOL CreateBar(CWnd* pParentWnd, UINT nIDTemplate, UINT nStyle, UINT nID );
+	void CloseAllWindows();
+	//BOOL CreateBar(CWnd* pParentWnd, UINT nIDTemplate, UINT nStyle, UINT nID);
 	//struct _Port InpPort[64],OutPort[64];
 	virtual ~CMainFrame();
 #ifdef _DEBUG
@@ -100,7 +94,7 @@ protected:  // control bar embedded members
 	CToolBar    m_wndToolBar;
 	CReBar      m_wndReBar;
 
-// Generated message map functions
+	// Generated message map functions
 protected:
 	CDialogBar m_wndProjectBar;
 	CInfoBar* pInfoBar;
@@ -110,12 +104,10 @@ protected:
 	afx_msg void OnFileMruPrj(UINT nID);
 	afx_msg void OnUpdateFileMruPrj1(CCmdUI* pCmdUI);
 	afx_msg void OnClose();
-  afx_msg LRESULT OnEmulatorMessage(WPARAM, LPARAM);
-	afx_msg LPARAM OnWritePort(WPARAM wParam, LPARAM lParam);
+	afx_msg LRESULT OnEmulatorMessage(WPARAM, LPARAM);
 	afx_msg LPARAM OnReadPort(WPARAM wParam, LPARAM lParam);
 	afx_msg LPARAM OnIntRequest(WPARAM wParam, LPARAM lParam);
 	afx_msg LPARAM OnEmulStop(WPARAM wParam, LPARAM lParam);
-  afx_msg LPARAM OnInstrCounterEvent(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };

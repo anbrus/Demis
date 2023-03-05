@@ -1,0 +1,7 @@
+[SOURCE]=00000001,1.asm
+[ARCH]=00000000,1.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(137,65,1004,508)C:\Demis\1.asm
+[WND.arh]=(45,-20,904,565)C:\Demis\1.arh

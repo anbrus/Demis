@@ -1,6 +1,5 @@
 // Flag.cpp : implementation file
 //
-
 #include "stdafx.h"
 #include "Demis2000.h"
 #include "Flag.h"

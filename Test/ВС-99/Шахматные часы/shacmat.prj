@@ -1,0 +1,7 @@
+[SOURCE]=00000001,shacmat.asm
+[ARCH]=00000000,shacmat.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(68,34,710,368)D:\USERS\sh1\shacmat.asm
+[WND.arh]=(66,66,708,400)D:\USERS\sh1\shacmat.arh

@@ -1,0 +1,7 @@
+[ARCH]=00000000,zlip1.arh
+[SOURCE]=00000001,zlip1.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(53,39,695,401)D:\USERS\Evil\zlip1.asm
+[WND.arh]=(132,132,932,596)D:\USERS\Evil\zlip1.arh

@@ -1,0 +1,868 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/17 08:50:44
+4.asm							     Page 1 - 1
+
+
+				.386
+				;Задайте объём ПЗУ в байтах
+ = 1000				RomSize    EQU   4096
+
+ 0000				IntTable   SEGMENT use16 AT 0
+				;Здесь размещаются адреса обработчиков прерываний
+ 0000				IntTable   ENDS
+
+ 0000				Data       SEGMENT use16 AT 40h
+				;Здесь размещаются описания переменных
+ 0000 00			 DigCode    DB   ?; 
+ 0001 00			 DigCodeT    DB   ?
+ 0002 00			 DigCodeP    DB   ?
+ 0003 00			 Amplitude    DB    ?
+ 0004  FFAA [			 Image1   DB    0ffaah DUP(?);
+        00
+       ]
+				           
+ FFAE 00			 flag   DB    ?
+ FFAF 0000			 period   DW    ?
+ FFB1 00			 maxtime  db ?
+ FFB2 00			 maxfreq  db ?
+ FFB3 00			 zoom db ?
+ FFB4 0000			 total dw ?
+ FFB6 0000			 move dw ?
+ FFB8 00			 corp db ?
+ FFB9 00			 once_p db ?
+ FFBA 00			 once_t db ?
+ FFBB 00			 mode db ?
+ FFBC				Data       ENDS
+
+				;Задайте необходимый адрес стека
+ 0000				Stk        SEGMENT use16 AT 100h
+				;Задайте необходимый размер стека
+ 0000  0010 [			           dw    16 dup (?)
+        0000
+       ]
+ 0020				StkTop     Label Word
+ 0020				Stk        ENDS
+
+ 0000				InitData   SEGMENT use16
+				;Здесь размещаются описания констант
+
+ 0000				InitData   ENDS
+
+ 0000				Code       SEGMENT use16
+				;Здесь размещаются описания констант
+ 0000 FF FF 80 80 80 80		Image      db    0ffh,0ffh,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0008  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0010  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0018  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0020  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0028  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0030  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0038  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0040  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0048  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0050  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0058  80 80 80 80 80 80	           db    080h,080h,080h,080h,080h,080h,080h,080h  ;
+       80 80
+ 0060  80 80 80 80		           db    080h,080h,080h,080h;
+ 0064 3F 0C 76 5E 4D 5B		SymImages  db    3Fh,0Ch,76h,5Eh,4Dh,5Bh,7Bh,0Eh,7fh,05fh 
+       7B 0E 7F 5F
+				;Cell_num   db    14h,0ah,7h,5h,4h,3h,3h,2h,2h;   
+ 006E 64 32 21 19 14 10		Cell_num   db    64h,032h,21h,19h,14h,10h,0eh,0ch,0bh;   
+       0E 0C 0B
+				;limit_freq db    7h,5h,4h,3h,3h,2h,2h,2h,1h 
+				;limit_time db    9h,8h,5h,2h,2h,1h,1h,1h 
+ 0077 09 06 04 03 03 02		limit_freq db    9h,6h,4h,3h,3h,2h,2h,2h,1h 
+       02 02 01
+ 0080 09 08 05 03 02 01		limit_time db    9h,8h,5h,3h,2h,1h,1h,1h,1h 
+       01 01 01
+				;arr db   9h,6h,4h,3h,2h,2h,2h,2h,1h 
+
+ 0089 0C 0C 76 76 5E 5E		timetwo    db    0Ch,0Ch,76h,76h,5Eh,5Eh,4Dh,4Dh,5Bh      
+       4D 4D 5B
+				           ASSUME cs:Code,ds:Data,es:stk
+				           ;--------------------------------
+ 0092				VibrDestr  PROC  NEAR
+ 0092  60			           pusha
+ 0093  8A E0			VD1:       mov   ah,al       ;Сохранение исходного состояния
+ 0095  BB 0000			           mov   bx,0        ;Сброс счётчика повторений
+ 0098  EC			VD2:       in    al,dx       ;Ввод текущего состояния
+ 0099  38 C4			           cmp   ah,al       ;Текущее состояние=исходному?
+ 009B  75 F6			           jne   VD1         ;Переход, если нет
+ 009D  43			           inc   bx          ;Инкремент счётчика повторений
+ 009E  81 FB 04FF		           cmp   bx,04ffh       ;Конец дребезга?
+ 00A2  75 F4			           jne   VD2         ;Переход, если нет
+ 00A4  8A C4			           mov   al,ah       ;Восстановление местоположения данных
+ 00A6  61			           popa
+ 00A7  C3			           ret
+ 00A8				VibrDestr  ENDP   
+				;------------------------------
+ 00A8				num_out proc near
+ 00A8  57			         push di                           ;сохраняем регистры
+ 00A9  50			         push ax
+ 00AA  53			         push bx
+ 00AB  56			         push si
+ 00AC  33 FF			         xor di,di                         ;номер в массиве на ноль
+ 00AE  8A 26 0000 R		         mov ah,DigCode                    ;цифра амплитуды(порт по умолчанию)
+ 00B2  83 FA 07			         cmp dx,7h                         ;если длительность(7порт вывода)
+ 00B5  75 32			         jnz nt
+				         ;---------------------
+ 00B7  B0 BF			         mov al,0bfh             ;длительность:пишем первый ноль с точкой 
+ 00B9  E6 07			         out 7, al
+ 00BB  A0 0001 R		         mov al,DigCodeT          ;проверяем четность бывшей переменной         
+ 00BE  32 E4			         xor ah,ah                ;если четно то пишем на конце 5
+ 00C0  B3 02			         mov bl,02h              ;если нет то ноль
+ 00C2  F6 F3			         div bl
+ 00C4  80 FC 00			         cmp ah,0
+ 00C7  74 06			         jz  kol
+ 00C9  2E: A0 0064 R		         mov al,SymImages[0]
+ 00CD  EB 04			         jmp outim
+ 00CF  2E: A0 0069 R		    kol: mov al,SymImages[5]
+ 00D3  E6 0B			    outim: out 0bh,al 
+ 00D5  8A 1E 0001 R		         mov bl,DigCodeT        ;среднюю цифру берём из массива
+ 00D9  33 F6			         xor si,si   
+ 00DB  46			   dfr:  inc si
+ 00DC  FE CB			         dec bl
+ 00DE  75 FB			         jnz dfr
+ 00E0  2E: 8A 84 0088 R		         mov al,timetwo[si-1]
+ 00E5  E6 0A			         out 0ah,al
+ 00E7  EB 14			         jmp  hhh         
+				         ;--------------------
+ 00E9  83 FA 08			    nt:  cmp dx,8h                         ;если длительность(7порт вывода)
+ 00EC  75 04			         jnz increm_di
+ 00EE  8A 26 0002 R		         mov ah,DigCodeP                   ;цифра длительности 
+ 00F2				 increm_di:  
+ 00F2  47			         inc di                            ;увеличим индекс
+ 00F3  FE CC			         dec ah                            ;убавим цифру
+ 00F5  75 FB			         jnz increm_di                     ;пока цифра не кончится   
+ 00F7  2E: 8A 85 0064 R		         mov al,SymImages[di]              ;элемент по индексу на вывод
+ 00FC  EE			         out dx, al
+ 00FD  5E			  hhh:   pop si
+ 00FE  5B			         pop bx
+ 00FF  58			         pop ax                            ;восстанавливаем регистры
+ 0100  5F			         pop di
+ 0101  C3			         ret
+ 0102				num_out endp
+				;-------------------------------------------------
+ 0102				amplitude_modify proc near
+ 0102  80 3E FFBB R 00		          cmp mode,0
+ 0107  74 31			          jz no_pr1
+ 0109  E4 00			          in al,0                          ;читаем 0 регистр
+ 010B  E8 FF84			          call VibrDestr                   ; гасим дребезг
+				          
+ 010E  3C FE			          cmp al,0feh                      ;нажата первая кнопка
+ 0110  75 0F			          jnz next1
+ 0112  8A 26 0000 R		          mov ah,DigCode                   ;читаем текущее состояние
+ 0116  80 FC 07			          cmp ah,7h                        ;если 7 то не надо увеличивать,это максимум
+ 0119  74 19			          jz exit
+ 011B  FE C4			          inc ah                           ;а если не 7 то увеличим на 1
+ 011D  88 26 0000 R		          mov DigCode,ah                   ; и сохраним как текущее
+ 0121  3C FD			    next1: cmp al,0fdh                     ;нажата вторая кнопка
+ 0123  75 0F			           jnz exit
+ 0125  8A 26 0000 R		           mov ah,DigCode                  ;читаем текущее состояние
+ 0129  80 FC 01			           cmp ah,1h                       ;если 1 то не надо уменьшать,это минимум
+ 012C  74 06			           jz exit
+ 012E  FE CC			           dec ah                          ;а если не 1 то уменьшим на 1
+ 0130  88 26 0000 R		           mov DigCode,ah                  ; и сохраним как текущее
+ 0134  BA 0006			    exit:  mov dx,6h                       ;номер порта передаём в процедуру
+ 0137  E8 FF6E			           call num_out
+ 013A  90			    no_pr1: nop  
+ 013B  C3			            ret     
+ 013C				amplitude_modify endp
+				;-------------------------------------------------
+ 013C				time_modify proc near
+				         
+ 013C  E4 00			          in al,0                          ;читаем 0 регистр
+ 013E  E8 FF51			          call VibrDestr                   ; гасим дребезг
+				          ;cmp mode,0
+				          ;jz no_in
+				          ;------------------------
+ 0141  3C FB			          cmp al,0fbh                      ;нажата третяя кнопка
+ 0143  75 2A			          jnz nxt2
+ 0145  B3 01			          mov bl,1
+ 0147  88 1E FFB9 R		          mov once_p,bl
+ 014B  8A 26 0001 R		          mov ah,DigCodeT                  ;читаем текущее состояние
+ 014F  2E: 3A A4 007F R		          cmp ah,limit_time[si-1];           ;не надо увеличивать,это максимум
+ 0154  74 47			          jz tz2;exit2; new techtask 
+ 0156  FE C4			          inc ah                           ;а если не максимум то увеличим на 1
+ 0158  88 26 0001 R		          mov DigCodeT,ah                   ; и сохраним как текущее
+ 015C  80 FC 03			          cmp ah,03h
+ 015F  75 0E			          jnz tpp1
+ 0161  80 3E 0002 R 06		          cmp digcodep,06h
+ 0166  75 07			          jnz tpp1 
+ 0168  B0 04			          mov al,04h
+ 016A  A2 0002 R		          mov digcodep,al
+ 016D  EB 69			          jmp exit2
+ 016F				      tpp1: 
+ 016F  3C F7			    nxt2: cmp al,0f7h                     ;нажата четвёртая кнопка
+ 0171  75 65			           jnz exit2
+ 0173  B3 01			           mov bl,1
+ 0175  88 1E FFB9 R		           mov once_p,bl
+ 0179  8A 26 0001 R		           mov ah,DigCodeT                  ;читаем текущее состояние
+ 017D  80 FC 01			           cmp ah,1h                       ;если 1 то не надо уменьшать,это минимум
+ 0180  74 56			           jz exit2
+ 0182  FE CC			           dec ah
+				                                 ;а если не 1 то уменьшим на 1
+ 0184  88 26 0001 R		           mov DigCodeT,ah                  ; и сохраним как текущее
+ 0188  80 FC 03			            cmp ah,03h
+ 018B  75 0E			            jnz tpp
+ 018D  80 3E 0002 R 06		            cmp digcodep,06h
+ 0192  75 07			            jnz tpp 
+ 0194  B0 04			            mov al,04h
+ 0196  A2 0002 R		            mov digcodep,al
+ 0199  EB 3D			            jmp exit2
+ 019B				      tpp:  
+ 019B  EB 3B			            jmp exit2 
+ 019D				    tz2:     ;а это ТЗ №2
+				           ;cmp ah,08h
+				           ;jz exit2
+ 019D  A0 0002 R		           mov al,digcodep
+ 01A0  3C 01			           cmp al,01h
+ 01A2  74 34			           jz exit2
+ 01A4  FE C8			           dec al
+ 01A6  A2 0002 R		           mov digcodep,al
+				         ;-----------------  
+ 01A9				    anov1: ; cmp ah,09h
+				           ;jz exit3
+ 01A9  3C 06			           cmp al,6
+ 01AB  74 18			           jz beg_t
+ 01AD  3C 04			           cmp al,4
+ 01AF  74 14			           jz beg_t
+ 01B1  3C 03			           cmp al,3
+ 01B3  74 17			           jz beg_t1
+ 01B5  3C 02			           cmp al,2
+ 01B7  74 13			           jz beg_t1
+ 01B9  3C 01			           cmp al,1
+ 01BB  74 0F			           jz beg_t1
+ 01BD  B3 01			           mov bl,1
+ 01BF  88 1E FFBA R		           mov once_t,bl
+ 01C3  EB 13			           jmp exit2
+ 01C5  80 3E FFBA R 00		 beg_t:    cmp once_t,0
+ 01CA  74 0C			           jz exit2
+ 01CC  32 DB			 beg_t1:    xor bl,bl
+ 01CE  88 1E FFBA R		           mov once_t,bl
+ 01D2  FE C4			           inc ah
+				          
+ 01D4  88 26 0001 R		           mov DigCodet,ah   
+				           
+				                     
+				         ;-----------------
+ 01D8  BA 0007			    exit2: mov dx,7h                       ;номер порта передаём в процедуру
+ 01DB  E8 FECA			           call num_out
+ 01DE				   no_in: ;nop 
+ 01DE  C3			           ret     
+ 01DF				time_modify endp
+				;-------------------------------------------------
+ 01DF				period_modify proc near
+				         
+ 01DF  E4 00			          in al,0                          ;читаем 0 регистр
+ 01E1  E8 FEAE			          call VibrDestr                   ; гасим дребезг
+				          ;--------------------------
+ 01E4  80 3E FFBB R 00		          cmp mode,0
+ 01E9  74 7C			          jz no_pr3
+ 01EB  3C EF			          cmp al,0efh                      ;нажата пятая кнопка
+ 01ED  75 17			          jnz nxt3
+ 01EF  B3 01			           mov bl,1
+ 01F1  88 1E FFBA R		           mov once_t,bl
+ 01F5  8A 26 0002 R		          mov ah,DigCodeP                  ;читаем текущее состояние
+				          
+ 01F9  2E: 3A A5 0076 R		          cmp ah,limit_freq[di-1];         ; не надо увеличивать,это максимум
+ 01FE  74 21			          jz tz2p;exit3
+ 0200  FE C4			          inc ah                           ;а если не максимум то увеличим на 1
+ 0202  88 26 0002 R		          mov DigCodeP,ah                   ; и сохраним как текущее
+ 0206  3C DF			    nxt3: cmp al,0dfh                      ;нажата шестая кнопка
+ 0208  75 57			           jnz exit3
+ 020A  B3 01			            mov bl,1
+ 020C  88 1E FFBA R		           mov once_t,bl
+ 0210  8A 26 0002 R		           mov ah,DigCodeP                  ;читаем текущее состояние
+ 0214  80 FC 01			           cmp ah,01h                       ;если 1 то не надо уменьшать,это минимум
+ 0217  74 48			           jz exit3
+ 0219  FE CC			           dec ah                          ;а если не 1 то уменьшим на 1
+ 021B  88 26 0002 R		           mov DigCodeP,ah                  ; и сохраним как текущее
+ 021F  EB 40			           jmp exit3
+ 0221				 tz2p:     ;а это ТЗ №2
+ 0221  A0 0001 R		           mov al,digcodet
+ 0224  3C 01			           cmp al,01h
+ 0226  74 05			           jz anov;exit3
+ 0228  FE C8			           dec al
+ 022A  A2 0001 R		           mov digcodet,al
+ 022D  80 FC 09			    anov:  cmp ah,09h
+ 0230  74 2F			           jz exit3
+ 0232  3C 08			           cmp al,8
+ 0234  74 18			           jz beg_p
+ 0236  3C 05			           cmp al,5
+ 0238  74 14			           jz beg_p
+ 023A  3C 03			           cmp al,3
+ 023C  74 10			           jz beg_p
+ 023E  3C 02			           cmp al,2
+ 0240  74 13			           jz beg_p1
+ 0242  3C 01			           cmp al,1
+ 0244  74 0F			           jz beg_p1
+ 0246  B3 01			           mov bl,1
+ 0248  88 1E FFB9 R		           mov once_p,bl
+ 024C  EB 13			           jmp exit3
+ 024E  80 3E FFB9 R 00		 beg_p:    cmp once_p,0
+ 0253  74 0C			           jz exit3
+				          
+				           ;jmp exit3
+				            ;cmp ah,1
+				            ;jnz exit3
+ 0255  32 DB			 beg_p1:    xor bl,bl
+ 0257  88 1E FFB9 R		           mov once_p,bl
+				          ; cmp ah,09h
+				          ; jz exit3
+ 025B  FE C4			           inc ah
+				          
+ 025D  88 26 0002 R		           mov DigCodeP,ah   
+				          ; mov ah,DigCodeP
+				          ; cmp ah,arr[di-1]; 
+				          ; jz exit3
+				          ; 
+				          ; inc ah 
+				          ; mov DigCodeP,ah 
+				          
+				         ;----
+ 0261				    exit3:
+ 0261  BA 0008			          mov dx,8h                       ;номер порта передаём в процедуру
+ 0264  E8 FE41			           call num_out
+ 0267  90			    no_pr3:  nop
+ 0268  C3			           ret     
+ 0269				period_modify endp
+				;-------------------------------------------------
+ 0269				math_array PROC  NEAR                      ; мат обработка массива(пока только амплитуда)
+ 0269  60			      pusha                                ;сохраняем регистры
+ 026A  B0 01			      mov al,1                             ;признак второй планки нет
+ 026C  A2 FFAE R		      mov flag,al
+				      ;---------------------------------
+ 026F  33 F6			      xor si,si                                       ;определяем сколько
+ 0271  A0 0002 R		      mov al,DigCodeP                                 ;клеток массива нужно брать
+				     
+ 0274				repeat1:
+ 0274  46			      inc si
+ 0275  FE C8			      dec al
+ 0277  75 FB			      jnz repeat1
+ 0279  2E: 8A 84 006D R		      mov al,cell_num[si-1]
+ 027E  32 E4			      xor ah,ah
+ 0280  80 3E FFB3 R 01		      cmp zoom,1
+ 0285  75 05			      jnz normal1
+				                      ;если кнопка нажата, масштабируем период в 2 раза
+ 0287  48			      dec ax
+ 0288  48			      dec ax 
+ 0289  D1 E8			      shr ax,1h
+ 028B  40			      inc ax
+				      ;inc ax
+				     
+ 028C				normal1: 
+ 028C  A3 FFAF R		      mov period,ax
+ 028F  8B D0			      mov dx,ax
+				      ;--------------------------------------
+				 ; ghs:mov ax,dx;это загруз кол-ва элементов массива для вывода 
+				 ;     shl ax,1;массивами периодами путем их удваивания до значения превыщающего 32
+				 ;     mov dx,ax
+				 ;     and ax,0e0h
+				 ;     jz ghs
+ 0291  89 16 FFB4 R		      mov total,dx
+				      ;----------------------------
+ 0295  33 F6			      xor si,si                            ;обнуляем индекс
+ 0297  33 FF			      xor di,di
+ 0299  8A 26 0000 R		      mov ah,DigCode                       ;грузим номер цифры
+ 029D  B9 1FFF			      mov cx,01fffh;0e2bh
+ 02A0  BA 00FF			in_rep: mov dx,0ffh;0affh;448h                           ;грузим счетчик на 32 элемента
+ 02A3  2E: 8A 84 0000 R		  n:  mov al,image[si]                     ;читаем образец
+				 ;-----------------------;это регулирует длительностьи импульса
+ 02A8  3C FF			      cmp al,0ffh        ;проверяем боковую стойку импульса
+ 02AA  75 56			      jnz n5             ;если не она то не нужно ничего вставлять
+ 02AC  52			      push dx
+ 02AD  80 3E FFAE R 00		      cmp flag,0         ; узнаем попалась ли нам первая стойка или вторая
+ 02B2  74 08			      jz n7              ;если вторая то вставляем планку между перегородками(длит имп)
+ 02B4  B2 00			      mov dl,0           ;если первая то ставим метку что следующая будет второй
+ 02B6  88 16 FFAE R		      mov flag,dl
+ 02BA  EB 45			      jmp n8
+ 02BC  8A 16 0001 R		  n7: mov dl,DigCodeT   ;читаем длительность
+				     ; dec dl             ;если 1 то ничего вставлять не надо
+				     ; jz n8
+ 02C0  50			      push ax
+ 02C1  B0 05			      mov al,5
+ 02C3  FE C2			      inc dl
+ 02C5  F6 E2			      mul dl
+ 02C7  8A D0			      mov dl,al
+ 02C9  FE CA			      dec dl
+ 02CB  FE CA			      dec dl
+				      ;надо умножить dl на 5
+ 02CD  58			      pop ax
+ 02CE  80 3E FFB3 R 01		      cmp zoom,1
+ 02D3  75 07			      jnz norm
+ 02D5  FE CA			      dec dl
+ 02D7  80 FA 02			      cmp dl,2
+ 02DA  74 25			      jz n8
+ 02DC  8A 36 0004 R		 norm: mov dh,image1[0]  ;ищем на какой высоте вставлять
+ 02E0  D0 E6			      shl dh,1
+ 02E2  32 36 0004 R		      xor dh,image1[0]
+ 02E6  88 B5 0004 R		  n6: mov image1[di],dh ;вставляем планку длиной длительность-1
+ 02EA  80 3E FFB3 R 01		      cmp zoom,1
+ 02EF  75 04			      jnz normal
+				                       ;если кнопка нажата, масштабируем планку в 2 раза
+ 02F1  FE CA			      dec dl
+ 02F3  74 06			      jz dr
+ 02F5				normal:
+ 02F5  47			      inc di
+ 02F6  46			      inc si             ;чтобы не раздвигало а съедало полоску
+ 02F7  FE CA			      dec dl
+ 02F9  75 EB			      jnz n6 
+ 02FB  B2 01			  dr: mov dl,1          ;после того как вставили ждём следующей первой планки
+ 02FD  88 16 FFAE R		      mov flag,dl   
+ 0301  5A			  n8: pop dx
+				 ;----------------------     это заканчивается длительность и начинается амплитуда
+ 0302  3C 80			  n5: cmp al,080h                          ;нижнюю полосочку не убираем
+ 0304  74 0C			      jz n3
+ 0306  B3 07			      mov bl,7                             ;вычитаем из 7 цифру с индикатора
+ 0308  2A DC			      sub bl,ah                            ;чтобы получить колличество сдвигов
+ 030A  74 06			      jz n3                                ;если не надо сдвигать(амплитуда равна эталонной)
+ 030C  D0 E0			  n1: shl al,1                             ;сдвигаем
+ 030E  FE CB			      dec bl
+ 0310  75 FA			      jnz n1
+ 0312				  n3: 
+ 0312  88 85 0004 R		      mov image1[di],al                    ;записываем то что сдвинули или не сдвинули, в новый массив, который и будем выводить
+				                                           ;чтобы получить колличество сдвигов
+				      
+ 0316  47			      inc di                              ; а это разные счетчики.      
+ 0317  46			      inc si
+				      
+ 0318  3B 36 FFAF R		      cmp si,period; из первого массива берём начало импульса с частотой указанной на индикаторе
+ 031C  75 02			      jnz n4
+ 031E  33 F6			      xor si,si
+ 0320				   n4:   
+ 0320  4A			      dec dx
+ 0321  75 80			      jnz n
+ 0323  49			      dec cx
+ 0324  0F 85 FF78		      jnz in_rep    
+ 0328  61			      popa
+ 0329  C3			       ret
+ 032A				math_array endp
+				;-------------------------------------------------
+ 032A				bin_out PROC  NEAR
+ 032A  8A 1E 0002 R		          mov bl,DigCodep
+ 032E  33 F6			          xor si,si                     ;узнаем максимум в зависимости от другого параметра
+ 0330  46			     tt:  inc si
+ 0331  FE CB			          dec bl
+ 0333  75 FB			          jnz tt
+ 0335  2E: 8A 9C 007F R		          mov bl,limit_time[si-1];
+ 033A  88 1E FFB1 R		          mov maxtime,bl               ;запоминаем максимум(в зависиммости от числа берём количество клеток из массива)
+				          ;-------------------------
+ 033E  80 3E FFB2 R 09		          cmp maxfreq,9h;7h               ;проверяем равен ли текущий максимум абсолютному для параметра
+ 0343  74 0A			          jz off                       ;еслм равен то надо гасить
+				        
+ 0345  B5 02			          mov ch,02h;а если не равет то зажигаем
+ 0347  8A C1			          mov al,cl
+ 0349  0C 02			          or al,02h;
+ 034B  E6 09			          out 9,al
+				        
+ 034D  EB 08			          jmp ff
+ 034F				     off:               ;гасим
+ 034F  B5 00			          mov ch,0h
+ 0351  8A C1			          mov al,cl
+ 0353  24 FD			          and al, 0fdh
+ 0355  E6 09			          out 9,al  
+				             
+ 0357  8A 1E 0001 R		     ff:  mov bl,DigCodet ;см выше
+ 035B  33 FF			          xor di,di                        ;узнаём максимум в зависимости от другого параметра
+ 035D  47			     tt1:  inc di
+ 035E  FE CB			          dec bl
+ 0360  75 FB			          jnz tt1
+ 0362  2E: 8A 9D 0076 R		          mov bl,limit_freq[di-1];
+ 0367  88 1E FFB2 R		          mov maxfreq,bl
+				          ;---------------------------------
+ 036B  80 3E FFB1 R 09		          cmp maxtime,09h
+ 0370  74 0A			          jz off2
+				          
+ 0372  B1 01			          mov cl,01h
+ 0374  8A C5			          mov al,ch
+ 0376  0C 01			          or al,01h
+ 0378  E6 09			          out 9,al
+				          
+ 037A  EB 08			          jmp ff2
+ 037C				     off2: 
+ 037C  B1 00			          mov cl,0h
+ 037E  8A C5			          mov al,ch
+ 0380  24 FE			          and al, 0feh
+ 0382  E6 09			          out 9,al 
+				              
+ 0384  80 3E FFB3 R 01		     ff2: cmp zoom,1;это индикаторы масштаба
+ 0389  75 08			          jnz ex
+ 038B  0C 04			          or al,4h
+ 038D  24 07			          and al,7h
+ 038F  E6 09			          out 9,al
+ 0391  EB 06			          jmp exi
+ 0393  0C 08			     ex:  or al,8h
+ 0395  24 FB			          and al,0fbh
+ 0397  E6 09			          out 9,al
+ 0399				     exi:
+ 0399  C3			          ret
+ 039A				bin_out endp
+				;-------------------------------------------------
+ 039A				horiz_time PROC  NEAR ; здесь только отлавливаются ситуации в которых масштабирование реально
+ 039A  32 C0			          xor al,al
+ 039C  A2 FFB3 R		          mov zoom,al
+ 039F  E4 01			          in al,1
+				          ;;call vibrdestr
+ 03A1  3C FE			          cmp al,0feh
+ 03A3  75 31			          jnz return
+ 03A5  80 3E 0002 R 09		          cmp DigCodep,09h
+ 03AA  74 2A			          jz return 
+ 03AC  80 3E 0002 R 08		          cmp DigCodep,08h
+ 03B1  74 23			          jz return
+ 03B3  80 3E 0002 R 06		          cmp DigCodep,06h
+ 03B8  74 1C			          jz return 
+ 03BA  80 3E 0002 R 04		          cmp DigCodep,04h
+ 03BF  74 15			          jz return 
+ 03C1  80 3E 0002 R 03		          cmp DigCodep,03h
+ 03C6  74 0E			          jz return 
+
+
+				          ;------------
+ 03C8  A0 0001 R		          mov al,DigCodet
+ 03CB  24 01			          and al,01h
+ 03CD  3C 00			          cmp al,0
+ 03CF  74 05			          jz return
+ 03D1  B0 01			          mov al,1h
+ 03D3  A2 FFB3 R		          mov zoom,al;значит можно масштабировать
+				          ;------------
+ 03D6				   return: 
+ 03D6  C3			          ret
+ 03D7				horiz_time endp
+				;-------------------------------------------------
+ 03D7				move_arr  PROC  NEAR
+				          ; pusha 
+ 03D7  80 3E 0002 R 01		           cmp digcodep,1h
+ 03DC  75 07			           jnz nxt_1
+ 03DE  83 3E FFB6 R 64		           cmp move,064h
+ 03E3  74 78			           jz zer
+ 03E5  80 3E 0002 R 02		      nxt_1:cmp digcodep,2h
+ 03EA  75 07			           jnz nxt_2
+ 03EC  83 3E FFB6 R 32		           cmp move,032h
+ 03F1  74 6A			           jz zer
+ 03F3  80 3E 0002 R 03		     nxt_2:cmp digcodep,3h
+ 03F8  75 07			           jnz nxt_3
+ 03FA  83 3E FFB6 R 21		           cmp move,021h
+ 03FF  74 5C			           jz zer
+ 0401  80 3E 0002 R 04		     nxt_3:cmp digcodep,4h
+ 0406  75 07			           jnz nxt_4
+ 0408  83 3E FFB6 R 19		           cmp move,019h
+ 040D  74 4E			           jz zer
+ 040F  80 3E 0002 R 05		     nxt_4:cmp digcodep,5h
+ 0414  75 07			           jnz nxt_5
+ 0416  83 3E FFB6 R 14		           cmp move,014h
+ 041B  74 40			           jz zer
+ 041D  80 3E 0002 R 06		     nxt_5:cmp digcodep,6h
+ 0422  75 07			           jnz nxt_6
+ 0424  83 3E FFB6 R 10		           cmp move,010h
+ 0429  74 32			           jz zer
+ 042B  80 3E 0002 R 07		     nxt_6:cmp digcodep,7h
+ 0430  75 07			           jnz nxt_7
+ 0432  83 3E FFB6 R 0E		           cmp move,0eh
+ 0437  74 24			           jz zer
+ 0439  80 3E 0002 R 08		     nxt_7:cmp digcodep,8h
+ 043E  75 07			           jnz nxt_8
+ 0440  83 3E FFB6 R 0C		           cmp move,0ch
+ 0445  74 16			           jz zer
+ 0447  80 3E 0002 R 09		     nxt_8:cmp digcodep,9h
+ 044C  75 07			           jnz nxt_9
+ 044E  83 3E FFB6 R 0B		           cmp move,0bh
+ 0453  74 08			           jz zer
+ 0455  81 3E FFB6 R AAAA	     nxt_9:cmp move,0aaaah
+ 045B  75 07			           jnz increm
+ 045D  33 C0			       zer:    xor ax,ax
+ 045F  A3 FFB6 R		            mov move,ax
+ 0462  EB 04			           jmp rty
+ 0464  FF 06 FFB6 R		     increm: inc move
+				               
+ 0468  B9 FFFF			     rty:  mov cx,0ffffh
+ 046B  90			       del:nop
+ 046C  90			           nop
+ 046D  E2 FC			           loop del 
+				          ; popa
+ 046F  C3			           ret
+ 0470				move_arr  ENDP   
+				;----------------------------------------------------
+ 0470				choose_mode proc near
+ 0470  E4 00			       in al,0                          ;читаем 0 регистр
+ 0472  E8 FC1D			       call VibrDestr                   ; гасим дребезг
+ 0475  3C BF			       cmp al,0bfh                      ;нажата 7 кнопка 7f
+ 0477  75 0D			       jnz sec_mode
+ 0479  B4 01			       mov ah,01h
+ 047B  88 26 FFBB R		       mov mode,ah
+ 047F  33 C0			       xor ax,ax
+ 0481  A3 FFB6 R		       mov move,ax
+ 0484  EB 0A			       jmp out_pr
+ 0486  3C 7F			  sec_mode: cmp al,07fh
+ 0488  75 06			        jnz out_pr
+ 048A  32 E4			        xor ah,ah
+ 048C  88 26 FFBB R		        mov mode,ah
+ 0490  90			  out_pr: nop
+ 0491  C3			        ret    
+
+ 0492				choose_mode endp
+				;-------------------------------------------------
+ 0492				out_image  PROC  NEAR
+ 0492  60			           pusha
+ 0493  B0 01			           mov    al,1             ;включаем питание
+ 0495  E6 00			           out   0,al              ;
+				          ; mov si,0h                ;счетчик массива
+ 0497  8B 36 FFB6 R		           mov si,move
+ 049B  B2 01			           mov dl,1h               ;выводимый столбец
+ 049D  B6 08			           mov dh,8h               ;колличество столбцов
+ 049F				 out_start: 
+ 049F  8A C2			           mov al,dl               ;активируем столбец
+ 04A1  E6 02			           out 2, al               ;
+ 04A3  8A 84 0004 R		           mov al,image1[si]        ;здесь должен выводиться элемент массива в матрицу 1
+ 04A7  E6 01			           out 1,al                ;
+ 04A9  8A 84 000C R		           mov al,image1[si+8h]    ;здесь должен выводиться элемент массива в матрицу 2
+ 04AD  E6 03			           out 3,al                ;
+ 04AF  8A 84 0014 R		           mov al,image1[si+10h]   ;здесь должен выводиться элемент массива в матрицу 3
+ 04B3  E6 04			           out 4,al                ;
+ 04B5  8A 84 001C R		           mov al,image1[si+18h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04B9  E6 05			           out 5,al                ;
+ 04BB  8A 84 0024 R		           mov al,image1[si+20h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04BF  E6 0C			           out 0ch,al                ;
+ 04C1  8A 84 002C R		           mov al,image1[si+28h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04C5  E6 0D			           out 0dh,al                ;
+ 04C7  8A 84 0034 R		           mov al,image1[si+30h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04CB  E6 0E			           out 0eh,al                ;
+ 04CD  8A 84 003C R		           mov al,image1[si+38h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04D1  E6 0F			           out 0fh,al                ;
+ 04D3  8A 84 0044 R		           mov al,image1[si+40h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04D7  E6 10			           out 010h,al                ;
+ 04D9  8A 84 004C R		           mov al,image1[si+48h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04DD  E6 11			           out 011h,al                ;
+ 04DF  8A 84 0054 R		           mov al,image1[si+50h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04E3  E6 12			           out 012h,al                ;
+ 04E5  8A 84 005C R		           mov al,image1[si+58h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04E9  E6 13			           out 013h,al     
+ 04EB  8A 84 0064 R		            mov al,image1[si+60h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04EF  E6 14			           out 014h,al    
+ 04F1  8A 84 006C R		           mov al,image1[si+68h]   ;здесь должен выводиться элемент массива в матрицу 4
+ 04F5  E6 15			           out 015h,al    
+				          ; mov al,image1[si+70h]   ;здесь должен выводиться элемент массива в матрицу 4
+				          ; out 016h,al    
+				           ;mov al,image1[si+78h]   ;здесь должен выводиться элемент массива в матрицу 4
+				          ; out 017h,al    
+ 04F7  32 C0			           xor al,al               ;гасим столбец
+ 04F9  E6 01			           out 1,al
+ 04FB  E6 03			           out 3,al
+ 04FD  E6 04			           out 4,al
+ 04FF  E6 05			           out 5,al
+ 0501  E6 0C			           out 0ch,al
+ 0503  E6 0D			           out 0dh,al
+ 0505  E6 0E			           out 0eh,al
+ 0507  E6 0F			           out 0fh,al
+ 0509  E6 10			           out 010h,al
+ 050B  E6 11			           out 011h,al
+ 050D  E6 12			            out 012h,al
+ 050F  E6 13			            out 013h,al
+ 0511  E6 14			             out 014h,al
+ 0513  E6 15			            out 015h,al
+				            ;  out 016h,al
+				           ; out 017h,al
+ 0515  46			           inc si                  ;счетчик на следующий элемент
+ 0516  D0 C2			           rol dl,1                ;указатель активной столбца на следующий
+ 0518  FE CE			           dec dh                  ;модификация счетцика массива
+ 051A  75 83			           jnz out_start  
+ 051C  80 3E FFBB R 00		           cmp mode,0
+ 0521  75 03			           jnz no_move
+ 0523  E8 FEB1			           call move_arr
+ 0526  61			    no_move:       popa  
+ 0527  C3			           ret
+ 0528				out_image  ENDP   
+ 0528				init proc near
+ 0528  B0 01			           mov al,1
+ 052A  A2 0000 R		           mov DigCode,al 
+ 052D  A2 0001 R		           mov DigCodeT,al
+ 0530  A2 FFB9 R		           mov once_p,al
+ 0533  A2 FFBB R		           mov mode,al
+				           ;mov al,1
+ 0536  A2 0002 R		           mov DigCodeP,al
+ 0539  33 C0			           xor ax,ax
+ 053B  A3 FFB6 R		           mov move, ax
+ 053E  B0 09			           mov al,09h
+ 0540  A2 FFB1 R		           mov maxtime,al
+ 0543  FE C8			           dec al
+ 0545  A2 FFB2 R		           mov maxfreq,al
+ 0548  C3			           ret
+ 0549				init endp
+ 0549				Start:
+				           
+ 0549  B8 ---- R		           mov   ax,Data
+ 054C  8E D8			           mov   ds,ax
+ 054E  8E C0			           mov   es,ax
+ 0550  B8 ---- R		           mov   ax,Stk
+ 0553  8E D0			           mov   ss,ax
+ 0555  8D 26 0020 R		           lea   sp,StkTop
+				;Здесь размещается код программы
+				           
+ 0559  E8 FFCC			          call init
+ 055C				   InfLoop:   
+ 055C  E8 FDCB			            call bin_out
+				           ;-------------------
+ 055F  E8 FBA0			           call amplitude_modify
+ 0562  80 3E FFBB R 00		           cmp mode,0
+ 0567  74 03			           jz no_t
+ 0569  E8 FBD0			           call time_modify
+ 056C				           no_t:
+ 056C  E8 FC70			           call period_modify
+ 056F  E8 FE28			           call horiz_time
+ 0572  E8 FCF4			           call math_array 
+ 0575  E8 FEF8			           call choose_mode
+ 0578  E8 FF17			           call out_image
+ 057B  EB DF			           jmp   InfLoop
+
+				;В следующей строке необходимо указать смещение стартовой точки
+				           org   RomSize-16-((15) AND 0FFF0h)
+				           ASSUME cs:NOTHING
+ 0FF0  EA ---- 0549 R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+				END
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/17 08:50:44
+4.asm							     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 FFBC	  Abs	  Private 
+InitData . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+IntTable . . . . . . . . . . . .	16 Bit	 0000	  Abs	  Private 
+Stk  . . . . . . . . . . . . . .	16 Bit	 0020	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+VibrDestr  . . . . . . . . . . .	P Near	 0092	  Code	Length= 0016 Public
+  VD1  . . . . . . . . . . . . .	L Near	 0093	  Code	
+  VD2  . . . . . . . . . . . . .	L Near	 0098	  Code	
+amplitude_modify . . . . . . . .	P Near	 0102	  Code	Length= 003A Public
+  next1  . . . . . . . . . . . .	L Near	 0121	  Code	
+  exit . . . . . . . . . . . . .	L Near	 0134	  Code	
+  no_pr1 . . . . . . . . . . . .	L Near	 013A	  Code	
+bin_out  . . . . . . . . . . . .	P Near	 032A	  Code	Length= 0070 Public
+  tt . . . . . . . . . . . . . .	L Near	 0330	  Code	
+  off  . . . . . . . . . . . . .	L Near	 034F	  Code	
+  ff . . . . . . . . . . . . . .	L Near	 0357	  Code	
+  tt1  . . . . . . . . . . . . .	L Near	 035D	  Code	
+  off2 . . . . . . . . . . . . .	L Near	 037C	  Code	
+  ff2  . . . . . . . . . . . . .	L Near	 0384	  Code	
+  ex . . . . . . . . . . . . . .	L Near	 0393	  Code	
+  exi  . . . . . . . . . . . . .	L Near	 0399	  Code	
+choose_mode  . . . . . . . . . .	P Near	 0470	  Code	Length= 0022 Public
+  sec_mode . . . . . . . . . . .	L Near	 0486	  Code	
+  out_pr . . . . . . . . . . . .	L Near	 0490	  Code	
+horiz_time . . . . . . . . . . .	P Near	 039A	  Code	Length= 003D Public
+  return . . . . . . . . . . . .	L Near	 03D6	  Code	
+init . . . . . . . . . . . . . .	P Near	 0528	  Code	Length= 0021 Public
+math_array . . . . . . . . . . .	P Near	 0269	  Code	Length= 00C1 Public
+  repeat1  . . . . . . . . . . .	L Near	 0274	  Code	
+  normal1  . . . . . . . . . . .	L Near	 028C	  Code	
+  in_rep . . . . . . . . . . . .	L Near	 02A0	  Code	
+  n  . . . . . . . . . . . . . .	L Near	 02A3	  Code	
+  n7 . . . . . . . . . . . . . .	L Near	 02BC	  Code	
+  norm . . . . . . . . . . . . .	L Near	 02DC	  Code	
+  n6 . . . . . . . . . . . . . .	L Near	 02E6	  Code	
+  normal . . . . . . . . . . . .	L Near	 02F5	  Code	
+  dr . . . . . . . . . . . . . .	L Near	 02FB	  Code	
+  n8 . . . . . . . . . . . . . .	L Near	 0301	  Code	
+  n5 . . . . . . . . . . . . . .	L Near	 0302	  Code	
+  n1 . . . . . . . . . . . . . .	L Near	 030C	  Code	
+  n3 . . . . . . . . . . . . . .	L Near	 0312	  Code	
+  n4 . . . . . . . . . . . . . .	L Near	 0320	  Code	
+move_arr . . . . . . . . . . . .	P Near	 03D7	  Code	Length= 0099 Public
+  nxt_1  . . . . . . . . . . . .	L Near	 03E5	  Code	
+  nxt_2  . . . . . . . . . . . .	L Near	 03F3	  Code	
+  nxt_3  . . . . . . . . . . . .	L Near	 0401	  Code	
+  nxt_4  . . . . . . . . . . . .	L Near	 040F	  Code	
+  nxt_5  . . . . . . . . . . . .	L Near	 041D	  Code	
+  nxt_6  . . . . . . . . . . . .	L Near	 042B	  Code	
+  nxt_7  . . . . . . . . . . . .	L Near	 0439	  Code	
+  nxt_8  . . . . . . . . . . . .	L Near	 0447	  Code	
+  nxt_9  . . . . . . . . . . . .	L Near	 0455	  Code	
+  zer  . . . . . . . . . . . . .	L Near	 045D	  Code	
+  increm . . . . . . . . . . . .	L Near	 0464	  Code	
+  rty  . . . . . . . . . . . . .	L Near	 0468	  Code	
+  del  . . . . . . . . . . . . .	L Near	 046B	  Code	
+num_out  . . . . . . . . . . . .	P Near	 00A8	  Code	Length= 005A Public
+  kol  . . . . . . . . . . . . .	L Near	 00CF	  Code	
+  outim  . . . . . . . . . . . .	L Near	 00D3	  Code	
+  dfr  . . . . . . . . . . . . .	L Near	 00DB	  Code	
+  nt . . . . . . . . . . . . . .	L Near	 00E9	  Code	
+  increm_di  . . . . . . . . . .	L Near	 00F2	  Code	
+  hhh  . . . . . . . . . . . . .	L Near	 00FD	  Code	
+out_image  . . . . . . . . . . .	P Near	 0492	  Code	Length= 0096 Public
+  out_start  . . . . . . . . . .	L Near	 049F	  Code	
+  no_move  . . . . . . . . . . .	L Near	 0526	  Code	
+period_modify  . . . . . . . . .	P Near	 01DF	  Code	Length= 008A Public
+  nxt3 . . . . . . . . . . . . .	L Near	 0206	  Code	
+  tz2p . . . . . . . . . . . . .	L Near	 0221	  Code	
+  anov . . . . . . . . . . . . .	L Near	 022D	  Code	
+  beg_p  . . . . . . . . . . . .	L Near	 024E	  Code	
+  beg_p1 . . . . . . . . . . . .	L Near	 0255	  Code	
+  exit3  . . . . . . . . . . . .	L Near	 0261	  Code	
+  no_pr3 . . . . . . . . . . . .	L Near	 0267	  Code	
+time_modify  . . . . . . . . . .	P Near	 013C	  Code	Length= 00A3 Public
+  tpp1 . . . . . . . . . . . . .	L Near	 016F	  Code	
+  nxt2 . . . . . . . . . . . . .	L Near	 016F	  Code	
+  tpp  . . . . . . . . . . . . .	L Near	 019B	  Code	
+  tz2  . . . . . . . . . . . . .	L Near	 019D	  Code	
+  anov1  . . . . . . . . . . . .	L Near	 01A9	  Code	
+  beg_t  . . . . . . . . . . . .	L Near	 01C5	  Code	
+  beg_t1 . . . . . . . . . . . .	L Near	 01CC	  Code	
+  exit2  . . . . . . . . . . . .	L Near	 01D8	  Code	
+  no_in  . . . . . . . . . . . .	L Near	 01DE	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+Amplitude  . . . . . . . . . . .	Byte	 0003	  Data	
+Cell_num . . . . . . . . . . . .	Byte	 006E	  Code	
+DigCodeP . . . . . . . . . . . .	Byte	 0002	  Data	
+DigCodeT . . . . . . . . . . . .	Byte	 0001	  Data	
+DigCode  . . . . . . . . . . . .	Byte	 0000	  Data	
+Image1 . . . . . . . . . . . . .	Byte	 0004	  Data	
+Image  . . . . . . . . . . . . .	Byte	 0000	  Code	
+InfLoop  . . . . . . . . . . . .	L Near	 055C	  Code	
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+Start  . . . . . . . . . . . . .	L Near	 0549	  Code	
+StkTop . . . . . . . . . . . . .	Word	 0020	  Stk	
+SymImages  . . . . . . . . . . .	Byte	 0064	  Code	
+corp . . . . . . . . . . . . . .	Byte	 FFB8	  Data	
+flag . . . . . . . . . . . . . .	Byte	 FFAE	  Data	
+limit_freq . . . . . . . . . . .	Byte	 0077	  Code	
+limit_time . . . . . . . . . . .	Byte	 0080	  Code	
+maxfreq  . . . . . . . . . . . .	Byte	 FFB2	  Data	
+maxtime  . . . . . . . . . . . .	Byte	 FFB1	  Data	
+mode . . . . . . . . . . . . . .	Byte	 FFBB	  Data	
+move . . . . . . . . . . . . . .	Word	 FFB6	  Data	
+no_t . . . . . . . . . . . . . .	L Near	 056C	  Code	
+once_p . . . . . . . . . . . . .	Byte	 FFB9	  Data	
+once_t . . . . . . . . . . . . .	Byte	 FFBA	  Data	
+period . . . . . . . . . . . . .	Word	 FFAF	  Data	
+timetwo  . . . . . . . . . . . .	Byte	 0089	  Code	
+total  . . . . . . . . . . . . .	Word	 FFB4	  Data	
+zoom . . . . . . . . . . . . . .	Byte	 FFB3	  Data	
+
+	   0 Warnings
+	   0 Errors

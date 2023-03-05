@@ -12,6 +12,8 @@
 #include "ElemInterface.h"
 #include "StdElem.h"
 
+#include <array>
+
 /////////////////////////////////////////////////////////////////////////////
 // CArchDoc document
 
@@ -21,39 +23,30 @@ protected:
 	CArchDoc();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CArchDoc)
 
-  struct PortData {
-    DWORD Address;
-    CElement *pElement;
-  };
-  CList<PortData,PortData&> InputPortList,OutputPortList;
+	struct PortData {
+		DWORD Address;
+		CElement *pElement;
+	};
+	CList<PortData, PortData&> InputPortList, OutputPortList;
 
-// Attributes
+	// Attributes
 public:
 	//int ElemCount;
-	CElement *Element[1024];
+	std::array<CElement*, 1024> Elements;
 
-// Operations
-public:
-
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CArchDoc)
-	public:
 	virtual void Serialize(CArchive& ar);   // overridden for document i/o
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	protected:
-	virtual BOOL OnNewDocument();
-	//}}AFX_VIRTUAL
 
 // Implementation
 public:
 	void CopySelected();
 	void ChangeMode(BOOL ConfigMode);
-	void WritePort(DWORD PortAddress,DWORD Data);
+	void WritePort(DWORD PortAddress, DWORD Data);
 	DWORD ReadPort(DWORD PortAddress);
-	LPARAM OnInstrCounterEvent(HANDLE hElement);
+	//void OnTickTimer(DWORD hElement);
 	void UpdateModifyStatus();
-	BOOL AddElement(LPCTSTR GUID,LPCTSTR Name,BOOL Show);
+	CElement* CreateElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show, int handle);
+	BOOL AddElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show);
 	BOOL DeleteElement(int ElementIndex);
 	CArchView *pView;
 	void ArchOpen(CArchive& ar);
@@ -66,10 +59,11 @@ public:
 
 	// Generated message map functions
 protected:
-	void ConvertVersion0200To0202(CArchive &ar,DWORD OldVersion);
+	virtual BOOL OnNewDocument();
+	void ConvertVersion0200To0202(CArchive &ar, DWORD OldVersion);
 	//{{AFX_MSG(CArchDoc)
 	afx_msg void OnUpdateFileSave(CCmdUI* pCmdUI);
-  //}}AFX_MSG
+	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
 };
 

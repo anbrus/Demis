@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:24:28
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:42
 Chess.asm						     Page 1 - 1
 
 
@@ -497,7 +497,7 @@ Chess.asm						     Page 1 - 1
  0FF0  EA ---- 049C R		  begin:jmp far ptr Start
  0FF5				Code   ends
 				  end begin
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/04/17 10:24:28
+Microsoft (R) Macro Assembler Version 6.14.8444		    02/19/23 15:50:42
 Chess.asm						     Symbols 2 - 1
 
 

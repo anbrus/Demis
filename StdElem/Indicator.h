@@ -2,70 +2,83 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_INDICATOR_H__159F0B11_7C9E_11D4_828D_94691C991847__INCLUDED_)
-#define AFX_INDICATOR_H__159F0B11_7C9E_11D4_828D_94691C991847__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
+
+#include <mutex>
 
 class CIndicator;
 
-class CIndArchWnd : public CElementWnd  
+class CIndArchWnd : public CElementWnd
 {
 public:
-	virtual void Draw(CDC* pDC);
-	void DrawValue(CDC* pDC,DWORD OldValue);
-	CIndArchWnd(CElement* pElement);
+	CIndArchWnd(CElementBase* pElement);
 	virtual ~CIndArchWnd();
 
+	virtual void Draw(CDC* pDC);
+	virtual void Redraw(int64_t ticks) override;
+
 protected:
-  //{{AFX_MSG(CIndArchWnd)
+	//{{AFX_MSG(CIndArchWnd)
 	afx_msg void OnActiveHigh();
 	afx_msg void OnActiveLow();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
+
+private:
+	CDC MemoryDC;
+
+	void DrawStatic(CDC* pDC);
+	void DrawDynamic(CDC* pDC);
 };
 
 
-class CIndConstrWnd : public CElementWnd  
+class CIndConstrWnd : public CElementWnd
 {
 public:
 	virtual void Draw(CDC* pDC);
-	void DrawValue(CDC* pDC,DWORD OldValue);
-	CIndConstrWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override;
+	CIndConstrWnd(CElementBase* pElement);
 	virtual ~CIndConstrWnd();
 
 protected:
-  //{{AFX_MSG(CIndConstrWnd)
+	//{{AFX_MSG(CIndConstrWnd)
 	afx_msg void OnActiveHigh();
 	afx_msg void OnActiveLow();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
-  DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP()
+
+private:
+	CDC MemoryDC;
+
+	void DrawStatic(CDC* pDC);
+	void DrawDynamic(CDC* pDC);
 };
 
-class CIndicator : public CElement  
+class CIndicator : public CElementBase
 {
 public:
-	virtual DWORD GetPinState();
-	virtual void SetPinState(DWORD NewState);
-	void DrawSegments(CDC *pDC,CBrush* pBkBrush,CPoint Pos,DWORD OldValue);
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
-	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
-	virtual BOOL Save(HANDLE hFile);
+	CIndicator(BOOL ArchMode, int id);
+	virtual ~CIndicator();
+
+	std::mutex mutexDraw;
 	BOOL ActiveHigh;
 	DWORD HighLight;
+
+	virtual DWORD GetPinState();
+	virtual void SetPinState(DWORD NewState);
+	void DrawSegments(CDC* pDC, bool isSelected, bool isArchMode, CPoint Pos);
+	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);
+	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
+	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
-	CIndicator(BOOL ArchMode,CElemInterface* pInterface);
-	virtual ~CIndicator();
 	void OnActiveHigh();
 	void OnActiveLow();
+
 protected:
-  POINT IndImage[8][6];
-
+	POINT IndImage[8][6];
 };
-
-#endif // !defined(AFX_INDICATOR_H__159F0B11_7C9E_11D4_828D_94691C991847__INCLUDED_)

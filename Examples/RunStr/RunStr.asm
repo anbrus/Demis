@@ -41,20 +41,15 @@ Code       SEGMENT use16
 ;Здесь размещаются описания констант
 
            ASSUME cs:Code,ds:Data,es:InitData
-Start:
-           mov   ax,Data
-           mov   ds,ax
-           mov   ax,InitData
-           mov   es,ax
-           mov   ax,Stk
-           mov   ss,ax
-           lea   sp,StkTop
-;Здесь размещается код программы
-           mov   dx,0
-InfLoop:
-           call  Delay
+
+Display    PROC  NEAR
+           ;ax   Смещение от начала Image
+           
+           push  bx
+           push  cx
+           
            lea   bx,Image
-           add   bx,dx
+           add   bx,ax
            mov   ch,1        ;Indicator Counter
 OutNextInd:
            mov   al,0
@@ -77,24 +72,40 @@ OutNextCol:
            shl   ch,1
            cmp   ch,16
            jnz   OutNextInd
+           
+           xor   al, al
+           out   2, al
+
+           pop   cx
+           pop   bx
+           ret
+Display    ENDP
+
+Start:
+           mov   ax,Data
+           mov   ds,ax
+           mov   ax,InitData
+           mov   es,ax
+           mov   ax,Stk
+           mov   ss,ax
+           lea   sp,StkTop
+;Здесь размещается код программы
+           mov   dx,50
+InfLoop:
+           mov   cx, 30
+LoopDisplay:
+           mov   ax, dx
+           call  Display
+           dec   cx
+LoopDisplay1:
+           jnz   LoopDisplay
+           
            inc   dx
            cmp   dx,11*16
            jnz   InfLoop
            xor   dx,dx
            jmp   InfLoop
            
-Delay      proc  near
-           push  cx
-           mov   cx,60000
-DelayLoop:
-           inc   cx
-           dec cx
-           inc   cx
-           dec cx
-           loop  DelayLoop
-           pop   cx
-           ret
-Delay      endp
 
 ;В следующей строке необходимо указать смещение стартовой точки
            org   RomSize-16-((InitDataEnd-InitDataStart+15) AND 0FFF0h)

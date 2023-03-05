@@ -1,0 +1,7 @@
+[SOURCE]=00000001,kr.asm
+[ARCH]=00000000,kr.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(196,12,1018,556)C:\Documents and Settings\student\Рабочий стол\КР-2\kr.asm
+[WND.arh]=(108,59,715,540)C:\Documents and Settings\student\Рабочий стол\КР-2\kr.arh

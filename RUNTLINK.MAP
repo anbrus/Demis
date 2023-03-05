@@ -1,0 +1,13 @@
+
+ Start  Stop   Length Name               Class
+
+ 00000H 00056H 00057H _TEXT              CODE
+ 00058H 0026BH 00214H _DATA              DATA
+ 0026CH 0026CH 00000H _BSS               BSS
+
+Error: Undefined symbol _SPAWNL in module RUNTLINK.CPP
+Error: Undefined symbol _STRCAT in module RUNTLINK.CPP
+Error: Undefined symbol N_SCOPY@ in module RUNTLINK.CPP
+Program entry point at 0000:0000
+Warning: No stack
+

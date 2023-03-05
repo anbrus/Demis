@@ -1,0 +1,831 @@
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 1
+segment.asm
+
+
+
+      1					 .386
+      2					 ;Задайте объём	ПЗУ в байтах
+      3		  =1000			 RomSize    EQU	  4096
+      4
+      5	    0000			 IntTable   SEGMENT AT 0 use16
+      6					 ;Здесь	размещаются адреса обработчиков	прерываний
+      7	    0000			 IntTable   ENDS
+      8
+      9	    0000			 Data	    SEGMENT AT 40h use16
+     10					 ;Здесь	размещаются описания переменных
+     11
+     12	    0000  ??			     mody    db	?
+     13	    0001  ??			     num  db ?
+     14	    0002  ??			     sum  db ?
+     15	    0003  ??			     j	db ?
+     16	    0004  ??			     one  db ?
+     17	    0005  ??			     ten  db ?
+     18	    0006  ??			     hour db ?
+     19	    0007  ??			     minit db ?
+     20	    0008  ??			     sec db ?
+     21	    0009  ??			     hour_1 db ?
+     22	    000A  ??			     minit_1 db	?
+     23	    000B  ??			     sec_1 db ?
+     24	    000C  ??			     hour_2 db ?
+     25	    000D  ??			     minit_2 db	?
+     26	    000E  ??			     sec_2 db ?
+     27	    000F  ??			     NumPlay db	?
+     28	    0010  ??			     KeyDec db ?
+     29	    0011  ??			     KeyInc db ?
+     30	    0012  ??			     KeyChUn db	?
+     31	    0013  ??			     KeyChPlay db ?
+     32	    0014  ??			     Num_Field db ?
+     33	    0015  ??			     Mode db ?
+     34	    0016  ??			     Push_1 db ?
+     35	    0017  ??			     Push_2 db ?
+     36	    0018  ??			     number db ?
+     37	    0019  ??			     unit_time db ?
+     38	    001A  ??			     NP	db ?
+     39	    001B  ??			     NF	db ?
+     40	    001C  ??			     fin db ?
+     41	    001D  ??			     Port1 db ?
+     42	    001E  ??			     Port2 db ?
+     43	    001F  ????			     msec dw ?
+     44	    0021  ??			     temp db ?
+     45	    0022  ??			     num_push db ?
+     46	    0023  ??			     Pause db ?
+     47	    0024  ??			     Unset db ?
+     48	    0025			 Data	    ENDS
+     49
+     50					 ;Задайте необходимый адрес стека
+     51	    0000			 Stk	    SEGMENT Stack 'para' use16	; AT 60h use16
+     52					 ;Задайте необходимый размер стека
+     53	    0000  64*(????)			    dw	  100 dup (?)
+     54	    00C8			 StkTop	    Label Word
+     55	    00C8			 Stk	    ENDS
+     56
+     57	    0000			 InitData   SEGMENT use16
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 2
+segment.asm
+
+
+
+     58	    0000  0063			 nach dw 99
+     59	    0002  3F 0C	76 5E 4D 5B 7B+	 symbols    db	3fh,0ch,76h,5eh,  4dh,5bh,7bh,0eh,  7fh,5fh;,6fh,79h,  33h,7ch,73h,63h
+     60		  0E 7F	5F
+     61
+     62					 ;Здесь	размещаются описания констант
+     63	    000C			 InitData   ENDS
+     64
+     65	    0000			 Code	    SEGMENT use16
+     66
+     67						    ASSUME cs:Code,ds:InitData,es:Data
+     68
+     69	    0000			 VibrDestr proc
+     70	    0000  8A E0			 VD1 : mov ah,al
+     71	    0002  B7 00			       mov bh,0
+     72	    0004  E4 00			 Vd2 : in al,0
+     73	    0006  3A E0			       cmp ah,al
+     74	    0008  75 F6			       jne Vd1
+     75	    000A  FE C7			       inc bh
+     76	    000C  80 FF	32		       cmp bh,50
+     77	    000F  75 F3			       jne VD2
+     78	    0011  8A C4			       mov al,ah
+     79	    0013  C3			       ret
+     80	    0014			 VibrDestr EndP
+     81	    0014			 ModiFy	 Proc
+     82	    0014  BB 0002r			   lea bx,symbols
+     83	    0017  26: A0 0000r			   mov	 al,mody
+     84	    001B  24 0F				   and	 al,0Fh
+     85	    001D  D7				   xlat
+     86	    001E  8A E0				   mov ah,al
+     87	    0020  26: A0 0000r			   mov	 al,mody
+     88	    0024  C0 E8	04			   shr	 al,4
+     89	    0027  D7				   xlat
+     90	    0028  86 C4				   xchg	al,ah
+     91	    002A  26: A2 0004r			   mov one,al
+     92	    002E  26: 88 26 0005r		   mov ten,ah
+     93	    0033  C3				   ret
+     94	    0034			 Modify	endp
+     95	    0034			 Summa proc
+     96	    0034  26: 80 3E 0011r 01		    cmp	KeyInc,1
+     97	    003A  75 15				    jne	exit_sum
+     98	    003C  26: 80 06 0002r 01		    add	  sum,1
+     99	    0042  26: A0 0002r			    mov	al,sum
+    100	    0046  27				    daa
+    101	    0047  26: A2 0002r			    mov	sum,al
+    102	    004B  26: C6 06 0011r 00		    mov	KeyInc,0
+    103	    0051			  exit_sum:
+    104	    0051  C3			 ret
+    105	    0052			 summa	 Endp
+    106	    0052			 Difference proc
+    107	    0052  26: 80 3E 0010r 01		    cmp	KeyDec,1
+    108	    0058  75 15				    jne	exit_dif
+    109	    005A  26: 80 2E 0002r 01		    sub	sum,1
+    110	    0060  26: A0 0002r			    mov	al,sum
+    111	    0064  2F				    das
+    112	    0065  26: A2 0002r			    mov	sum,al
+    113	    0069  26: C6 06 0010r 00		    mov	KeyDec,0
+    114	    006F			 exit_dif:
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 3
+segment.asm
+
+
+
+    115	    006F  C3				    ret
+    116	    0070			 Difference  EndP
+    117					 Indicate_number macro Port1,port2,number,NP,NF
+    118						 local indic
+    119						 mov al,number
+    120						 mov mody,al
+    121						 call modify
+    122						 cmp mode,0ffH
+    123						 je Indic
+    124						 cmp NumPlay,NP
+    125						 jne Indic
+    126						 cmp Num_Field,NF
+    127						 jne Indic
+    128						 or one,128
+    129						 or ten,128
+    130					     Indic:
+    131						 mov al,one
+    132						 out Port1,al
+    133						 mov al,ten
+    134						 out Port2,al
+    135					    EndM
+    136	    0070			  Indicate proc
+    137					       Indicate_number 2,3,sec_1,0,0
+1   138	    0070  26: A0 000Br			 mov al,sec_1
+1   139	    0074  26: A2 0000r			 mov mody,al
+1   140	    0078  E8 FF99			 call modify
+1   141	    007B  26: 80 3E 0015r FF		 cmp mode,0ffH
+1   142	    0081  74 1C				 je ??0000
+1   143	    0083  26: 80 3E 000Fr 00		 cmp NumPlay,0
+1   144	    0089  75 14				 jne ??0000
+1   145	    008B  26: 80 3E 0014r 00		 cmp Num_Field,0
+1   146	    0091  75 0C				 jne ??0000
+1   147	    0093  26: 80 0E 0004r 80		 or one,128
+1   148	    0099  26: 80 0E 0005r 80		 or ten,128
+1   149	    009F			     ??0000:
+1   150	    009F  26: A0 0004r			 mov al,one
+1   151	    00A3  E6 02				 out 2,al
+1   152	    00A5  26: A0 0005r			 mov al,ten
+1   153	    00A9  E6 03				 out 3,al
+    154					       Indicate_number 4,5h,minit_1,0,1
+1   155	    00AB  26: A0 000Ar			 mov al,minit_1
+1   156	    00AF  26: A2 0000r			 mov mody,al
+1   157	    00B3  E8 FF5E			 call modify
+1   158	    00B6  26: 80 3E 0015r FF		 cmp mode,0ffH
+1   159	    00BC  74 1C				 je ??0001
+1   160	    00BE  26: 80 3E 000Fr 00		 cmp NumPlay,0
+1   161	    00C4  75 14				 jne ??0001
+1   162	    00C6  26: 80 3E 0014r 01		 cmp Num_Field,1
+1   163	    00CC  75 0C				 jne ??0001
+1   164	    00CE  26: 80 0E 0004r 80		 or one,128
+1   165	    00D4  26: 80 0E 0005r 80		 or ten,128
+1   166	    00DA			     ??0001:
+1   167	    00DA  26: A0 0004r			 mov al,one
+1   168	    00DE  E6 04				 out 4,al
+1   169	    00E0  26: A0 0005r			 mov al,ten
+1   170	    00E4  E6 05				 out 5h,al
+    171					       Indicate_number 6h,14h,hour_1,0,2
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 4
+segment.asm
+
+
+
+1   172	    00E6  26: A0 0009r			 mov al,hour_1
+1   173	    00EA  26: A2 0000r			 mov mody,al
+1   174	    00EE  E8 FF23			 call modify
+1   175	    00F1  26: 80 3E 0015r FF		 cmp mode,0ffH
+1   176	    00F7  74 1C				 je ??0002
+1   177	    00F9  26: 80 3E 000Fr 00		 cmp NumPlay,0
+1   178	    00FF  75 14				 jne ??0002
+1   179	    0101  26: 80 3E 0014r 02		 cmp Num_Field,2
+1   180	    0107  75 0C				 jne ??0002
+1   181	    0109  26: 80 0E 0004r 80		 or one,128
+1   182	    010F  26: 80 0E 0005r 80		 or ten,128
+1   183	    0115			     ??0002:
+1   184	    0115  26: A0 0004r			 mov al,one
+1   185	    0119  E6 06				 out 6h,al
+1   186	    011B  26: A0 0005r			 mov al,ten
+1   187	    011F  E6 14				 out 14h,al
+    188					       Indicate_number	11h,13h,Hour_2,0ffh,2
+1   189	    0121  26: A0 000Cr			 mov al,Hour_2
+1   190	    0125  26: A2 0000r			 mov mody,al
+1   191	    0129  E8 FEE8			 call modify
+1   192	    012C  26: 80 3E 0015r FF		 cmp mode,0ffH
+1   193	    0132  74 1C				 je ??0003
+1   194	    0134  26: 80 3E 000Fr FF		 cmp NumPlay,0ffh
+1   195	    013A  75 14				 jne ??0003
+1   196	    013C  26: 80 3E 0014r 02		 cmp Num_Field,2
+1   197	    0142  75 0C				 jne ??0003
+1   198	    0144  26: 80 0E 0004r 80		 or one,128
+1   199	    014A  26: 80 0E 0005r 80		 or ten,128
+1   200	    0150			     ??0003:
+1   201	    0150  26: A0 0004r			 mov al,one
+1   202	    0154  E6 11				 out 11h,al
+1   203	    0156  26: A0 0005r			 mov al,ten
+1   204	    015A  E6 13				 out 13h,al
+    205					       Indicate_number 9,10h,minit_2,0FFh,1
+1   206	    015C  26: A0 000Dr			 mov al,minit_2
+1   207	    0160  26: A2 0000r			 mov mody,al
+1   208	    0164  E8 FEAD			 call modify
+1   209	    0167  26: 80 3E 0015r FF		 cmp mode,0ffH
+1   210	    016D  74 1C				 je ??0004
+1   211	    016F  26: 80 3E 000Fr FF		 cmp NumPlay,0FFh
+1   212	    0175  75 14				 jne ??0004
+1   213	    0177  26: 80 3E 0014r 01		 cmp Num_Field,1
+1   214	    017D  75 0C				 jne ??0004
+1   215	    017F  26: 80 0E 0004r 80		 or one,128
+1   216	    0185  26: 80 0E 0005r 80		 or ten,128
+1   217	    018B			     ??0004:
+1   218	    018B  26: A0 0004r			 mov al,one
+1   219	    018F  E6 09				 out 9,al
+1   220	    0191  26: A0 0005r			 mov al,ten
+1   221	    0195  E6 10				 out 10h,al
+    222					       Indicate_number 7,8,sec_2,0FFh,0
+1   223	    0197  26: A0 000Er			 mov al,sec_2
+1   224	    019B  26: A2 0000r			 mov mody,al
+1   225	    019F  E8 FE72			 call modify
+1   226	    01A2  26: 80 3E 0015r FF		 cmp mode,0ffH
+1   227	    01A8  74 1C				 je ??0005
+1   228	    01AA  26: 80 3E 000Fr FF		 cmp NumPlay,0FFh
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 5
+segment.asm
+
+
+
+1   229	    01B0  75 14				 jne ??0005
+1   230	    01B2  26: 80 3E 0014r 00		 cmp Num_Field,0
+1   231	    01B8  75 0C				 jne ??0005
+1   232	    01BA  26: 80 0E 0004r 80		 or one,128
+1   233	    01C0  26: 80 0E 0005r 80		 or ten,128
+1   234	    01C6			     ??0005:
+1   235	    01C6  26: A0 0004r			 mov al,one
+1   236	    01CA  E6 07				 out 7,al
+1   237	    01CC  26: A0 0005r			 mov al,ten
+1   238	    01D0  E6 08				 out 8,al
+    239					       Indicate_number 20h,21h,num_push,1,1
+1   240	    01D2  26: A0 0022r			 mov al,num_push
+1   241	    01D6  26: A2 0000r			 mov mody,al
+1   242	    01DA  E8 FE37			 call modify
+1   243	    01DD  26: 80 3E 0015r FF		 cmp mode,0ffH
+1   244	    01E3  74 1C				 je ??0006
+1   245	    01E5  26: 80 3E 000Fr 01		 cmp NumPlay,1
+1   246	    01EB  75 14				 jne ??0006
+1   247	    01ED  26: 80 3E 0014r 01		 cmp Num_Field,1
+1   248	    01F3  75 0C				 jne ??0006
+1   249	    01F5  26: 80 0E 0004r 80		 or one,128
+1   250	    01FB  26: 80 0E 0005r 80		 or ten,128
+1   251	    0201			     ??0006:
+1   252	    0201  26: A0 0004r			 mov al,one
+1   253	    0205  E6 20				 out 20h,al
+1   254	    0207  26: A0 0005r			 mov al,ten
+1   255	    020B  E6 21				 out 21h,al
+    256	    020D  E8 02E6		       call The_End
+    257	    0210  C3			    ret
+    258	    0211			   Indicate endP
+    259	    0211			 ReadKey proc
+    260	    0211  E4 00			     in	al,0
+    261	    0213  E8 FDEA		     call VibrDestr
+    262	    0216  A8 01			     test al,1
+    263	    0218  75 1E			     jnz Key_inc
+    264	    021A  A8 02			     test al,2
+    265	    021C  75 22			     jnz key_dec
+    266	    021E  A8 04			     test al,4
+    267	    0220  75 2E			     jnz Ch_Play
+    268	    0222  A8 08			     test al,8
+    269	    0224  75 22			     jnz Key_Unit
+    270	    0226  A8 10			     test al,16
+    271	    0228  75 2E			     jnz Key_Push_1
+    272	    022A  A8 20			     test al,32
+    273	    022C  75 35			     jnz Key_Push_2
+    274	    022E  A8 40			     test al,64
+    275	    0230  75 39			     jnz Key_Pause
+    276	    0232  A8 80			     test al,128
+    277	    0234  75 3C			     jnz Key_Unset
+    278	    0236  EB 40			     jmp getout
+    279	    0238  26: C6 06 0011r 01	    Key_inc:   mov KeyInc,1
+    280	    023E  EB 38				       jmp getout
+    281	    0240  26: C6 06 0010r 01	    Key_dec:   mov KeyDec,1
+    282	    0246  EB 30				       jmp getout
+    283	    0248  26: C6 06 0012r 01	   Key_Unit:   mov KeyChUn,1
+    284	    024E  EB 28				       jmp getout
+    285	    0250  26: C6 06 0013r 01	    Ch_Play:   mov KeyChPlay,1
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 6
+segment.asm
+
+
+
+    286	    0256  EB 20				       jmp getout
+    287	    0258  26: C6 06 0016r 01	 Key_Push_1:   mov Push_1,1
+    288	    025E  E8 0018			       call Install_Flag_Mode
+    289	    0261  EB 15				       jmp getout
+    290	    0263  26: C6 06 0017r 01	 Key_Push_2 :  mov Push_2,1
+    291	    0269  EB 0D				       jmp getout
+    292	    026B  26: F6 16 0023r	   Key_Pause:  not Pause
+    293	    0270  EB 06				       jmp getout
+    294	    0272  26: C6 06 0024r FF	   Key_Unset:  mov unset,0FFh
+    295	    0278			      getout:
+    296	    0278  C3			  ret
+    297	    0279			 Readkey endP
+    298
+    299	    0279			 Install_Flag_Mode proc
+    300					 ;cmp Push_1,1
+    301					 ;jne ex_IM
+    302	    0279  B0 00			  mov al,0h
+    303	    027B  B4 00			  mov ah,0h
+    304	    027D  26: 0A 06 000Br	  or al,sec_1
+    305	    0282  26: 0A 26 000Er	  or ah,sec_2
+    306	    0287  26: 0A 06 000Ar	  or al,minit_1
+    307	    028C  26: 0A 26 000Dr	  or ah,minit_2
+    308	    0291  26: 0A 06 0009r	  or al,hour_1
+    309	    0296  26: 0A 26 000Cr	  or ah,hour_2
+    310	    029B  22 C4			  and al,ah
+    311	    029D  3C 00			  cmp al,0
+    312	    029F  74 06			  jz  ex_IM
+    313	    02A1  26: C6 06 0015r FF	  mov mode,0FFh
+    314	    02A7			  ex_IM:
+    315	    02A7  C3			  ret
+    316	    02A8			 Install_Flag_Mode EndP
+    317	    02A8			 Save_Time proc
+    318	    02A8  26: 80 3E 000Fr FF	    cmp	NumPlay,0FFh
+    319	    02AE  74 1A			    je Time_2
+    320	    02B0  26: A0 0008r			mov al,sec
+    321	    02B4  26: A2 000Br			mov sec_1,al
+    322	    02B8  26: A0 0007r			mov al,minit
+    323	    02BC  26: A2 000Ar			mov minit_1,al
+    324	    02C0  26: A0 0006r			mov al,hour
+    325	    02C4  26: A2 0009r			mov hour_1,al
+    326	    02C8  EB 18				jmp exit_st
+    327	    02CA  26: A0 0008r		 Time_2:mov al,sec
+    328	    02CE  26: A2 000Er			mov sec_2,al
+    329	    02D2  26: A0 0007r			mov al,minit
+    330	    02D6  26: A2 000Dr			mov minit_2,al
+    331	    02DA  26: A0 0006r			mov al,hour
+    332	    02DE  26: A2 000Cr			mov hour_2,al
+    333	    02E2			 exit_St:
+    334	    02E2  C3			 ret
+    335	    02E3			 Save_Time EndP
+    336
+    337	    02E3			 Establish proc
+    338	    02E3  E8 FD4E		  call summa
+    339	    02E6  E8 FD69		  call difference
+    340	    02E9  C3			  ret
+    341	    02EA			 Establish EndP
+    342	    02EA			 Test_Port Proc
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 7
+segment.asm
+
+
+
+    343	    02EA			    WaitBtnDown:
+    344	    02EA  E4 00				 in    al,0
+    345	    02EC  26: 84 06 0001r		 test  al,num
+    346	    02F1  75 F7				 jnz   WaitBtnDown
+    347	    02F3  C3			    ret
+    348	    02F4			 Test_Port endP
+    349	    02F4			 Change_Field proc
+    350	    02F4  26: 80 3E 0012r 01		cmp KeyChUn,1
+    351	    02FA  75 13				jne exit_cf
+    352	    02FC  26: FE 06 0014r		inc Num_field
+    353	    0301  26: 80 3E 0014r 03		cmp Num_field,3
+    354	    0307  75 06				jne exit_CF
+    355	    0309  26: C6 06 0014r 00		mov Num_field,0
+    356	    030F			 exit_CF:
+    357	    030F  26: C6 06 0012r 00		mov KeyChUn,0
+    358	    0315  C3				ret
+    359	    0316			 Change_field endP
+    360	    0316			 Change_Play proc
+    361	    0316  26: 80 3E 0013r 01	      cmp KeyChPlay,1
+    362	    031C  75 05			      jne exit_CP
+    363	    031E  26: F6 16 000Fr	      not NumPlay
+    364	    0323			  exit_Cp:
+    365	    0323  26: C6 06 0013r 00	      mov KeyChPlay,0
+    366	    0329  C3			      ret
+    367	    032A			  Change_Play EndP
+    368	    032A			  Install_Play proc
+    369	    032A  26: 80 3E 000Fr FF	     cmp NumPlay,0FFh
+    370	    0330  74 1A			     je	PlaY_2
+    371	    0332  26: A0 000Br		     mov al,sec_1
+    372	    0336  26: A2 0008r		     mov sec,al
+    373	    033A  26: A0 000Ar		     mov al,minit_1
+    374	    033E  26: A2 0007r		     mov minit,al
+    375	    0342  26: A0 0009r		     mov al,Hour_1
+    376	    0346  26: A2 0006r		     mov hour,al
+    377	    034A  EB 18			     jmp Exit_TP
+    378	    034C  26: A0 000Er		  play_2: mov al,sec_2
+    379	    0350  26: A2 0008r			  mov sec,al
+    380	    0354  26: A0 000Dr			  mov al,minit_2
+    381	    0358  26: A2 0007r			  mov minit,al
+    382	    035C  26: A0 000Cr			  mov al,Hour_2
+    383	    0360  26: A2 0006r			  mov hour,al
+    384	    0364			 Exit_TP:
+    385	    0364  C3			 ret
+    386	    0365			 Install_Play EndP
+    387					 Install_Time macro Unit_time
+    388					   mov al,unit_time
+    389					   mov sum,al
+    390					   call	establish
+    391					   mov al,sum
+    392					   mov unit_Time,al
+    393					  endM
+    394	    0365			 Select_UnitT proc
+    395	    0365  26: 80 3E 0014r 00	    cmp	Num_field,0
+    396	    036B  74 10			    je set_s
+    397	    036D  26: 80 3E 0014r 01	    cmp	Num_field,1
+    398	    0373  74 12			    je Set_m
+    399	    0375  26: 80 3E 0014r 02	    cmp	Num_field,2
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 8
+segment.asm
+
+
+
+    400	    037B  74 14			    je Set_h
+    401	    037D  26: A0 0008r		 set_s:mov al,sec
+    402	    0381  26: A2 0019r		       mov Unit_time,al
+    403	    0385  EB 12			       jmp exit_SU
+    404	    0387  26: A0 0007r		 set_m:mov al,minit
+    405	    038B  26: A2 0019r		       mov unit_time,al
+    406	    038F  EB 08			       jmp  exit_SU
+    407	    0391  26: A0 0006r		 set_H : mov al,hour
+    408	    0395  26: A2 0019r			mov unit_time,al
+    409	    0399			 exit_SU:
+    410	    0399  C3			  ret
+    411	    039A			  Select_unitT endP
+    412	    039A			  Save_Unit proc
+    413	    039A  26: 80 3E 0014r 00	    cmp	Num_field,0
+    414	    03A0  74 10			    je save_s
+    415	    03A2  26: 80 3E 0014r 01	    cmp	Num_field,1
+    416	    03A8  74 12			    je Save_m
+    417	    03AA  26: 80 3E 0014r 02	    cmp	Num_field,2
+    418	    03B0  74 14			    je Save_h
+    419	    03B2  26: A0 0019r		 Save_s:mov al,Unit_time
+    420	    03B6  26: A2 0008r			mov sec,al
+    421	    03BA  EB 12				jmp exit_u
+    422	    03BC  26: A0 0019r		 Save_m:mov al,Unit_time
+    423	    03C0  26: A2 0007r			mov minit,al
+    424	    03C4  EB 08				jmp exit_u
+    425	    03C6  26: A0 0019r		 save_h: mov al,Unit_time
+    426	    03CA  26: A2 0006r			 mov hour,al
+    427	    03CE			 exit_u:
+    428	    03CE  C3			  ret
+    429	    03CF			  Save_Unit EndP
+    430	    03CF			  Control_Data proc
+    431	    03CF  26: A0 0006r		       mov al,hour
+    432	    03D3  3C 04			       cmp al,4
+    433	    03D5  74 1E			       jz Min_H
+    434	    03D7  3C 99			       cmp al,99h
+    435	    03D9  74 32			       jz Max_h
+    436	    03DB  26: A0 0007r		       mov al,minit
+    437	    03DF  3C 60			       cmp al,60h
+    438	    03E1  74 1A			       jz Min_M
+    439	    03E3  3C 99			       cmp al,99h
+    440	    03E5  74 2E			       jz Max_M
+    441	    03E7  26: A0 0008r		       mov al,sec
+    442	    03EB  3C 60			       cmp al,60h
+    443	    03ED  74 16			       jz Min_S
+    444	    03EF  3C 99			       cmp al,99h
+    445	    03F1  74 2A			       jz Max_S
+    446	    03F3  EB 2E			       jmp Exit_CD
+    447	    03F5  26: C6 06 0006r 00	 min_H :mov hour,0
+    448	    03FB  EB 26				 jmp Exit_CD
+    449	    03FD  26: C6 06 0007r 00	 min_M :mov minit,0
+    450	    0403  EB 1E				 jmp Exit_CD
+    451	    0405  26: C6 06 0008r 00	 min_S :mov sec,0
+    452	    040B  EB 16				jmp exit_CD
+    453	    040D  26: C6 06 0006r 03	 Max_H:	mov hour,3
+    454	    0413  EB 0E				jmp Exit_CD
+    455	    0415  26: C6 06 0007r 59	 Max_M :mov minit,59h
+    456	    041B  EB 06				jmp Exit_CD
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 9
+segment.asm
+
+
+
+    457	    041D  26: C6 06 0008r 59	 Max_S:	mov sec,59h
+    458	    0423			 Exit_CD:
+    459	    0423  C3			   ret
+    460	    0424			 Control_Data EndP
+    461	    0424			    Status proc
+    462	    0424  26: 80 3E 0024r FF	    cmp	unset,0FFh
+    463	    042A  75 6B			    jne	exit_STatus
+    464	    042C  26: C6 06 0009r 00	    mov	hour_1,0
+    465	    0432  26: C6 06 000Ar 00	    mov	minit_1,0
+    466	    0438  26: C6 06 000Br 00	    mov	sec_1,0
+    467	    043E  26: C6 06 0015r 00	    mov	mode,0
+    468	    0444  26: C6 06 000Cr 00	    mov	hour_2,0
+    469	    044A  26: C6 06 000Dr 00	    mov	minit_2,0
+    470	    0450  26: C6 06 000Er 00	    mov	sec_2,0
+    471	    0456  26: C7 06 001Fr 0000	    mov	msec,0
+    472	    045D  26: C6 06 0002r 00	    mov	sum,0
+    473	    0463  26: C6 06 0024r 00	    mov	unset,0
+    474	    0469  26: C6 06 0022r 00	    mov	num_push,0
+    475	    046F  26: C6 06 0021r 00	    mov	temp,0
+    476	    0475  26: C6 06 001Cr 00	    mov	fin,0
+    477	    047B  B0 00			    mov	al,0
+    478	    047D  E6 01			    out	1,al
+    479	    047F  26: C6 06 0003r 00	    mov	j,0
+    480	    0485  26: C6 06 000Fr 00	    mov	numPlay,0
+    481	    048B  26: C6 06 0014r 00	    mov	num_Field,0
+    482	    0491  26: C6 06 0023r 00	    mov	pause,0
+    483	    0497			  exit_STatus:
+    484	    0497  C3			    ret
+    485	    0498			 status	EndP
+    486	    0498			 Test_Down proc
+    487	    0498  26: 81 3E 001Fr 03E8		 cmp msec,1000
+    488	    049F  75 54				 jne exit_TD
+    489	    04A1  26: C7 06 001Fr 0000		 mov msec,0
+    490	    04A8  26: A0 0008r			 mov al,sec
+    491	    04AC  2C 01				 sub al,1
+    492	    04AE  2F				 das
+    493	    04AF  26: A2 0008r			 mov sec,al
+    494	    04B3  26: 80 3E 0008r 99		 cmp sec,99h
+    495	    04B9  75 3A				 jne exit_TD
+    496	    04BB  26: A0 0007r			 mov al,minit
+    497	    04BF  2C 01				 sub al,1
+    498	    04C1  2F				 das
+    499	    04C2  26: A2 0007r			 mov minit,al
+    500	    04C6  26: 80 3E 0007r 99		 cmp minit,99H
+    501	    04CC  75 27				 jne exit_TD
+    502	    04CE  26: 80 3E 0006r 00	  dec_H: cmp hour,0
+    503	    04D4  74 0D				 je finish
+    504	    04D6  26: A0 0006r			 mov al,hour
+    505	    04DA  2C 01				 sub al,1
+    506	    04DC  2F				 das
+    507	    04DD  26: A2 0006r			 mov hour,al
+    508	    04E1  EB 12				 jmp exit_td
+    509	    04E3			 finish:
+    510	    04E3  26: C6 06 001Cr FF		 mov fin,0ffh
+    511	    04E9  26: C6 06 0007r 00		 mov minit,0
+    512	    04EF  26: C6 06 0008r 00		 mov sec,0
+    513	    04F5			 exit_td:
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 10
+segment.asm
+
+
+
+    514	    04F5  C3			     ret
+    515	    04F6			 test_down EndP
+    516	    04F6			 The_End proc
+    517	    04F6  26: 80 3E 001Cr FF	      cmp fin,0ffh
+    518	    04FC  75 12			      jne exit_Te
+    519	    04FE  26: 80 3E 000Fr 00	      cmp numPlay,0
+    520	    0504  75 06			      jne END_2
+    521	    0506  B0 40			      mov al,64
+    522	    0508  E6 01			      out 1,al
+    523	    050A  EB 04			      jmp exit_Te
+    524	    050C  B0 80			 end_2:mov al,128
+    525	    050E  E6 01			       out 1,al
+    526	    0510			 exit_Te:
+    527	    0510  C3			  ret
+    528	    0511			 The_End EndP
+    529	    0511			 Inc_push proc
+    530	    0511  26: 80 3E 0016r 01	    cmp	push_1,1
+    531	    0517  75 1A			    jne	p2
+    532	    0519  26: 80 3E 0021r 00	    cmp	temp,0
+    533	    051F  75 08			    jne	T_p
+    534	    0521  26: C6 06 000Fr FF	    mov	numPlay,0ffh
+    535	    0527  EB 1A			    jmp	jamp
+    536	    0529  26: 80 3E 000Fr 00	 T_p :cmp numPlay,0h
+    537	    052F  75 34			      jne e_P
+    538	    0531  EB 10			      Jmp jamp
+    539	    0533  26: 80 3E 0017r 01	  P2:cmp push_2,1
+    540	    0539  75 2A			     jne e_p
+    541	    053B  26: 80 3E 000Fr FF	     cmp numPlay,0FFh
+    542	    0541  75 22			     jne e_p
+    543	    0543  26: F6 16 000Fr	   jamp: not numPlay
+    544	    0548  26: A0 0021r		    mov	al,temp
+    545	    054C  14 01			    adc	al,1
+    546	    054E  27			    daa
+    547	    054F  26: A2 0021r		    mov	temp,al
+    548	    0553  26: 80 3E 0021r 00	    cmp	temp,0
+    549	    0559  74 0A			    je e_p
+    550	    055B  26: A0 0021r		    mov	al,temp
+    551	    055F  FE C8			    dec	al
+    552	    0561  26: A2 0022r		    mov	num_push,al
+    553	    0565			  e_P :
+    554	    0565  26: C6 06 0016r 00	     mov push_1,0
+    555	    056B  26: C6 06 0017r 00	     mov push_2,0
+    556	    0571  C3			     ret
+    557	    0572			 Inc_Push  endP
+    558	    0572			 Count_Down proc
+    559	    0572  26: 80 3E 0015r FF	    cmp	mode,0FFh
+    560	    0578  75 22			    jne	exit_TT
+    561	    057A  26: 80 3E 0023r FF	    cmp	Pause,0FFh
+    562	    0580  74 1A			    je exit_TT
+    563	    0582  26: 80 3E 001Cr FF	    cmp	fin,0ffh
+    564	    0588  74 12			    je exit_TT
+    565	    058A  E8 FF84		    call inc_push
+    566	    058D  E8 FD9A		    call install_play
+    567	    0590  26: 83 06 001Fr 01	    add	msec,1
+    568	    0596  E8 FEFF		    call Test_down
+    569	    0599  E8 FE33		    call Control_data
+    570	    059C			  exit_TT:
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 11
+segment.asm
+
+
+
+    571	    059C  C3			    ret
+    572	    059D			 Count_down EndP
+    573	    059D			 Input_Time proc
+    574	    059D  26: 80 3E 0015r FF	    cmp	mode,0FFh
+    575	    05A3  74 25			    je exit_InT
+    576	    05A5  E8 FD6E		    call Change_play
+    577	    05A8  E8 FD7F		    call Install_play
+    578	    05AB  E8 FD46		    call Change_field
+    579	    05AE  E8 FDB4		    call Select_UnitT
+    580					    Install_Time Unit_time
+1   581	    05B1  26: A0 0019r		   mov al,Unit_time
+1   582	    05B5  26: A2 0002r		   mov sum,al
+1   583	    05B9  E8 FD27		   call	establish
+1   584	    05BC  26: A0 0002r		   mov al,sum
+1   585	    05C0  26: A2 0019r		   mov Unit_time,al
+    586	    05C4  E8 FDD3		    call Save_Unit
+    587	    05C7  E8 FE05		    Call Control_Data
+    588	    05CA			 exit_InT:
+    589	    05CA  C3			  ret
+    590	    05CB			  Input_Time endP
+    591	    05CB			 Start:
+    592	    05CB  B8 0000s			    mov	  ax,data
+    593	    05CE  8E C0				    mov	  es,ax
+    594	    05D0  B8 0000s			    mov	  ax,InitData
+    595	    05D3  8E D8				    mov	  ds,ax
+    596	    05D5  B8 0000s			    mov	  ax,Stk
+    597	    05D8  8E D0				    mov	  ss,ax
+    598	    05DA  BC 00C8r			    lea	  sp,StkTop
+    599					 ;Здесь	размещается код	программы
+    600	    05DD  26: C6 06 0024r FF		mov unset,0FFh
+    601	    05E3  26: C6 06 0001r FF		 mov num,255
+    602	    05E9  E8 FE38			s: call	status
+    603	    05EC  E8 FC22			 call readkey
+    604	    05EF  E8 FCF8			 Call Test_port
+    605						 ;call install_Flag_Mode
+    606	    05F2  E8 FFA8			 call Input_Time
+    607	    05F5  E8 FF7A			 call Count_Down
+    608	    05F8  E8 FCAD			 call Save_Time
+    609	    05FB  E8 FA72			 call indicate
+    610	    05FE  EB E9			    jmp	s
+    611					 ;В следующей строке необходимо	указать	смещение стартовой точки
+    612						    org	  RomSize-16-((SIZE InitData+15) AND 0FFF0h)
+    613
+    614						    ASSUME cs:NOTHING
+    615	    0FE0  EA 000005CBsr			    jmp	  Far Ptr Start
+    616	    0FE5			 Code	    ENDS
+    617					 END
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 12
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??0000				  Near	 CODE:009F
+??0001				  Near	 CODE:00DA
+??0002				  Near	 CODE:0115
+??0003				  Near	 CODE:0150
+??0004				  Near	 CODE:018B
+??0005				  Near	 CODE:01C6
+??0006				  Near	 CODE:0201
+??DATE				  Text	 "07/05/02"
+??FILENAME			  Text	 "segment "
+??TIME				  Text	 "12:31:25"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 CODE
+@FILENAME			  Text	 SEGMENT
+@WORDSIZE			  Text	 2
+CHANGE_FIELD			  Near	 CODE:02F4
+CHANGE_PLAY			  Near	 CODE:0316
+CH_PLAY				  Near	 CODE:0250
+CONTROL_DATA			  Near	 CODE:03CF
+COUNT_DOWN			  Near	 CODE:0572
+DEC_H				  Near	 CODE:04CE
+DIFFERENCE			  Near	 CODE:0052
+END_2				  Near	 CODE:050C
+ESTABLISH			  Near	 CODE:02E3
+EXIT_CD				  Near	 CODE:0423
+EXIT_CF				  Near	 CODE:030F
+EXIT_CP				  Near	 CODE:0323
+EXIT_DIF			  Near	 CODE:006F
+EXIT_INT			  Near	 CODE:05CA
+EXIT_ST				  Near	 CODE:02E2
+EXIT_STATUS			  Near	 CODE:0497
+EXIT_SU				  Near	 CODE:0399
+EXIT_SUM			  Near	 CODE:0051
+EXIT_TD				  Near	 CODE:04F5
+EXIT_TE				  Near	 CODE:0510
+EXIT_TP				  Near	 CODE:0364
+EXIT_TT				  Near	 CODE:059C
+EXIT_U				  Near	 CODE:03CE
+EX_IM				  Near	 CODE:02A7
+E_P				  Near	 CODE:0565
+FIN				  Byte	 DATA:001C
+FINISH				  Near	 CODE:04E3
+GETOUT				  Near	 CODE:0278
+HOUR				  Byte	 DATA:0006
+HOUR_1				  Byte	 DATA:0009
+HOUR_2				  Byte	 DATA:000C
+INC_PUSH			  Near	 CODE:0511
+INDICATE			  Near	 CODE:0070
+INPUT_TIME			  Near	 CODE:059D
+INSTALL_FLAG_MODE		  Near	 CODE:0279
+INSTALL_PLAY			  Near	 CODE:032A
+J				  Byte	 DATA:0003
+JAMP				  Near	 CODE:0543
+KEYCHPLAY			  Byte	 DATA:0013
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 13
+Symbol Table
+
+
+
+KEYCHUN				  Byte	 DATA:0012
+KEYDEC				  Byte	 DATA:0010
+KEYINC				  Byte	 DATA:0011
+KEY_DEC				  Near	 CODE:0240
+KEY_INC				  Near	 CODE:0238
+KEY_PAUSE			  Near	 CODE:026B
+KEY_PUSH_1			  Near	 CODE:0258
+KEY_PUSH_2			  Near	 CODE:0263
+KEY_UNIT			  Near	 CODE:0248
+KEY_UNSET			  Near	 CODE:0272
+MAX_H				  Near	 CODE:040D
+MAX_M				  Near	 CODE:0415
+MAX_S				  Near	 CODE:041D
+MINIT				  Byte	 DATA:0007
+MINIT_1				  Byte	 DATA:000A
+MINIT_2				  Byte	 DATA:000D
+MIN_H				  Near	 CODE:03F5
+MIN_M				  Near	 CODE:03FD
+MIN_S				  Near	 CODE:0405
+MODE				  Byte	 DATA:0015
+MODIFY				  Near	 CODE:0014
+MODY				  Byte	 DATA:0000
+MSEC				  Word	 DATA:001F
+NACH				  Word	 INITDATA:0000
+NF				  Byte	 DATA:001B
+NP				  Byte	 DATA:001A
+NUM				  Byte	 DATA:0001
+NUMBER				  Byte	 DATA:0018
+NUMPLAY				  Byte	 DATA:000F
+NUM_FIELD			  Byte	 DATA:0014
+NUM_PUSH			  Byte	 DATA:0022
+ONE				  Byte	 DATA:0004
+P2				  Near	 CODE:0533
+PAUSE				  Byte	 DATA:0023
+PLAY_2				  Near	 CODE:034C
+PORT1				  Byte	 DATA:001D
+PORT2				  Byte	 DATA:001E
+PUSH_1				  Byte	 DATA:0016
+PUSH_2				  Byte	 DATA:0017
+READKEY				  Near	 CODE:0211
+ROMSIZE				  Number 1000
+S				  Near	 CODE:05E9
+SAVE_H				  Near	 CODE:03C6
+SAVE_M				  Near	 CODE:03BC
+SAVE_S				  Near	 CODE:03B2
+SAVE_TIME			  Near	 CODE:02A8
+SAVE_UNIT			  Near	 CODE:039A
+SEC				  Byte	 DATA:0008
+SEC_1				  Byte	 DATA:000B
+SEC_2				  Byte	 DATA:000E
+SELECT_UNITT			  Near	 CODE:0365
+SET_H				  Near	 CODE:0391
+SET_M				  Near	 CODE:0387
+SET_S				  Near	 CODE:037D
+START				  Near	 CODE:05CB
+STATUS				  Near	 CODE:0424
+STKTOP				  Word	 STK:00C8
+Turbo Assembler	 Version 3.1	    07/05/02 12:31:25	    Page 14
+Symbol Table
+
+
+
+SUM				  Byte	 DATA:0002
+SUMMA				  Near	 CODE:0034
+SYMBOLS				  Byte	 INITDATA:0002
+TEMP				  Byte	 DATA:0021
+TEN				  Byte	 DATA:0005
+TEST_DOWN			  Near	 CODE:0498
+TEST_PORT			  Near	 CODE:02EA
+THE_END				  Near	 CODE:04F6
+TIME_2				  Near	 CODE:02CA
+T_P				  Near	 CODE:0529
+UNIT_TIME			  Byte	 DATA:0019
+UNSET				  Byte	 DATA:0024
+VD1				  Near	 CODE:0000
+VD2				  Near	 CODE:0004
+VIBRDESTR			  Near	 CODE:0000
+WAITBTNDOWN			  Near	 CODE:02EA
+
+Macro Name
+
+INDICATE_NUMBER
+INSTALL_TIME
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FE5 Para	  none
+DATA				  16  0025  AT 0040
+INITDATA			  16  000C Para	  none
+INTTABLE			  16  0000  AT 0000
+STK				  16  00C8 Para	  Stack	  PARA
+

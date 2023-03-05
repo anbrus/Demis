@@ -19,6 +19,7 @@
 #define ID_INC_DEL                      112
 #define ID_ARCH_STATUS                  113
 #define ID_INSTR_COUNTER                115
+#define ID_FPS                          116
 #define IDR_MAINFRAME                   128
 #define IDR_PRJTYPE                     129
 #define IDR_ASSMTYPE                    130

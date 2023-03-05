@@ -1,0 +1,6 @@
+[SOURCE]=00000001,Elena.asm
+[ARCH]=00000000,Elena.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.arh]=(77,187,719,521)C:\Documents and Settings\student\Рабочий стол\ELENA\Elena.arh

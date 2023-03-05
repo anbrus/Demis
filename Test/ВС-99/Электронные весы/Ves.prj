@@ -1,0 +1,6 @@
+[ARCH]=00000000,ves.arh
+[SOURCE]=00000001,ves.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(93,23,735,357)D:\Лабы по МС\VES\ves.asm

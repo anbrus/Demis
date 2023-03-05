@@ -1,0 +1,12 @@
+[SOURCE]=00000001,Memory.asm
+[INCLUDE]=00000000,Tests.asm
+[ARCH]=00000000,memory.arh
+[INCLUDE]=00000000,System.asm
+[ROMSIZE]=4
+[FREQ]=10000
+[FREEPINLEVEL]=0
+[WND.asm]=(132,41,995,634)C:\Documents and Settings\student\Рабочий стол\Курсовой проект\Memory.asm
+[WND.asm]=(66,66,888,524)C:\Documents and Settings\student\Рабочий стол\Курсовой проект\Tests.asm
+[WND.asm]=(110,110,932,568)C:\Documents and Settings\student\Рабочий стол\Курсовой проект\System.asm
+[WND.arh]=(91,25,922,590)C:\Documents and Settings\student\Рабочий стол\Курсовой проект\memory.arh
+[WND.arh]=(132,132,756,445)C:\Documents and Settings\student\Рабочий стол\memory.arh

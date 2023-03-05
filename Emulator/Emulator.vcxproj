@@ -15,17 +15,17 @@
     <SccProjectName />
     <SccLocalPath />
     <ProjectGuid>{83774E6B-698A-48CE-9A98-B02CE294B6FD}</ProjectGuid>
-    <WindowsTargetPlatformVersion>8.1</WindowsTargetPlatformVersion>
+    <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140_xp</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -65,6 +65,7 @@
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
@@ -77,6 +78,7 @@
       <SubSystem>Windows</SubSystem>
       <ImportLibrary>.\..\Debug/Emulator.lib</ImportLibrary>
       <ImageHasSafeExceptionHandlers>false</ImageHasSafeExceptionHandlers>
+      <Profile>true</Profile>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -105,6 +107,7 @@
       <ProgramDataBaseFileName>.\Release/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalOptions>/MACHINE:I386 %(AdditionalOptions)</AdditionalOptions>
@@ -132,12 +135,17 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="emulator.cpp" />
+    <ClCompile Include="instructions.cpp" />
     <ClCompile Include="SubFunc.cpp" />
+    <ClCompile Include="Tables.cpp" />
+    <ClCompile Include="TickTimer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="emulator.h" />
+    <ClInclude Include="instructions.h" />
     <ClInclude Include="SubFunc.h" />
     <ClInclude Include="Tables.h" />
+    <ClInclude Include="TickTimer.h" />
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="asmfunc.asm">

@@ -30,12 +30,6 @@
     <ClCompile Include="ElemInterf.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ElemLib.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Element.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ElementWnd.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -66,28 +60,29 @@
     <ClCompile Include="StdAfx.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="StdElem.cpp">
+    <ClCompile Include="TextDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="TextDlg.cpp">
+    <ClCompile Include="StdElemApp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="ElementBase.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="StdElem.def">
-      <Filter>Source Files</Filter>
-    </None>
     <None Include="ElemLib.rgs">
       <Filter>Resource Files</Filter>
     </None>
     <None Include="Element.rgs">
       <Filter>Resource Files</Filter>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Midl Include="StdElem.idl">
+    <None Include="StdElem.def">
       <Filter>Source Files</Filter>
-    </Midl>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="StdElem.rc">
@@ -111,12 +106,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\ElemInterface.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ElemLib.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="Element.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="ElementWnd.h">
@@ -146,9 +135,6 @@
     <ClInclude Include="StdAfx.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="StdElem.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="StdElemApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -159,6 +145,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="matrixelem.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ElementBase.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

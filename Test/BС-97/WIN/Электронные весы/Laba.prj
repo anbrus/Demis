@@ -1,0 +1,5 @@
+[ARCH]=0,Laba.arh
+[SOURCE]=1,Laba.asm
+[ROMSIZE]=4
+[WND.arh]=(55,-13,780,341)D:\demis 3.1win\Laba.arh
+[WND.asm]=(70,112,712,474)D:\demis 3.1win\Laba.asm

@@ -1,0 +1,3 @@
+[SOURCE]=1,kalc.asm
+[ARCH]=0,kalc.arh
+[ROMSIZE]=4

@@ -1,0 +1,9 @@
+[SOURCE]=00000001,time.asm
+[ARCH]=00000000,time.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(107,77,929,533)D:\Documents and Settings\Ден\Рабочий стол\Новая папка\time.asm
+[WND.arh]=(99,186,1057,731)D:\Documents and Settings\Ден\Рабочий стол\TIMER\time.arh
+[WND.arh]=(88,88,910,644)D:\Documents and Settings\Ден\Рабочий стол\Новая папка\time.arh
+[WND.arh]=(59,17,935,583)D:\Documents and Settings\Ден\Рабочий стол\Копия Новая папка\time.arh

@@ -1,0 +1,7 @@
+[SOURCE]=00000000,kurs.asm
+[ARCH]=00000000,kurs.arh
+[ROMSIZE]=4
+[FREQ]=1000
+[FREEPINLEVEL]=1
+[WND.asm]=(202,1,1017,610)C:\Program Files\Design Microsystems v3.3\kr\kurs.asm
+[WND.arh]=(27,38,996,581)C:\Program Files\Design Microsystems v3.3\kr\kurs.arh

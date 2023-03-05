@@ -17,6 +17,8 @@ static char THIS_FILE[] = __FILE__;
 
 IMPLEMENT_DYNCREATE(CDebugFrame, CMDIChildWnd)
 
+constexpr int WIDTH_REGS_VIEW = 108;
+
 CDebugFrame::CDebugFrame()
 {
   ChildWndInfo.Menu.LoadMenu(IDR_DEBUGTYPE_ADD);
@@ -72,7 +74,7 @@ BOOL CDebugFrame::OnCreateClient(LPCREATESTRUCT lpcs, CCreateContext* pContext)
 
   pRightDebug=new CFrameWnd;
   pRightDebug->Create(NULL,"RightDebug",WS_VISIBLE|WS_CHILD
-    |WS_OVERLAPPED,CRect(0,0,100,100),this);
+    |WS_OVERLAPPED,CRect(0,0,WIDTH_REGS_VIEW,100),this);
 
   pRegsView->Create(NULL,"RegsView",WS_CHILD|WS_VISIBLE|WS_OVERLAPPED,
     CRect(0,0,1,1),pRightDebug,0);
@@ -114,14 +116,14 @@ void CDebugFrame::OnStepInto()
 
 void CDebugFrame::OnSize(UINT nType, int cx, int cy) 
 {
-  if(cx-100>300) {
-    pLeftDebug->MoveWindow(0,0,cx-100,cy);
-    pRightDebug->MoveWindow(cx-100,0,cx,cy);
+  if(cx- WIDTH_REGS_VIEW>300) {
+    pLeftDebug->MoveWindow(0,0,cx- WIDTH_REGS_VIEW,cy);
+    pRightDebug->MoveWindow(cx- WIDTH_REGS_VIEW,0,cx,cy);
   }else {
     pLeftDebug->MoveWindow(0,0,300,cy);
     pRightDebug->MoveWindow(300,0,400,cy);
   }
-  pRegsView->MoveWindow(0,0,100,cy);
+  pRegsView->MoveWindow(0,0, WIDTH_REGS_VIEW,cy);
 
   CMDIChildWnd::OnSize(nType, cx, cy);
 }

@@ -1,23 +1,17 @@
-// KbdElement.h: interface for the CKbdElement class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_KBDELEMENT_H__66EA2333_6487_44AC_8CD9_ECE1E417D6A7__INCLUDED_)
-#define AFX_KBDELEMENT_H__66EA2333_6487_44AC_8CD9_ECE1E417D6A7__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
+
+#include <random>
 
 class CKbdArchWnd : public CElementWnd  
 {
 public:
 	void UpdateSize();
-	CKbdArchWnd(CElement* pElement);
+	CKbdArchWnd(CElementBase* pElement);
 	virtual void Draw(CDC* pDC);
+	virtual void Redraw(int64_t ticks) override {};
 	virtual ~CKbdArchWnd();
 
 protected:
@@ -44,8 +38,9 @@ class CKbdConstrWnd : public CElementWnd
 {
 public:
 	void UpdateSize();
-	CKbdConstrWnd(CElement* pElement);
+	CKbdConstrWnd(CElementBase* pElement);
 	virtual void Draw(CDC* pDC);
+	virtual void Redraw(int64_t ticks) override {};
 	virtual ~CKbdConstrWnd();
 
 protected:
@@ -63,10 +58,13 @@ protected:
   DECLARE_MESSAGE_MAP()
 };
 
-class CKbdElement : public CElement  
+class CKbdElement : public CElementBase  
 {
 public:
-	virtual void OnInstrCounterEvent();
+	CKbdElement(BOOL ArchMode, int id);
+	virtual ~CKbdElement();
+
+	void OnTickTimer();
 	void OnFixable();
 	BOOL Drebezg,Fixable;
 	void OnKbdSize();
@@ -79,21 +77,23 @@ public:
 	CString Caption[8][8];
 	BOOL Pressed[8][8];
 	CSize KbdSize;
-	CKbdElement(BOOL ArchMode,CElemInterface* pInterface);
 	virtual void UpdateTipText();
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	virtual BOOL Reset(BOOL bEditMode,int64_t* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
-	virtual ~CKbdElement();
-protected:
-	int VibrCounter;
+private:
+	CPoint LastChangedKey;
+	int64_t* pTickCounter = nullptr;
+	int64_t ticksDrebezgEnd;
+	std::default_random_engine rndEngine;
+	std::uniform_int_distribution<int> distributionDrebezg = std::uniform_int_distribution<int>(2000, 5000);
+	std::uniform_int_distribution<int> distributionBinary = std::uniform_int_distribution<int>(0, 1);
+
 	void RecalcOutputs();
-  CPoint LastChangedKey;
 	void UpdateSize();
 };
 
-#endif // !defined(AFX_KBDELEMENT_H__66EA2333_6487_44AC_8CD9_ECE1E417D6A7__INCLUDED_)
 /////////////////////////////////////////////////////////////////////////////
 // CKbdCaptionsDlg dialog
 

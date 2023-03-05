@@ -3,7 +3,6 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "stdelem.h"
 #include "InputPort.h"
 #include "AddressDlg.h"
 #include "..\definitions.h"
@@ -11,7 +10,7 @@
 
 #ifdef _DEBUG
 #undef THIS_FILE
-static char THIS_FILE[]=__FILE__;
+static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
 
@@ -19,27 +18,27 @@ static char THIS_FILE[]=__FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CInputPort::CInputPort(BOOL ArchMode,CElemInterface* pInterface)
-  : CElement(ArchMode,pInterface)
+CInputPort::CInputPort(BOOL ArchMode, int id)
+	: CElementBase(ArchMode, id)
 {
-  IdIndex=0;
-  Value=0; Address=0;
+	IdIndex = 0;
+	Value = 0; Address = 0;
 
-  pArchElemWnd=new CInPortArchWnd(this);
-  pConstrElemWnd=NULL;
+	pArchElemWnd = new CInPortArchWnd(this);
+	pConstrElemWnd = NULL;
 
-  PointCount=8;
-  for(int n=0; n<8; n++) {
-    ConPoint[n].x=3;
-    ConPoint[n].y=10+n*15;
-    ConPin[n]=FALSE;
-    PinType[n]=PT_INPUT;
-  }
+	PointCount = 8;
+	for (int n = 0; n < 8; n++) {
+		ConPoint[n].x = 3;
+		ConPoint[n].y = 10 + n * 15;
+		ConPin[n] = FALSE;
+		PinType[n] = PT_INPUT;
+	}
 
 	HINSTANCE hInstOld = AfxGetResourceHandle();
-  HMODULE hDll=GetModuleHandle(theApp.m_pszAppName);
+	HMODULE hDll = GetModuleHandle(theApp.m_pszAppName);
 	AfxSetResourceHandle(hDll);
-  PopupMenu.LoadMenu(IDR_INPUT_PORT_MENU);
+	PopupMenu.LoadMenu(IDR_INPUT_PORT_MENU);
 	AfxSetResourceHandle(hInstOld);
 }
 
@@ -49,53 +48,53 @@ CInputPort::~CInputPort()
 
 BOOL CInputPort::Load(HANDLE hFile)
 {
-  CFile File(hFile);
-  
-  DWORD Version;
-  File.Read(&Version,4);
-  if(Version!=0x00010000) {
-    MessageBox(NULL,"Порт ввода: неизвестная версия элемента","Ошибка",MB_ICONSTOP|MB_OK);
-    return FALSE;
-  }
+	CFile File(hFile);
 
-  File.Read(&Address,4);
+	DWORD Version;
+	File.Read(&Version, 4);
+	if (Version != 0x00010000) {
+		MessageBox(NULL, "Порт ввода: неизвестная версия элемента", "Ошибка", MB_ICONSTOP | MB_OK);
+		return FALSE;
+	}
 
-  return CElement::Load(hFile);
+	File.Read(&Address, 4);
+
+	return CElementBase::Load(hFile);
 }
 
 BOOL CInputPort::Save(HANDLE hFile)
 {
-  CFile File(hFile);
+	CFile File(hFile);
 
-  DWORD Version=0x00010000;
-  File.Write(&Version,4);
+	DWORD Version = 0x00010000;
+	File.Write(&Version, 4);
 
-  File.Write(&Address,4);
+	File.Write(&Address, 4);
 
-  return CElement::Save(hFile);
+	return CElementBase::Save(hFile);
 }
 
 BOOL CInputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 {
-  if(!CElement::Show(hArchParentWnd,hConstrParentWnd)) return FALSE;
+	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
-  CString ClassName=AfxRegisterWndClass(CS_DBLCLKS,
-    ::LoadCursor(NULL,IDC_ARROW));
-  pArchElemWnd->Create(ClassName,"Порт ввода",WS_VISIBLE|WS_OVERLAPPED|WS_CHILD|WS_CLIPSIBLINGS,
-    CRect(0,0,pArchElemWnd->Size.cx,pArchElemWnd->Size.cy),
-    CWnd::FromHandle(hArchParentWnd),0);
+	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
+		::LoadCursor(NULL, IDC_ARROW));
+	pArchElemWnd->Create(ClassName, "Порт ввода", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
+		CWnd::FromHandle(hArchParentWnd), 0);
 
-  UpdateTipText();
+	UpdateTipText();
 
-  return TRUE;
+	return TRUE;
 }
 
-BOOL CInputPort::Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel)
+BOOL CInputPort::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel)
 {
-  if((FreePinLevel==0)||bEditMode) Value=0;
-  else Value=0xFF;
+	if ((FreePinLevel == 0) || bEditMode) Value = 0;
+	else Value = 0xFF;
 
-  return CElement::Reset(bEditMode,pTickCounter,TaktFreq,FreePinLevel);
+	return CElementBase::Reset(bEditMode, pTickCounter, TaktFreq, FreePinLevel);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -105,6 +104,7 @@ BOOL CInputPort::Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWOR
 BEGIN_MESSAGE_MAP(CInPortArchWnd, CElementWnd)
 	//{{AFX_MSG_MAP(CInPortArchWnd)
 	ON_COMMAND(ID_ADDRESS, OnAddress)
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -112,137 +112,178 @@ END_MESSAGE_MAP()
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-CInPortArchWnd::CInPortArchWnd(CElement* pElement) : CElementWnd(pElement)
+CInPortArchWnd::CInPortArchWnd(CElementBase* pElement) : CElementWnd(pElement)
 {
-  Size.cx=60;
-  Size.cy=7*15+2*10;
+	Size.cx = 60;
+	Size.cy = 7 * 15 + 2 * 10;
 }
 
 CInPortArchWnd::~CInPortArchWnd()
 {
 }
 
-void CInPortArchWnd::DrawValue(CDC* pDC)
+void CInPortArchWnd::DrawDynamic(CDC* pDC)
 {
-  CGdiObject *pOldFont;
-  CFont DrawFont;
-  DrawFont.CreatePointFont(80,"Arial Cyr");
-  pOldFont=pDC->SelectObject(&DrawFont);
-  pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
-  if(pElement->ArchSelected) pDC->SetTextColor(theApp.SelectColor);
-  else pDC->SetTextColor(theApp.DrawColor);
-  CString Temp;
-  Temp.Format("(%02Xh)",((CInputPort*)pElement)->Value);
-  pDC->DrawText(Temp,CRect(17,31,Size.cx-1,44),
-    DT_CENTER|DT_SINGLELINE|DT_VCENTER);
+	CGdiObject *pOldFont;
+	CFont DrawFont;
+	DrawFont.CreatePointFont(80, "Arial Cyr");
+	pOldFont = pDC->SelectObject(&DrawFont);
+	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetTextColor(theApp.DrawColor);
+	CString Temp;
+	Temp.Format("(%02Xh)", ((CInputPort*)pElement)->Value);
+	pDC->FillSolidRect(CRect(17, 31, Size.cx - 1, 44), GetSysColor(COLOR_BTNFACE));
+	pDC->DrawText(Temp, CRect(17, 31, Size.cx - 1, 44),
+		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
-  pDC->SetBkColor(theApp.BkColor);
-  for(int n=0; n<8; n++) {
-    Temp.Format("%d",n);
-    if(!pElement->EditMode)
-      if(((CInputPort*)pElement)->Value&(1<<n)) pDC->SetTextColor(theApp.SelectColor);
-      else pDC->SetTextColor(theApp.DrawColor);
-    pDC->DrawText(Temp,CRect(9,4+n*15,16,18+n*15),DT_SINGLELINE);
-  }
+	for (int n = 0; n < 8; n++) {
+		CDC* pCharsDc;
+		if (pElement->EditMode) {
+			pCharsDc = &theApp.DrawOnWhiteChar;
+		}
+		else {
+			if (((CInputPort*)pElement)->Value & (1 << n))
+				pCharsDc = &theApp.SelOnWhiteChar;
+			else
+				pCharsDc = &theApp.DrawOnWhiteChar;
+		}
+		pDC->BitBlt(8, 4 + n * 15, 8, 8, pCharsDc, n * 8, 0, SRCCOPY);
+	}
 
-  //Восстанавливаем контекст
-  pDC->SelectObject(pOldFont);
+	//Восстанавливаем контекст
+	pDC->SelectObject(pOldFont);
 }
 
 
-void CInPortArchWnd::OnAddress() 
+void CInPortArchWnd::OnAddress()
 {
 	HINSTANCE hInstOld = AfxGetResourceHandle();
-  HMODULE hDll=GetModuleHandle(theApp.m_pszAppName);
+	HMODULE hDll = GetModuleHandle(theApp.m_pszAppName);
 	AfxSetResourceHandle(hDll);
 	CAddressDlg Dlg(this);
-  Dlg.SetAddress((WORD)pElement->Address);
-  if(Dlg.DoModal()==IDOK) {
-    pElement->Address=(DWORD)Dlg.GetAddress();
-    RedrawWindow();
-    pElement->ModifiedFlag=TRUE;
-    ((CInputPort*)pElement)->UpdateTipText();
-  }
+	Dlg.SetAddress((WORD)pElement->Address);
+	if (Dlg.DoModal() == IDOK) {
+		pElement->Address = (DWORD)Dlg.GetAddress();
+		RedrawWindow();
+		pElement->ModifiedFlag = TRUE;
+		((CInputPort*)pElement)->UpdateTipText();
+	}
 	AfxSetResourceHandle(hInstOld);
 }
 
-void CInPortArchWnd::Draw(CDC *pDC)
+static void createMemoryDC(CDC* pDC, CDC* pMemoryDC, int width, int height) {
+	pMemoryDC->CreateCompatibleDC(pDC);
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pDC, width, height);
+	HGDIOBJ hBmpOld = pMemoryDC->SelectObject(bmp);
+	DeleteObject(hBmpOld);
+	pMemoryDC->PatBlt(0, 0, width, height, WHITENESS);
+}
+
+int CInPortArchWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+	CClientDC dc(this);
+
+	createMemoryDC(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
+
+	return 0;
+}
+
+void CInPortArchWnd::Redraw(int64_t ticks) {
+	m_isRedrawRequired = false;
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	CClientDC DC(this);
+	DC.BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void CInPortArchWnd::Draw(CDC *pDC) {
+	DrawStatic(&MemoryDC);
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void CInPortArchWnd::DrawStatic(CDC *pDC)
 {
-  CGdiObject *pOldPen,*pOldFont;
-  CPen BluePen(PS_SOLID,0,RGB(0,0,255));
-  CBrush SelectBrush(theApp.SelectColor);
-  CBrush NormalBrush(theApp.DrawColor);
-  pOldPen=pDC->SelectObject(&theApp.DrawPen);
+	CGdiObject *pOldPen, *pOldFont;
+	CPen BluePen(PS_SOLID, 0, RGB(0, 0, 255));
+	CBrush SelectBrush(theApp.SelectColor);
+	CBrush NormalBrush(theApp.DrawColor);
+	pOldPen = pDC->SelectObject(&theApp.DrawPen);
 
-  CRect MainRect(6,0,Size.cx,Size.cy);
-  if(pElement->ArchSelected)
-    pDC->FrameRect(MainRect,&SelectBrush);
-  else pDC->FrameRect(MainRect,&NormalBrush);
+	CRect MainRect(6, 0, Size.cx, Size.cy);
+	if (pElement->ArchSelected)
+		pDC->FrameRect(MainRect, &SelectBrush);
+	else pDC->FrameRect(MainRect, &NormalBrush);
 
-  CBrush GrayBrush(GetSysColor(COLOR_BTNFACE));
-  CGdiObject* pOldBrush=pDC->SelectObject(&GrayBrush);
-  pDC->PatBlt(17,1,Size.cx-18,Size.cy-2,PATCOPY);
-  pDC->SelectObject(pOldBrush);
+	CBrush GrayBrush(GetSysColor(COLOR_BTNFACE));
+	CGdiObject* pOldBrush = pDC->SelectObject(&GrayBrush);
+	pDC->PatBlt(17, 1, Size.cx - 18, Size.cy - 2, PATCOPY);
+	pDC->SelectObject(pOldBrush);
 
-  if(pElement->ArchSelected)
-    pOldPen=pDC->SelectObject(&theApp.SelectPen);
-	else pOldPen=pDC->SelectObject(&theApp.DrawPen);
-  pDC->MoveTo(16,0); pDC->LineTo(16,Size.cy);
-  
-  //Рисуем проводки
-  for(int n=0; n<8; n++) {
-    if(pElement->ArchSelected) pDC->SelectObject(&theApp.SelectPen);
-	    else pDC->SelectObject(&theApp.DrawPen);
-    pDC->MoveTo(3,10+n*15); pDC->LineTo(6,10+n*15);
+	if (pElement->ArchSelected)
+		pOldPen = pDC->SelectObject(&theApp.SelectPen);
+	else pOldPen = pDC->SelectObject(&theApp.DrawPen);
+	pDC->MoveTo(16, 0); pDC->LineTo(16, Size.cy);
 
-    //Рисуем крестик, если надо
-    if(!pElement->ConPin[n]) {
-      pDC->SelectObject(&BluePen);
-      pDC->MoveTo(0,8+n*15); pDC->LineTo(5,13+n*15);
-      pDC->MoveTo(0,12+n*15); pDC->LineTo(5,7+n*15);
-    }else { //или палочку
-      pDC->MoveTo(0,10+n*15); pDC->LineTo(6,10+n*15);
-    }
-  }
-  //Текст внутри порта
-  CFont DrawFont;
-  DrawFont.CreatePointFont(80,"Arial Cyr");
-  pOldFont=pDC->SelectObject(&DrawFont);
-  pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
-  if(pElement->ArchSelected) pDC->SetTextColor(theApp.SelectColor);
-  else pDC->SetTextColor(theApp.DrawColor);
-  pDC->DrawText("RGIN",CRect(17,5,Size.cx-1,18),
-    DT_CENTER|DT_SINGLELINE|DT_VCENTER);
-  CString Temp;
-  Temp.Format("[%04Xh]",pElement->Address);
-  pDC->DrawText(Temp,CRect(17,18,Size.cx-1,31),
-    DT_CENTER|DT_SINGLELINE|DT_VCENTER);
-  DrawValue(pDC);
+	//Рисуем проводки
+	for (int n = 0; n < 8; n++) {
+		pDC->PatBlt(0, 8 + n * 15, 5, 5, WHITENESS);
 
-  //Восстанавливаем контекст
-  pDC->SelectObject(pOldPen);
-  pDC->SelectObject(pOldFont);
+		if (pElement->ArchSelected) pDC->SelectObject(&theApp.SelectPen);
+		else pDC->SelectObject(&theApp.DrawPen);
+		pDC->MoveTo(3, 10 + n * 15); pDC->LineTo(6, 10 + n * 15);
+
+		//Рисуем крестик, если надо
+		if (!pElement->ConPin[n]) {
+			pDC->SelectObject(&BluePen);
+			pDC->MoveTo(0, 8 + n * 15); pDC->LineTo(5, 13 + n * 15);
+			pDC->MoveTo(0, 12 + n * 15); pDC->LineTo(5, 7 + n * 15);
+		}
+		else { //или палочку
+			pDC->MoveTo(0, 10 + n * 15); pDC->LineTo(6, 10 + n * 15);
+		}
+	}
+	//Текст внутри порта
+	CFont DrawFont;
+	DrawFont.CreatePointFont(80, "Arial Cyr");
+	pOldFont = pDC->SelectObject(&DrawFont);
+	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetTextColor(theApp.DrawColor);
+	pDC->DrawText("RGIN", CRect(17, 5, Size.cx - 1, 18),
+		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+	CString Temp;
+	Temp.Format("[%04Xh]", pElement->Address);
+	pDC->DrawText(Temp, CRect(17, 18, Size.cx - 1, 31),
+		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
+
+	//Восстанавливаем контекст
+	pDC->SelectObject(pOldPen);
+	pDC->SelectObject(pOldFont);
 }
 
 
 void CInputPort::UpdateTipText()
 {
-  TipText.Format("Порт ввода [%04Xh]",Address);
+	TipText.Format("Порт ввода [%04Xh]", Address);
 }
 
 void CInputPort::SetPinState(DWORD NewState)
 {
-  Value=NewState;
-  CClientDC DC(pArchElemWnd);
-  ((CInPortArchWnd*)pArchElemWnd)->DrawValue(&DC);
+	Value = NewState;
+	((CInPortArchWnd*)pArchElemWnd)->scheduleRedraw();
 }
 
 DWORD CInputPort::GetPortData()
 {
-  return Value;
+	return Value;
 }
 
 DWORD CInputPort::GetPinState()
 {
-  return Value;
+	return Value;
 }

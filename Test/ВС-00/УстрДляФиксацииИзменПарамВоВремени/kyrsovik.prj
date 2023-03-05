@@ -1,0 +1,5 @@
+[SOURCE]=00000001,kyrsovik.asm
+[ARCH]=00000000,kyrsovik.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0

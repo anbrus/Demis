@@ -1,0 +1,6 @@
+[ARCH]=00000000,program_zvonok.arh
+[SOURCE]=00000001,program_zvonok.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.arh]=(66,66,785,488)D:\USERS\Zt\Keyboard\program_zvonok.arh

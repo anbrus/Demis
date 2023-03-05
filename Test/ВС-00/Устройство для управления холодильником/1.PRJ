@@ -1,0 +1,7 @@
+[SOURCE]=00000001,1.asm
+[ARCH]=00000000,1.arh
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=0
+[WND.asm]=(66,87,932,530)C:\Documents and Settings\Ivan\Рабочий стол\Холодильник\1.asm
+[WND.arh]=(0,0,866,443)C:\Documents and Settings\Ivan\Рабочий стол\Холодильник\1.arh

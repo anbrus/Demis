@@ -1,0 +1,257 @@
+Turbo Assembler	 Version 3.1	    17/10/12 22:37:15	    Page 1
+4.asm
+
+
+
+      1					 .386
+      2		  =1000			 RomSize    EQU	  4096
+      3		  =0000			 KeybPort   EQU	  0h
+      4		  =0001			 DisplPort1 EQU	  1h
+      5		  =0032			 DrebMax    EQU	  50
+      6
+      7	    0000			 Data	    SEGMENT use16 AT 100h
+      8	    0000  03*(??)		 KeybImage  db	  3 dup(?)
+      9	    0003  ??			 KeybNthng  db	  ?	 ;Keyboard Nothing (ничего не нажато)
+     10	    0004  ??			 KeybError  db	  ?
+     11	    0005  ????			 Summ	    dw	  ?
+     12	    0007  ??			 LastWrite  db	  ?
+     13	    0008			 Data	    ENDS
+     14
+     15	    0000			 Code	    SEGMENT use16
+     16						    ASSUME cs:Code,ds:Data,es:Code,ss:Stk
+     17	    0000  3F 0C	76 5E 4D 5B 7B+	 ImageNum   db	  3Fh,0Ch,76h,5Eh,4Dh,5Bh,7Bh,0Eh,7Fh,5Fh
+     18		  0E 7F	5F
+     19
+     20	    000A			 Dreb	    PROC  NEAR
+     21	    000A  B7 32			 DrebM1:    mov	  bh,DrebMax	 ;сколько раз подряд нужно прочитать одно и то же число	    +
+     22					 против	дребезга
+     23	    000C  8A E0				    mov	  ah,al		 ;сохр.	исх.сост.
+     24	    000E  32 C4			 DrebM2:    xor	  al,ah		 ;чистим al
+     25	    0010  EC				    in	  al,dx		 ;кладем в al то, что в	dx (номер порта	KeybPort)
+     26	    0011  75 F7				    jnz	  short	DrebM1	 ;переход на метку, если последовательность прервалась
+     27	    0013  FE CF				    dec	  bh		 ;последовательность сокращается 
+     28	    0015  75 F7				    jnz	  short	DrebM2
+     29	    0017  C3				    ret
+     30	    0018			 Dreb	    ENDP
+     31
+     32	    0018			 KeyRead    PROC  NEAR
+     33	    0018  B9 0003			    mov	  cx,length KeybImage ;счетчик циклов
+     34	    001B  BE 0000r			    lea	  si,KeybImage	      ;адрес образа клавиатуры
+     35	    001E  B3 FE				    mov	  bl,11111110b	 ;начнем с 1 ряда кнопок (3|2|1|0)(зажигание нулями)
+     36	    0020  8A C3			 KeyReadM1: mov	  al,bl		 ;выбор	строки
+     37	    0022  E6 00				    out	  KeybPort,al	 ;активация строки
+     38	    0024  E4 00				    in	  al,KeybPort	 ;ввод строки
+     39	    0026  BA 0000			    mov	  dx,KeybPort	 ;передаем номер порта через регистр dx	(для универсальности+
+     40					 антидребезга)
+     41	    0029  E8 FFDE			    call  Dreb
+     42	    002C  F6 D0				    not	  al		 ;было,	скажем,	11111101, стало	00000010, т.е. второй ряд
+     43	    002E  88 04				    mov	  [si],al	 ;запись строки
+     44	    0030  46				    inc	  si		 ;модификация адреса
+     45	    0031  D0 C3				    rol	  bl,1		 ;следующий ряд	(цикл.сдвиг влево)
+     46	    0033  E2 EB				    loop  KeyReadM1	 ;все строки прошли?
+     47	    0035  C3				    RET
+     48	    0036			 KeyRead    ENDP
+     49
+     50	    0036			 KeybCntr   PROC  NEAR
+     51	    0036  32 DB				    xor	  bl,bl
+     52	    0038  88 1E	0003r			    mov	  KeybNthng,bl
+     53	    003C  88 1E	0004r			    mov	  KeybError,bl
+     54	    0040  B9 0003			    mov	  cx,length KeybImage
+     55	    0043  BE 0000r			    lea	  si,KeybImage
+     56	    0046  8A 04			 KeybCntrM2:mov	  al,[si]	  ;перебираем ряды с кнопками
+     57	    0048  80 D3	00		 KeybCntrM1:adc	  bl,0		  ;подсчет установленных бит (складываем)
+Turbo Assembler	 Version 3.1	    17/10/12 22:37:15	    Page 2
+4.asm
+
+
+
+     58	    004B  D0 E8				    shr	  al,1		  ;подсчет установленных бит
+     59	    004D  75 F9				    jnz	  KeybCntrM1	  ;подсчет установленных бит
+     60	    004F  80 D3	00			    adc	  bl,0		  ;подсчет установленных бит
+     61	    0052  46				    inc	  si
+     62	    0053  E2 F1				    loop  KeybCntrM2
+     63	    0055  0A DB				    or	  bl,bl
+     64	    0057  75 0A				    jnz	  short	KeybCntrM3 ;ничего не нажато?
+     65	    0059  F6 16	0003r			    not	  KeybNthng
+     66	    005D  88 0E	0007r			    mov	  LastWrite,cl
+     67	    0061  EB 08				    jmp	  short	KeybCntrM4
+     68	    0063  D0 EB			 KeybCntrM3:shr	  bl,1		  ;если	там была единичка - после сдвига перепрыгнем ошибку
+     69	    0065  74 04				    jz	  short	KeybCntrM4
+     70	    0067  F6 16	0004r			    not	  KeybError
+     71	    006B  C3			 KeybCntrM4:RET
+     72	    006C			 KeybCntr   ENDP
+     73
+     74	    006C			 Summa	    PROC  NEAR
+     75	    006C  33 C0				    xor	  ax,ax
+     76	    006E  08 06	0003r			    or	  KeybNthng,al
+     77	    0072  75 38				    jnz	  short	SummaM3
+     78	    0074  08 06	0004r			    or	  KeybError,al	  ;проверка
+     79	    0078  75 32				    jnz	  short	SummaM3	  ;на
+     80	    007A  08 06	0007r			    or	  LastWrite,al	  ;необходимость
+     81	    007E  75 2C				    jnz	  short	SummaM3	  ;суммировать
+     82	    0080  BE 0000r			    lea	  si,KeybImage
+     83	    0083  FE C4			 SummaM1:   inc	  ah
+     84	    0085  8A 1C				    mov	  bl,[si]
+     85	    0087  46				    inc	  si
+     86	    0088  0A DB				    or	  bl,bl		  ;ищем	ненулевую строку
+     87	    008A  74 F7				    jz	  short	SummaM1
+     88	    008C  FE CC				    dec	  ah
+     89	    008E  C0 E4	02			    shl	  ah,2		  ;старшие 2 бита младшей тетрады
+     90	    0091  FE C0			 SummaM2:   inc	  al
+     91	    0093  D0 EB				    shr	  bl,1
+     92	    0095  75 FA				    jnz	  short	SummaM2
+     93	    0097  FE C8				    dec	  al
+     94	    0099  0A C4				    or	  al,ah		  ;воссоздаем младшую тетраду
+     95	    009B  3C 0A				    cmp	  al,10		  ;номер кнопки	не больше 10-го	номера?	(т.е. цифры 9)
+     96	    009D  73 0D				    jnb	  short	SummaM3
+     97	    009F  32 E4				    xor	  ah,ah
+     98	    00A1  03 06	0005r			    add	  ax,Summ	  ;суммируем
+     99	    00A5  A3 0005r			    mov	  Summ,ax
+    100	    00A8  F6 16	0007r			    not	  LastWrite	  ;флаг	о том, что мы записали,	чтобы 100 раз подряд не	    +
+    101					 записать
+    102	    00AC  C3			 SummaM3:   RET
+    103	    00AD			 Summa	    ENDP
+    104
+    105					 Out7LED    MACRO Port
+    106						    lea	  bx,ImageNum
+    107						    div	  dl		  ;делим на 10 (Hex->Dec)
+    108						    mov	  dh,al		  ;сохраняем целую часть от деления, она ещё пригодится
+    109						    shr	  ax,8		  ;остаток от деления (который в ah) переносим в al
+    110						    add	  bx,ax		  ;вычисляем адрес образа нужной цифры
+    111						    mov	  al,es:[bx]
+    112						    out	  Port,al	  ;вывод в порт	образ полученной цифры
+    113						    mov	  al,dh		  ;возвращаем целую часть от деления
+    114						    ENDM
+Turbo Assembler	 Version 3.1	    17/10/12 22:37:15	    Page 3
+4.asm
+
+
+
+    115
+    116	    00AD			 OutLED	    PROC  NEAR
+    117	    00AD  A1 0005r			    mov	  ax,Summ
+    118	    00B0  B2 0A				    mov	  dl,10
+    119						    Out7LED 4		  ;будем делить	на 10 (Hex->Dec)
+1   120	    00B2  BB 0000r			    lea	  bx,ImageNum
+1   121	    00B5  F6 F2				    div	  dl		  ;делим на 10 (Hex->Dec)
+1   122	    00B7  8A F0				    mov	  dh,al		  ;сохраняем целую часть от деления, она ещё пригодится
+1   123	    00B9  C1 E8	08			    shr	  ax,8		  ;остаток от деления (который в ah) переносим в al
+1   124	    00BC  03 D8				    add	  bx,ax		  ;вычисляем адрес образа нужной цифры
+1   125	    00BE  26: 8A 07			    mov	  al,es:[bx]
+1   126	    00C1  E6 04				    out	  4,al	       ;вывод в	порт образ полученной цифры
+1   127	    00C3  8A C6				    mov	  al,dh		  ;возвращаем целую часть от деления
+    128						    Out7LED 3		  ;вызываем макрокоманду для 3 порта
+1   129	    00C5  BB 0000r			    lea	  bx,ImageNum
+1   130	    00C8  F6 F2				    div	  dl		  ;делим на 10 (Hex->Dec)
+1   131	    00CA  8A F0				    mov	  dh,al		  ;сохраняем целую часть от деления, она ещё пригодится
+1   132	    00CC  C1 E8	08			    shr	  ax,8		  ;остаток от деления (который в ah) переносим в al
+1   133	    00CF  03 D8				    add	  bx,ax		  ;вычисляем адрес образа нужной цифры
+1   134	    00D1  26: 8A 07			    mov	  al,es:[bx]
+1   135	    00D4  E6 03				    out	  3,al	       ;вывод в	порт образ полученной цифры
+1   136	    00D6  8A C6				    mov	  al,dh		  ;возвращаем целую часть от деления
+    137						    Out7LED 2		  ;			 для 2 порта
+1   138	    00D8  BB 0000r			    lea	  bx,ImageNum
+1   139	    00DB  F6 F2				    div	  dl		  ;делим на 10 (Hex->Dec)
+1   140	    00DD  8A F0				    mov	  dh,al		  ;сохраняем целую часть от деления, она ещё пригодится
+1   141	    00DF  C1 E8	08			    shr	  ax,8		  ;остаток от деления (который в ah) переносим в al
+1   142	    00E2  03 D8				    add	  bx,ax		  ;вычисляем адрес образа нужной цифры
+1   143	    00E4  26: 8A 07			    mov	  al,es:[bx]
+1   144	    00E7  E6 02				    out	  2,al	       ;вывод в	порт образ полученной цифры
+1   145	    00E9  8A C6				    mov	  al,dh		  ;возвращаем целую часть от деления
+    146						    Out7LED 1		  ;			 для 1 порта
+1   147	    00EB  BB 0000r			    lea	  bx,ImageNum
+1   148	    00EE  F6 F2				    div	  dl		  ;делим на 10 (Hex->Dec)
+1   149	    00F0  8A F0				    mov	  dh,al		  ;сохраняем целую часть от деления, она ещё пригодится
+1   150	    00F2  C1 E8	08			    shr	  ax,8		  ;остаток от деления (который в ah) переносим в al
+1   151	    00F5  03 D8				    add	  bx,ax		  ;вычисляем адрес образа нужной цифры
+1   152	    00F7  26: 8A 07			    mov	  al,es:[bx]
+1   153	    00FA  E6 01				    out	  1,al	       ;вывод в	порт образ полученной цифры
+1   154	    00FC  8A C6				    mov	  al,dh		  ;возвращаем целую часть от деления
+    155	    00FE  C3				    RET
+    156	    00FF			 OutLED	    ENDP
+    157
+    158	    00FF  B8 0000s		 Start:	    mov	  ax,Code
+    159	    0102  8E C0				    mov	  es,ax
+    160	    0104  B8 0000s			    mov	  ax,Data
+    161	    0107  8E D8				    mov	  ds,ax
+    162	    0109  33 C0				    xor	  ax,ax
+    163	    010B  A3 0005r			    mov	  Summ,ax
+    164	    010E  A2 0007r			    mov	  LastWrite,al
+    165	    0111  E8 FF04		 InfLoop:   call  KeyRead	  ;читаем клавиатуру
+    166	    0114  E8 FF1F			    call  KeybCntr	  ;анализ корректности нажатий клавиш
+    167	    0117  E8 FF52			    call  Summa		  ;сумма
+    168	    011A  E8 FF90			    call  OutLED	  ;вывод суммы
+    169	    011D  EB F2				    jmp	  short	InfLoop
+    170
+    171						    org	  RomSize-16
+Turbo Assembler	 Version 3.1	    17/10/12 22:37:15	    Page 4
+4.asm
+
+
+
+    172						    ASSUME cs:NOTHING
+    173	    0FF0  EA 000000FFsr			    jmp	  Far Ptr Start
+    174	    0FF5			 Code	    ENDS
+    175
+    176	    0000			 Stk	    SEGMENT use16 STACK
+    177						    org	10h
+    178	    0010  05*(????)			    dw	5 dup(?)
+    179	    001A			 StkTop	    LABEL
+    180	    001A			 Stk	    ENDS
+    181
+    182					 END
+Turbo Assembler	 Version 3.1	    17/10/12 22:37:15	    Page 5
+Symbol Table
+
+
+
+
+Symbol Name			  Type	 Value
+
+??DATE				  Text	 "17/10/12"
+??FILENAME			  Text	 "4	  "
+??TIME				  Text	 "22:37:15"
+??VERSION			  Number 030A
+@CPU				  Text	 0F0FH
+@CURSEG				  Text	 STK
+@FILENAME			  Text	 4
+@WORDSIZE			  Text	 2
+DISPLPORT1			  Number 0001
+DREB				  Near	 CODE:000A
+DREBM1				  Near	 CODE:000A
+DREBM2				  Near	 CODE:000E
+DREBMAX				  Number 0032
+IMAGENUM			  Byte	 CODE:0000
+INFLOOP				  Near	 CODE:0111
+KEYBCNTR			  Near	 CODE:0036
+KEYBCNTRM1			  Near	 CODE:0048
+KEYBCNTRM2			  Near	 CODE:0046
+KEYBCNTRM3			  Near	 CODE:0063
+KEYBCNTRM4			  Near	 CODE:006B
+KEYBERROR			  Byte	 DATA:0004
+KEYBIMAGE			  Byte	 DATA:0000
+KEYBNTHNG			  Byte	 DATA:0003
+KEYBPORT			  Number 0000
+KEYREAD				  Near	 CODE:0018
+KEYREADM1			  Near	 CODE:0020
+LASTWRITE			  Byte	 DATA:0007
+OUTLED				  Near	 CODE:00AD
+ROMSIZE				  Number 1000
+START				  Near	 CODE:00FF
+STKTOP				  Word	 STK:001A
+SUMM				  Word	 DATA:0005
+SUMMA				  Near	 CODE:006C
+SUMMAM1				  Near	 CODE:0083
+SUMMAM2				  Near	 CODE:0091
+SUMMAM3				  Near	 CODE:00AC
+
+Macro Name
+
+OUT7LED
+
+Groups & Segments		  Bit Size Align  Combine Class
+
+CODE				  16  0FF5 Para	  none
+DATA				  16  0008  AT 0100
+STK				  16  001A Para	  Stack
+

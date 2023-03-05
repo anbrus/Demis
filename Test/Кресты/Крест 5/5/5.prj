@@ -1,0 +1,7 @@
+[ARCH]=00000000,5.arh
+[SOURCE]=00000001,5.asm
+[ROMSIZE]=4
+[FREQ]=1000000
+[FREEPINLEVEL]=1
+[WND.asm]=(156,156,1691,834)D:\1\Demis2k\Test\Кресты\Крест 5\5\5.asm
+[WND.arh]=(182,182,1717,860)D:\1\Demis2k\Test\Кресты\Крест 5\5\5.arh

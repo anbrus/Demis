@@ -1,22 +1,16 @@
-// Button.h: interface for the CButtonElement class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_BUTTON_H__AC326D84_78BA_11D4_8288_E863E1351E47__INCLUDED_)
-#define AFX_BUTTON_H__AC326D84_78BA_11D4_8288_E863E1351E47__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
-#include "Element.h"
+#include "ElementBase.h"
 #include "ElementWnd.h"
+
+#include <random>
 
 class CBtnArchWnd : public CElementWnd  
 {
 public:
 	virtual void Draw(CDC* pDC);
-	CBtnArchWnd(CElement* pElement);
+	virtual void Redraw(int64_t ticks) override {};
+	CBtnArchWnd(CElementBase* pElement);
 	virtual ~CBtnArchWnd();
 
 protected:
@@ -37,8 +31,9 @@ class CBtnConstrWnd : public CElementWnd
 {
 public:
 	virtual void Draw(CDC* pDC);
+	virtual void Redraw(int64_t ticks) {};
 	void UpdateSize();
-	CBtnConstrWnd(CElement* pElement);
+	CBtnConstrWnd(CElementBase* pElement);
 	virtual ~CBtnConstrWnd();
 
 protected:
@@ -54,10 +49,13 @@ protected:
   DECLARE_MESSAGE_MAP()
 };
 
-class CButtonElement : public CElement  
+class CButtonElement : public CElementBase  
 {
 public:
-	virtual void OnInstrCounterEvent();
+	CButtonElement(BOOL ArchMode, int id);
+	virtual ~CButtonElement();
+
+	void OnTickTimer();
 	virtual DWORD GetPinState();
 	void OnLButtonDown();
 	void OnLButtonUp();
@@ -71,19 +69,20 @@ public:
 	void OnLabelText(CElementWnd* pParentWnd);
 	CString Text;
 	virtual void UpdateTipText();
-	virtual BOOL Reset(BOOL bEditMode,CURRENCY* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
+	virtual BOOL Reset(BOOL bEditMode,int64_t* pTickCounter,DWORD TaktFreq,DWORD FreePinLevel);
 	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
 	virtual BOOL Save(HANDLE hFile);
 	virtual BOOL Load(HANDLE hFile);
-	virtual ~CButtonElement();
 	BOOL NormalOpened;
 	BOOL Pressed;
-	CButtonElement(BOOL ArchMode,CElemInterface* pInterface);
 
-protected:
+private:
 	DWORD CurState;
-	int DrebCounter;
+	int64_t* pTickCounter=nullptr;
+	int64_t ticksDrebezgEnd;
+	std::default_random_engine rndEngine;
+	std::uniform_int_distribution<int> distributionDrebezg = std::uniform_int_distribution<int>(2000, 5000);
+	std::uniform_int_distribution<int> distributionBinary = std::uniform_int_distribution<int>(0, 1);
+
 	void ChangePinState();
 };
-
-#endif // !defined(AFX_BUTTON_H__AC326D84_78BA_11D4_8288_E863E1351E47__INCLUDED_)

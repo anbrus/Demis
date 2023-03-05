@@ -3,7 +3,6 @@
 //////////////////////////////////////////////////////////////////////
 
 #include "stdafx.h"
-#include "StdElem.h"
 #include "ElemInterf.h"
 #include "OutputPort.h"
 #include "AddressDlg.h"
@@ -19,8 +18,8 @@ static char THIS_FILE[] = __FILE__;
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-COutputPort::COutputPort(BOOL ArchMode, CElemInterface* pInterface)
-	: CElement(ArchMode, pInterface)
+COutputPort::COutputPort(BOOL ArchMode, int id)
+	: CElementBase(ArchMode, id)
 {
 	IdIndex = 1;
 	Value = 0; Address = 0;
@@ -60,7 +59,7 @@ BOOL COutputPort::Load(HANDLE hFile)
 
 	File.Read(&Address, 4);
 
-	return CElement::Load(hFile);
+	return CElementBase::Load(hFile);
 }
 
 BOOL COutputPort::Save(HANDLE hFile)
@@ -72,12 +71,14 @@ BOOL COutputPort::Save(HANDLE hFile)
 
 	File.Write(&Address, 4);
 
-	return CElement::Save(hFile);
+	return CElementBase::Save(hFile);
 }
 
 BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 {
-	if (!CElement::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
+	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
+
+	((COutPortArchWnd*)pArchElemWnd)->InitializePoints();
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
@@ -85,18 +86,17 @@ BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
 
-	((COutPortArchWnd*)pArchElemWnd)->InitializePoints();
 	UpdateTipText();
 
 	return TRUE;
 }
 
-BOOL COutputPort::Reset(BOOL bEditMode, CURRENCY* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel)
+BOOL COutputPort::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel)
 {
 	if (bEditMode) Value = 0;
 	else Value = -1;
 
-	return CElement::Reset(bEditMode, pTickCounter, TaktFreq, FreePinLevel);
+	return CElementBase::Reset(bEditMode, pTickCounter, TaktFreq, FreePinLevel);
 }
 
 //////////////////////////////////////////////////////////////////////
@@ -104,17 +104,16 @@ BOOL COutputPort::Reset(BOOL bEditMode, CURRENCY* pTickCounter, DWORD TaktFreq, 
 //////////////////////////////////////////////////////////////////////
 
 BEGIN_MESSAGE_MAP(COutPortArchWnd, CElementWnd)
-	//{{AFX_MSG_MAP(COutPortArchWnd)
 	ON_COMMAND(ID_ADDRESS, OnAddress)
 	ON_COMMAND(ID_ROTATE, OnRotate)
-	//}}AFX_MSG_MAP
+	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
 
-COutPortArchWnd::COutPortArchWnd(CElement* pElement) : CElementWnd(pElement)
+COutPortArchWnd::COutPortArchWnd(CElementBase* pElement) : CElementWnd(pElement)
 {
 }
 
@@ -122,15 +121,30 @@ COutPortArchWnd::~COutPortArchWnd()
 {
 }
 
-void COutPortArchWnd::DrawValue(CDC* pDC, DWORD OldValue)
+static void createMemoryDC(CDC* pDC, CDC* pMemoryDC, int width, int height) {
+	pMemoryDC->CreateCompatibleDC(pDC);
+	CBitmap bmp;
+	bmp.CreateCompatibleBitmap(pDC, width, height);
+	HGDIOBJ hBmpOld = pMemoryDC->SelectObject(bmp);
+	DeleteObject(hBmpOld);
+	pMemoryDC->PatBlt(0, 0, width, height, WHITENESS);
+}
+
+int COutPortArchWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+	CClientDC dc(this);
+
+	createMemoryDC(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
+	
+	return 0;
+}
+
+void COutPortArchWnd::DrawDynamic(CDC* pDC)
 {
 	DWORD NewVal = ((COutputPort*)pElement)->Value;
 	int HiByte = (NewVal >> 4) & 0x0F;
 	int LoByte = NewVal & 0x0F;
 
-	CDC *pNumbDC;
-	if (pElement->ArchSelected) pNumbDC = &theApp.SelOnGrayNumb;
-	else pNumbDC = &theApp.DrawOnGrayNumb;
+	CDC *pNumbDC = &theApp.DrawOnGrayNumb;
 
 	int X = 0, Y = 0;
 	switch (Angle) {
@@ -143,9 +157,8 @@ void COutPortArchWnd::DrawValue(CDC* pDC, DWORD OldValue)
 	pDC->BitBlt(X + 14, Y + 13 * 2 + 4, 6, 8, pNumbDC, LoByte * 8, 0, SRCCOPY);
 
 	for (int n = 0; n < 8; n++) {
-		if ((NewVal&(1 << n)) == (OldValue&(1 << n))) continue;
 		BOOL BitSetted = (NewVal&(1 << n)) > 0;
-		if (BitSetted || pElement->ArchSelected)
+		if (BitSetted)
 			pDC->BitBlt(WorkPntArray[n + 30].x - 3, WorkPntArray[n + 30].y - 4, 6, 8, &theApp.SelOnWhiteNumb, n * 8, 0, SRCCOPY);
 		else pDC->BitBlt(WorkPntArray[n + 30].x - 3, WorkPntArray[n + 30].y - 4, 6, 8,
 			&theApp.DrawOnWhiteNumb, n * 8, 0, SRCCOPY);
@@ -168,7 +181,30 @@ void COutPortArchWnd::OnAddress()
 	AfxSetResourceHandle(hInstOld);
 }
 
-void COutPortArchWnd::Draw(CDC *pDC)
+void COutPortArchWnd::Redraw(int64_t ticks) {
+	std::lock_guard<std::mutex> lock(mutexDraw);
+
+	m_isRedrawRequired = false;
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	CClientDC DC(this);
+	DC.BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void COutPortArchWnd::Draw(CDC *pDC) {
+	std::lock_guard<std::mutex> lock(mutexDraw);
+
+	DrawStatic(&MemoryDC);
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void COutPortArchWnd::DrawStatic(CDC *pDC)
 {
 	CGdiObject *pOldPen, *pOldFont;
 	CPen BluePen(PS_SOLID, 0, RGB(0, 0, 255));
@@ -180,8 +216,7 @@ void COutPortArchWnd::Draw(CDC *pDC)
 	else pTempPen = &theApp.DrawPen;
 	pOldPen = pDC->SelectObject(pTempPen);
 	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
-	if (pElement->ArchSelected) pDC->SetTextColor(theApp.SelectColor);
-	else pDC->SetTextColor(theApp.DrawColor);
+	pDC->SetTextColor(theApp.DrawColor);
 
 	CString Temp;
 
@@ -209,6 +244,7 @@ void COutPortArchWnd::Draw(CDC *pDC)
 	//Координаты начала вывода: n*3+7
 	//Координаты конца вывода: n*3+8
 	for (int n = 0; n < 8; n++) {
+		pDC->PatBlt(WorkPntArray[n * 3 + 6].x - 2, WorkPntArray[n * 3 + 6].y - 2, 5, 5, WHITENESS);
 		pDC->SelectObject(pTempPen);
 		pDC->MoveTo(WorkPntArray[n * 3 + 7].x, WorkPntArray[n * 3 + 7].y);
 		pDC->LineTo(WorkPntArray[n * 3 + 6].x, WorkPntArray[n * 3 + 6].y);
@@ -242,7 +278,6 @@ void COutPortArchWnd::Draw(CDC *pDC)
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 	Temp.Format("(     h)", pElement->Address & 0xFFFF);
 	pDC->DrawText(Temp, CRect(X, Y + 2 * 13, X + 35, Y + 3 * 13), DT_CENTER | DT_SINGLELINE | DT_TOP);
-	DrawValue(pDC, ~((COutputPort*)pElement)->Value);
 
 	//Восстанавливаем контекст
 	pDC->SelectObject(pOldPen);
@@ -261,11 +296,9 @@ void COutputPort::SetPortData(DWORD Data)
 	DWORD OldValue = Value;
 	Value = Data;
 	if (pArchElemWnd->IsWindowEnabled()) {
-		CClientDC DC(pArchElemWnd);
-		((COutPortArchWnd*)pArchElemWnd)->DrawValue(&DC, OldValue);
+		((COutPortArchWnd*)pArchElemWnd)->scheduleRedraw();
 	}
-	pArchParentWnd->SendMessage(WMU_PINSTATECHANGED, Value,
-		(LPARAM)pInterface->hElement);
+	theApp.pHostInterface->OnPinStateChanged(Value, id);
 }
 
 void COutputPort::SetPinState(DWORD NewState)
@@ -345,11 +378,6 @@ void COutPortArchWnd::InitializePoints()
 		pElement->ConPoint[n].x = WorkPntArray[n * 3 + 6].x;
 		pElement->ConPoint[n].y = WorkPntArray[n * 3 + 6].y;
 	}
-
-	WINDOWPLACEMENT pls;
-	GetWindowPlacement(&pls);
-	MoveWindow(pls.rcNormalPosition.left, pls.rcNormalPosition.top, Size.cx, Size.cy);
-	Invalidate();
 }
 
 void COutPortArchWnd::OnRotate()
@@ -357,4 +385,13 @@ void COutPortArchWnd::OnRotate()
 	Angle += 90;
 	if (Angle >= 360) Angle = 0;
 	InitializePoints();
+
+	WINDOWPLACEMENT pls;
+	GetWindowPlacement(&pls);
+	MoveWindow(pls.rcNormalPosition.left, pls.rcNormalPosition.top, Size.cx, Size.cy);
+
+	CClientDC dc(this);
+	MemoryDC.DeleteDC();
+	createMemoryDC(&dc, &MemoryDC, Size.cx, Size.cy);
+	Invalidate();
 }

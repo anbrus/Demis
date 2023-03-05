@@ -31,7 +31,7 @@ public:
 	virtual void OnStep();
 	CFont m_Font;
 	struct _EmulatorData* pEmData;
-	struct _HostData* pHData;
+	HostInterface* pHData;
 	CRegisterEdit RegEdit[13];
   CFlag Flag[9];
 

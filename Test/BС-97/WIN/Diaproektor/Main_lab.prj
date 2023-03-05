@@ -1,0 +1,4 @@
+[SOURCE]=1,main_lab.asm
+[ARCH]=0,main_lab.arh
+[ROMSIZE]=4
+[WND.arh]=(88,88,730,422)D:\demis 3.1win\main_lab.arh
