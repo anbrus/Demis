@@ -12,9 +12,10 @@ TickTimer::~TickTimer()
 {
 }
 
-void TickTimer::AddTimer(int64_t ticks, std::function<void(DWORD)> handler, DWORD data) {
+void TickTimer::AddTimer(int64_t ticks, int64_t interval, std::function<void(DWORD)> handler, DWORD data) {
 	TickHandler tp = {
 		ticks,
+		interval,
 		handler,
 		data
 	};
@@ -31,21 +32,25 @@ bool TickTimer::RemoveTimer(DWORD data) {
 }
 
 void TickTimer::onTicks(int64_t ticks) {
-	std::vector<TickHandler> elapsed;
+	std::vector<TickHandler> toRepeat;
 	int countToDelete = 0;
 	for (const TickHandler& th : tickHandlers) {
 		if (th.ticks > ticks) break;
 		
-		elapsed.push_back(th);
-		countToDelete += 1;
+		th.handler(th.data);
+		if(th.interval>0)
+			toRepeat.push_back(th);
+		countToDelete++;
 	}
 
 	for (int n = 0; n < countToDelete; n++) {
 		tickHandlers.erase(tickHandlers.cbegin());
 	}
 
-	for (const TickHandler& th : elapsed) {
-		th.handler(th.data);
+	for (TickHandler th : toRepeat) {
+		while(th.ticks < ticks)
+			th.ticks += th.interval;
+		tickHandlers.insert(th);
 	}
 }
 

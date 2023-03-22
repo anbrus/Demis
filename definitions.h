@@ -2,6 +2,7 @@
 #define DEFINITIONS
 
 #include <vector>
+#include <array>
 #include <string>
 #include <functional>
 #include <chrono>
@@ -9,10 +10,12 @@
 #define WMU_ELEMENT_LBUTTONDOWN (WM_USER+1501)
 #define WMU_ELEMENT_LBUTTONUP   (WM_USER+1502)
 #define WMU_ELEMENT_MOUSEMOVE   (WM_USER+1503)
+#define WMU_ARCHELEM_DISCONNECT (WM_USER+1504)
+#define WMU_ARCHELEM_CONNECT    (WM_USER+1505)
 //#define WMU_PINSTATECHANGED     (WM_USER+1504)
 //#define WMU_READPORT            (WM_USER+1505)
 //#define WMU_WRITEPORT           (WM_USER+1506)
-#define WMU_INTREQUEST          (WM_USER+1507)
+//#define WMU_INTREQUEST          (WM_USER+1507)
 #define WMU_EMULSTOP            (WM_USER+1508)
 //#define WMU_GETPINSTATE         (WM_USER+1509)
 //#define WMU_SET_INSTRCOUNTER    (WM_USER+1510)
@@ -44,9 +47,8 @@ struct _Registers {
 };
 
 struct _BP {
-	DWORD Addr : 20,
-		Count : 11;
-	BOOL  Valid : 1;
+	DWORD Addr;
+	int	Count;
 };
 
 struct _EmulatorData {      //Глобальные общие данные эмулятора
@@ -54,8 +56,8 @@ struct _EmulatorData {      //Глобальные общие данные эмулятора
 	INT64 Ticks;  //Счётчик тактов
 	void *Memory;
 	BOOL RunProg, Stopped;
-	DWORD IntRequest;
-	struct _BP BPX[8], BPR[8], BPW[8], BPI[8], BPO[8];
+	uint64_t IntRequest;
+	std::unordered_map<DWORD, _BP> BPX, BPR, BPW, BPI, BPO;
 };
 
 class HostInterface {                 //Глобальные общие данные оболочки
@@ -67,11 +69,13 @@ public:
 	DWORD TaktFreq=1000000;                  //Тактовая частота в герцах
 	DWORD RomSize=4096*1024;
 
-	virtual void SetTickTimer(int64_t ticks, DWORD hElement, std::function<void(DWORD)> handler) = 0;
+	virtual void SetTickTimer(int64_t ticks, int64_t interval, DWORD hElement, std::function<void(DWORD)> handler) = 0;
+	virtual int AddInstructionListener(std::function<void(int64_t)> handler) = 0;
+	virtual void DeleteInstructionListener(int id) = 0;
 	virtual void WritePort(WORD port, BYTE value) = 0;
 	virtual uint8_t ReadPort(WORD port) = 0;
 	virtual void OnPinStateChanged(DWORD PinState, int hElement) = 0;
-
+	virtual void Interrupt(int irqNumber) = 0;
 };
 
 struct _ErrorData {
@@ -91,13 +95,17 @@ extern "C" DWORD PASCAL ToggleBreakpoint(DWORD Type, DWORD Addr, DWORD Count);
 extern "C" struct _EmulatorData* PASCAL InitEmulator(HostInterface *pHostData);
 //Возвращает указатель на данные эмулятора, получает указатель на данные оболочки
 extern "C" DWORD PASCAL DasmInstr(DWORD Seg, DWORD Offs, struct _EmulatorData *EmData, char* s);
+extern "C" DWORD PASCAL ClearListing();
+extern "C" DWORD PASCAL ParseListing(const std::string & pathLst);
 extern "C" DWORD PASCAL BackDasm(BYTE *Blk, DWORD BlkSize, DWORD IP, char *s);
 
 extern "C" DWORD PASCAL AssembleFile(char *PrjPath, char *AsmName, std::vector<struct _ErrorData>& Errors);
 extern "C" DWORD PASCAL LinkFiles(char* PrjPath, char* OBJNames, char* DMSName, std::vector<struct _ErrorData>& Errors);
 
-extern "C" DWORD PASCAL SetTickTimer(DWORD Owner, int64_t ticks, std::function<void(DWORD)> handler);
+extern "C" DWORD PASCAL SetTickTimer(DWORD Owner, int64_t ticks, int64_t interval, std::function<void(DWORD)> handler);
 extern "C" DWORD PASCAL KillTickTimer(DWORD Owner);
+extern "C" int PASCAL AddInstructionListener(std::function<void(int64_t)> handler);
+extern "C" void PASCAL DeleteInstructionListener(int id);
 
 //Ошибки:
 #define NO_ERRORS         0x000  //Нет ошибок

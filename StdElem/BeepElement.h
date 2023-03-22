@@ -12,6 +12,7 @@
 #include <inttypes.h>
 #include "ElementBase.h"
 #include "ElementWnd.h"
+#include "Resource.h"
 
 class CBeepArchWnd : public CElementWnd  
 {

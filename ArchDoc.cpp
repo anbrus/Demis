@@ -20,7 +20,6 @@ IMPLEMENT_DYNCREATE(CArchDoc, CDocument)
 
 CArchDoc::CArchDoc()
 {
-	for (size_t n = 0; n < Elements.size(); n++) Elements[n] = NULL;
 }
 
 BOOL CArchDoc::OnNewDocument()
@@ -32,8 +31,6 @@ BOOL CArchDoc::OnNewDocument()
 
 CArchDoc::~CArchDoc()
 {
-	for (size_t n = 0; n < Elements.size(); n++)
-		if (Elements[n] != NULL) delete Elements[n];
 }
 
 
@@ -76,7 +73,7 @@ void CArchDoc::Serialize(CArchive& ar)
 /////////////////////////////////////////////////////////////////////////////
 // CArchDoc commands
 
-void CArchDoc::ArchOpen(CArchive &ar)
+void CArchDoc::ArchOpen(CArchive& ar)
 {
 	DWORD Version;
 	char Id[13];
@@ -122,83 +119,82 @@ void CArchDoc::ArchOpen(CArchive &ar)
 			ConstrAngle = 0;
 		}
 		ar.Flush();
-		CElement* pElement = CreateElement(ClsId, Name, FALSE, n);
+		std::shared_ptr<CElement> pElement = CreateElement(ClsId, Name, FALSE, n);
 		if (!pElement) break;
 		Elements[n] = pElement;
 
-		if (!Elements[n]->Load(ar.GetFile()->m_hFile)) {
+		if (!pElement->Load(ar.GetFile()->m_hFile)) {
 			MessageBox(NULL, "Ошибка загрузки архитектуры", "Ошибка", MB_OK | MB_ICONSTOP);
 			return;
 		}
-		Elements[n]->put_nArchAngle(ArchAngle);
-		Elements[n]->put_nConstrAngle(ConstrAngle);
-		Elements[n]->Show(pView->m_hWnd, pView->m_hWnd);
+		pElement->put_nArchAngle(ArchAngle);
+		pElement->put_nConstrAngle(ConstrAngle);
+		pElement->Show(pView->m_hWnd, pView->m_hWnd);
 
-		HWND hWnd = (HWND)Elements[n]->get_hArchWnd();
+		HWND hWnd = (HWND)pElement->get_hArchWnd();
 		if (hWnd) {
 			::GetWindowPlacement(hWnd, &Pls);
 			CRect Rect1(Pls.rcNormalPosition);
 			Rect1.OffsetRect(ArchPos);
-			::MoveWindow((HWND)Elements[n]->get_hArchWnd(), Rect1.left, Rect1.top,
+			::MoveWindow((HWND)pElement->get_hArchWnd(), Rect1.left, Rect1.top,
 				Rect1.Width(), Rect1.Height(), TRUE);
 		}
 
-		hWnd = (HWND)Elements[n]->get_hConstrWnd();
+		hWnd = (HWND)pElement->get_hConstrWnd();
 		if (hWnd) {
 			::GetWindowPlacement(hWnd, &Pls);
 			CRect Rect2(Pls.rcNormalPosition);
 			Rect2.OffsetRect(ConstrPos);
-			::MoveWindow((HWND)Elements[n]->get_hConstrWnd(), Rect2.left, Rect2.top,
+			::MoveWindow((HWND)pElement->get_hConstrWnd(), Rect2.left, Rect2.top,
 				Rect2.Width(), Rect2.Height(), TRUE);
 		}
 	}
-	for (size_t n = 0; n < Elements.size(); n++) {
-		if (Elements[n] != NULL) pView->FindIntersections(Elements[n]);
+	for (const auto pair : Elements) {
+		pView->FindIntersections(pair.second);
 	}
 
 	UpdateAllViews(NULL);
 }
 
-void CArchDoc::ArchSave(CArchive &ar)
+void CArchDoc::ArchSave(CArchive& ar)
 {
 	DWORD Version = 0x00000202;
 	char Id[] = "DEMISArchFmt";
 	ar.Write(Id, 12);
-	int countElem = 0;
-	for (size_t n = 0; n < Elements.size(); n++) {
-		if (Elements[n] == NULL) continue;
-		countElem++;
-	}
-	ar << Version << static_cast<int32_t>(countElem);
-	for (size_t n = 0; n < Elements.size(); n++) {
-		if (Elements[n] == NULL) continue;
-		CString ElemName = Elements[n]->get_sName();
-		CString ElemClsId = Elements[n]->get_sClsId();
+	ar << Version << static_cast<int32_t>(Elements.size());
+	for (const auto pair : Elements) {
+		std::shared_ptr<CElement> pElement = pair.second;
+		CString ElemName = pElement->get_sName();
+		CString ElemClsId = pElement->get_sClsId();
 		ar << ElemName;
 		ar << ElemClsId;
 		WINDOWPLACEMENT Pls;
 		Pls.length = sizeof(Pls);
-		::GetWindowPlacement((HWND)Elements[n]->get_hArchWnd(), &Pls);
+		::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls);
 		Pls.rcNormalPosition.left += pView->GetScrollPos(SB_HORZ);
 		Pls.rcNormalPosition.top += pView->GetScrollPos(SB_VERT);
 		ar << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
-		::GetWindowPlacement((HWND)Elements[n]->get_hConstrWnd(), &Pls);
+		::GetWindowPlacement((HWND)pElement->get_hConstrWnd(), &Pls);
 		Pls.rcNormalPosition.left += pView->GetScrollPos(SB_HORZ);
 		Pls.rcNormalPosition.top += pView->GetScrollPos(SB_VERT);
 		ar << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
-		ar << Elements[n]->get_nArchAngle();
-		ar << Elements[n]->get_nConstrAngle();
+		ar << pElement->get_nArchAngle();
+		ar << pElement->get_nConstrAngle();
 		ar.Flush();
-		Elements[n]->Save(ar.GetFile()->m_hFile);
+		pElement->Save(ar.GetFile()->m_hFile);
 	}
 }
 
 BOOL CArchDoc::DeleteElement(int ElementIndex)
 {
-	//::ShowWindow((HWND)Element[ElementIndex]->get_hArchWnd(),SW_HIDE);
-	//::ShowWindow((HWND)Element[ElementIndex]->get_hConstrWnd(),SW_HIDE);
-	delete Elements[ElementIndex];
-	Elements[ElementIndex] = NULL;
+	const auto iter = Elements.find(ElementIndex);
+	if (iter == Elements.cend()) return FALSE;
+
+	std::shared_ptr<CElement> pElement = iter->second;
+	::ShowWindow(pElement->get_hArchWnd(),SW_HIDE);
+	::ShowWindow(pElement->get_hConstrWnd(),SW_HIDE);
+	pElement->OnDelete();
+	Elements.erase(ElementIndex);
 	SetModifiedFlag();
 
 	return TRUE;
@@ -218,35 +214,32 @@ void CArchDoc::OnUpdateFileSave(CCmdUI* pCmdUI)
 	pCmdUI->Enable(IsModified());
 }
 
-BOOL CArchDoc::AddElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show) {
-	BOOL FreeFounded = FALSE;
-	size_t n = 0;
-	for (n = 0; n < Elements.size(); n++) {
-		if (Elements[n] == NULL) { FreeFounded = TRUE; break; }
-	}
-	if (!FreeFounded) {
-		MessageBox(NULL, "Слишком много элементов", "Ошибка", MB_OK | MB_ICONSTOP);
-		return FALSE;
-	}
+static int getNewElementId(const std::unordered_map<int, std::shared_ptr<CElement>>& elements) {
+	int idNew = 0;
+	const auto iterMax = std::max_element(elements.cbegin(), elements.cend(), [](const auto& a, const auto& b) { return a.first < b.first; });
+	if (iterMax != elements.cend()) idNew = iterMax->first + 1;
 
-	CElement* pElement = CreateElement((LPCTSTR)GUID, (LPCTSTR)Name, Show, n);
-	Elements[n] = pElement;
+	return idNew;
+}
+
+BOOL CArchDoc::AddElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show) {
+	int idNew = getNewElementId(Elements);
+	Elements[idNew] = CreateElement((LPCTSTR)GUID, (LPCTSTR)Name, Show, idNew);
 	UpdateAllViews(NULL);
 
 	return TRUE;
 }
 
-CElement* CArchDoc::CreateElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show, int handle)
+std::shared_ptr<CElement> CArchDoc::CreateElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show, int handle)
 {
-	CElement* pElement = theApp.CreateExtElement(GUID, Name, pView->ArchMode, handle);
-	if (!(void*)pElement) {
+	std::shared_ptr<CElement> pElement = theApp.CreateExtElement(GUID, Name, pView->ArchMode, handle);
+	if (!pElement) {
 		CString Msg;
 		Msg.Format("Невозможно создать элемент \"%s\".", Name);
 		MessageBox(NULL, Msg, "Ошибка", MB_OK | MB_ICONSTOP);
 		return nullptr;
 	}
 
-	//Elements[n]=pElement;
 	pElement->put_Id(handle);
 	pElement->put_bArchSelected(FALSE);
 	pElement->put_bConstrSelected(FALSE);
@@ -263,81 +256,94 @@ CElement* CArchDoc::CreateElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show, int han
 void CArchDoc::UpdateModifyStatus()
 {
 	if (IsModified()) return;
-	for (size_t n = 0; n < Elements.size(); n++) {
-		if (Elements[n] == NULL) continue;
-		if (Elements[n]->get_bModifiedFlag()) { SetModifiedFlag(); return; }
-	}
+	bool isModified = std::any_of(Elements.cbegin(), Elements.cend(), [](const auto& entry) { return entry.second->get_bModifiedFlag(); });
+	if (isModified) SetModifiedFlag();
 }
 
 DWORD CArchDoc::ReadPort(DWORD PortAddress)
 {
-	POSITION Pos = InputPortList.GetHeadPosition();
-	PortData PD;
-
 	DWORD Data;
 	if (theApp.pPrjDoc->FreePinLevel == 0) Data = 0;
 	else Data = 0xFFFFFFFF;
 
-	while (Pos) {
-		PD = InputPortList.GetNext(Pos);
-		if (PD.Address == PortAddress) {
-			if (theApp.pPrjDoc->FreePinLevel == 0) Data |= PD.pElement->GetPortData();
-			else Data &= PD.pElement->GetPortData();
-		}
+	const auto iterPorts = InputPorts.find(PortAddress);
+	if (iterPorts == InputPorts.cend()) return Data;
+
+	const std::vector<std::shared_ptr<CElement>>& elements = iterPorts->second;
+	for (std::shared_ptr<CElement> const& pElement : elements) {
+		if (theApp.pPrjDoc->FreePinLevel == 0) Data |= pElement->GetPortData(PortAddress);
+		else Data &= pElement->GetPortData(PortAddress);
 	}
-	//if(Data)
-	//  MessageBeep(-1);
+
 	return Data;
 }
 
 void CArchDoc::WritePort(DWORD PortAddress, DWORD Data)
 {
-	POSITION Pos = OutputPortList.GetHeadPosition();
-	PortData PD;
-	while (Pos) {
-		PD = OutputPortList.GetNext(Pos);
-		if (PD.Address == PortAddress) PD.pElement->SetPortData(Data);
+	const auto iterPorts = OutputPorts.find(PortAddress);
+	if (iterPorts == OutputPorts.cend()) return;
+
+	const std::vector<std::shared_ptr<CElement>>& elements = iterPorts->second;
+	for (std::shared_ptr<CElement> const& pElement : elements) {
+		pElement->SetPortData(PortAddress, Data);
 	}
 }
 
 void CArchDoc::ChangeMode(BOOL ConfigMode)
 {
 	if (ConfigMode) {
-		for (size_t n = 0; n < Elements.size(); n++) {
-			if (Elements[n] == NULL) continue;
-			Elements[n]->Reset(ConfigMode, &theApp.pEmData->Ticks,
+		for (const auto entry : Elements) {
+			std::shared_ptr<CElement> pElement = entry.second;
+
+			pElement->Reset(ConfigMode, &theApp.pEmData->Ticks,
 				theApp.pPrjDoc->TaktFreq, theApp.pPrjDoc->FreePinLevel);
-			if (Elements[n]->get_hArchWnd()) InvalidateRect((HWND)Elements[n]->get_hArchWnd(), NULL, TRUE);
-			if (Elements[n]->get_hConstrWnd()) InvalidateRect((HWND)Elements[n]->get_hConstrWnd(), NULL, TRUE);
+			if (pElement->get_hArchWnd()) InvalidateRect((HWND)pElement->get_hArchWnd(), NULL, TRUE);
+			if (pElement->get_hConstrWnd()) InvalidateRect((HWND)pElement->get_hConstrWnd(), NULL, TRUE);
 		}
 	}
 	else {
-		OutputPortList.RemoveAll();
-		InputPortList.RemoveAll();
-		PortData PD;
-		for (size_t n = 0; n < Elements.size(); n++) {
-			if (Elements[n] == NULL) continue;
-			if (Elements[n]->get_nType()&ET_INPUTPORT) {
-				PD.Address = Elements[n]->get_nAddress();
-				PD.pElement = Elements[n];
-				InputPortList.AddTail(PD);
-			}
-			if (Elements[n]->get_nType()&ET_OUTPUTPORT) {
-				PD.Address = Elements[n]->get_nAddress();
-				PD.pElement = Elements[n];
-				OutputPortList.AddTail(PD);
-			}
-			Elements[n]->put_bArchSelected(FALSE);
-			Elements[n]->put_bConstrSelected(FALSE);
-			Elements[n]->Reset(ConfigMode, &theApp.pEmData->Ticks,
-				theApp.pPrjDoc->TaktFreq, theApp.pPrjDoc->FreePinLevel);
-			if (Elements[n]->get_hArchWnd()) InvalidateRect((HWND)Elements[n]->get_hArchWnd(), NULL, TRUE);
-			if (Elements[n]->get_hConstrWnd()) InvalidateRect((HWND)Elements[n]->get_hConstrWnd(), NULL, TRUE);
+		OutputPorts.clear();
+		InputPorts.clear();
+		for (const auto entry : Elements) {
+			std::shared_ptr<CElement> pElement = entry.second;
 
-			POSITION Pos = OutputPortList.GetHeadPosition();
-			while (Pos) {
-				OutputPortList.GetNext(Pos).pElement->SetPortData(0);
+			if (pElement->get_nType() & ET_INPUTPORT) {
+				std::vector<DWORD> Addresses = pElement->GetAddresses();
+				for (DWORD Address : Addresses) {
+					const auto iterPorts = InputPorts.find(Address);
+					if (iterPorts == InputPorts.cend()) {
+						std::vector<std::shared_ptr<CElement>> elements;
+						elements.push_back(pElement);
+						InputPorts[Address] = elements;
+					}
+					else {
+						std::vector<std::shared_ptr<CElement>>& elements = iterPorts->second;
+						elements.push_back(pElement);
+					}
+				}
 			}
+			if (pElement->get_nType() & ET_OUTPUTPORT) {
+				std::vector<DWORD> Addresses = pElement->GetAddresses();
+				for (DWORD Address : Addresses) {
+					const auto iterPorts = OutputPorts.find(Address);
+					if (iterPorts == OutputPorts.cend()) {
+						std::vector<std::shared_ptr<CElement>> elements;
+						elements.push_back(pElement);
+						OutputPorts[Address] = elements;
+					}
+					else {
+						std::vector<std::shared_ptr<CElement>>& elements = iterPorts->second;
+						elements.push_back(pElement);
+					}
+					pElement->SetPortData(Address, 0);
+				}
+			}
+			pElement->put_bArchSelected(FALSE);
+			pElement->put_bConstrSelected(FALSE);
+			pElement->Reset(ConfigMode, &theApp.pEmData->Ticks,
+				theApp.pPrjDoc->TaktFreq, theApp.pPrjDoc->FreePinLevel);
+			if (pElement->get_hArchWnd()) InvalidateRect((HWND)pElement->get_hArchWnd(), NULL, TRUE);
+			if (pElement->get_hConstrWnd()) InvalidateRect((HWND)pElement->get_hConstrWnd(), NULL, TRUE);
 		}
 	}
 	pView->ChangeMode(ConfigMode);
@@ -356,16 +362,17 @@ void CArchDoc::CopySelected()
 	CArchive SaveAr(&TempFile, CArchive::store);
 
 	int ElementsCount = 0;
-	for (CElement* pElement : Elements) {
-		if (pElement == NULL) continue;
+	for (const auto entry : Elements) {
+		std::shared_ptr < CElement> pElement = entry.second;
+
 		BOOL Selected = pView->ArchMode ? pElement->get_bArchSelected() : pElement->get_bConstrSelected();
 		if (!Selected) continue;
 
 		ElementsCount++;
 	}
 
-	for (CElement* pElement : Elements) {
-		if (pElement == NULL) continue;
+	for (const auto entry : Elements) {
+		std::shared_ptr < CElement> pElement = entry.second;
 
 		BOOL Selected = pView->ArchMode ? pElement->get_bArchSelected() : pElement->get_bConstrSelected();
 		if (!Selected) continue;
@@ -394,39 +401,39 @@ void CArchDoc::CopySelected()
 	CPoint ArchPos, ConstrPos;
 	WINDOWPLACEMENT Pls;
 	Pls.length = sizeof(Pls);
-	for (size_t n = 0; n < Elements.size(); n++) {
-		if (!ElementsCount) break;
-		if (Elements[n]) continue;
+
+	for (int n = 0; n < ElementsCount; n++) {
+		int idNew = getNewElementId(Elements);
 
 		LoadAr >> Name >> ClsId;
 		LoadAr >> ArchPos.x >> ArchPos.y >> ConstrPos.x >> ConstrPos.y;
 		int ArchAngle, ConstrAngle;
 		LoadAr >> ArchAngle;
 		LoadAr >> ConstrAngle;
-		CElement* pElement = CreateElement(ClsId, Name, FALSE, n);
+		std::shared_ptr<CElement> pElement = CreateElement(ClsId, Name, FALSE, idNew);
 		if (!pElement) break;
-		Elements[n] = pElement;
+		Elements[idNew] = pElement;
 
 		LoadAr.Flush();
-		Elements[n]->put_nArchAngle(ArchAngle);
-		Elements[n]->put_nConstrAngle(ConstrAngle);
-		Elements[n]->Load(LoadAr.GetFile()->m_hFile);
-		Elements[n]->Show(pView->m_hWnd, pView->m_hWnd);
+		pElement->put_nArchAngle(ArchAngle);
+		pElement->put_nConstrAngle(ConstrAngle);
+		pElement->Load(LoadAr.GetFile()->m_hFile);
+		pElement->Show(pView->m_hWnd, pView->m_hWnd);
 
-		::GetWindowPlacement((HWND)Elements[n]->get_hArchWnd(), &Pls);
+		::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls);
 		CRect Rect1(Pls.rcNormalPosition);
 		if (pView->ArchMode) Rect1.OffsetRect(ArchPos);
-		::MoveWindow((HWND)Elements[n]->get_hArchWnd(), Rect1.left, Rect1.top,
+		::MoveWindow((HWND)pElement->get_hArchWnd(), Rect1.left, Rect1.top,
 			Rect1.Width(), Rect1.Height(), TRUE);
 
-		::GetWindowPlacement((HWND)Elements[n]->get_hConstrWnd(), &Pls);
+		::GetWindowPlacement((HWND)pElement->get_hConstrWnd(), &Pls);
 		CRect Rect2(Pls.rcNormalPosition);
 		if (!pView->ArchMode) Rect2.OffsetRect(ConstrPos);
-		::MoveWindow((HWND)Elements[n]->get_hConstrWnd(), Rect2.left, Rect2.top,
+		::MoveWindow((HWND)pElement->get_hConstrWnd(), Rect2.left, Rect2.top,
 			Rect2.Width(), Rect2.Height(), TRUE);
 
-		HWND hArchWnd = (HWND)Elements[n]->get_hArchWnd();
-		HWND hConstrWnd = (HWND)Elements[n]->get_hConstrWnd();
+		HWND hArchWnd = (HWND)pElement->get_hArchWnd();
+		HWND hConstrWnd = (HWND)pElement->get_hConstrWnd();
 		if (pView->ArchMode) {
 			if (hArchWnd) ::ShowWindow(hArchWnd, SW_SHOW);
 			if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_HIDE);
@@ -435,12 +442,7 @@ void CArchDoc::CopySelected()
 			if (hArchWnd) ::ShowWindow(hArchWnd, SW_HIDE);
 			if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_SHOW);
 		}
-
-		ElementsCount--;
 	}
-
-	if (ElementsCount)
-		MessageBox(NULL, "Слишком много элементов", "Ошибка", MB_OK | MB_ICONSTOP);
 
 	LoadAr.Close();
 	TempFile.Close();
@@ -453,7 +455,7 @@ void CArchDoc::CopySelected()
 	pElement->OnInstrCounterEvent();
 }*/
 
-void CArchDoc::ConvertVersion0200To0202(CArchive &ar, DWORD OldVersion)
+void CArchDoc::ConvertVersion0200To0202(CArchive& ar, DWORD OldVersion)
 {
 	CString NewFileName(ar.GetFile()->GetFilePath());
 	NewFileName += ".new";
@@ -604,7 +606,7 @@ void CArchDoc::ConvertVersion0200To0202(CArchive &ar, DWORD OldVersion)
 
 	if (Error) return;
 
-	CFile *pFile = ar.GetFile();
+	CFile* pFile = ar.GetFile();
 	ar.Flush();
 	pFile->Close();
 	pFile->Open(NewFileName, CFile::typeBinary | CFile::modeRead);

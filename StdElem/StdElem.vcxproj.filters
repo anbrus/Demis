@@ -72,6 +72,30 @@
     <ClCompile Include="utils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="vi54.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="vi54counter.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vi54Element.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CAdcSliderCtrl.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vi54SettingsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vi54IoPort.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IrqElement.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="IrqSettingsDlg.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ElemLib.rgs">
@@ -153,6 +177,33 @@
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="vi54.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="control_word.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="vi54counter.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vi54Element.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CAdcSliderCtrl.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vi54SettingsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vi54IoPort.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IrqElement.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="IrqSettingsDlg.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Beep.ico">
@@ -177,9 +228,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\chars.bmp">
-      <Filter>Resource Files</Filter>
-    </Image>
-    <Image Include="res\icon1.ico">
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\indicato.bmp">
@@ -228,6 +276,15 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\out_port.ico">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="\\tsclient\_home_anton_tmp\vi54.png">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\vi54_icon.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\irq.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

@@ -48,7 +48,7 @@ void CPrjCfgDlg::DoDataExchange(CDataExchange* pDX)
 	DDX_Text(pDX, IDC_ROMSTART, m_RomStart);
 	DDX_Text(pDX, IDC_ROMSIZE, m_sRomSize);
 	DDX_Text(pDX, IDC_TAKTFREQ, m_TaktFreq);
-	DDV_MinMaxFloat(pDX, m_TaktFreq, 0.001f, 1E9f);
+	DDV_MinMaxFloat(pDX, m_TaktFreq, 0.001f, 1E6f);
 	DDX_Radio(pDX, IDC_FREEPIN_0, m_FreePinLevel);
 	//}}AFX_DATA_MAP
 }

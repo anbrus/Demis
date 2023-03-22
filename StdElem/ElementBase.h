@@ -4,16 +4,18 @@
 
 #pragma once
 
+#include "../StdElem.h"
 #include "..\ElemInterface.h"
 #include "..\definitions.h"
-#include "StdElemApp.h"
 #include "ElementWnd.h"
 
 
 class CElementWnd;
 class CElemInterface;
 
-class CElementBase: public CElement
+class CElementBase:
+	public CElement,
+	public std::enable_shared_from_this<CElement>
 {
 public:
 	CElementBase(BOOL ArchMode, int id);
@@ -33,7 +35,7 @@ public:
 	CElementWnd* pArchElemWnd, *pConstrElemWnd;
 	CString TipText;
 	BOOL ModifiedFlag;
-	DWORD Address;
+	std::vector<DWORD> Addresses;
 	CMenu PopupMenu;
 	BOOL EditMode;
 	DWORD PinType[MAX_CONNECT_POINT];
@@ -45,7 +47,7 @@ public:
 	virtual CString get_sClsId() override;
 	virtual HWND get_hArchWnd() override;
 	virtual HWND get_hConstrWnd() override;
-	virtual DWORD get_nAddress() override;
+	virtual std::vector<DWORD> GetAddresses() override;
 	virtual BOOL get_bModifiedFlag() override;
 	virtual CString get_sTipText() override;
 	virtual BOOL get_bArchSelected() override;
@@ -62,8 +64,8 @@ public:
 	//virtual void OnInstrCounterEvent() override;
 	virtual void SetPinState(DWORD NewState) override;
 	virtual DWORD GetPinState() override;
-	virtual void SetPortData(DWORD Data) override;
-	virtual DWORD GetPortData() override;
+	virtual void SetPortData(DWORD Addresses, DWORD Data) override;
+	virtual DWORD GetPortData(DWORD Addresses) override;
 	virtual BOOL ConnectPin(DWORD PinIndex, BOOL Connect) override;
 	virtual DWORD GetPinType(DWORD PinIndex) override;
 	virtual BOOL Reset(BOOL bEditMode, __int64 *pTickCounter, DWORD TaktFreq, DWORD FreePinLevel) override;
@@ -75,6 +77,6 @@ public:
 	virtual void RedrawArchWnd(int64_t ticks) override;
 	virtual void RedrawConstrWnd(int64_t ticks) override;
 	virtual void OnVSync() override {};
-	//virtual void UpdateTipText() = 0;
+	virtual void OnDelete() override {};
 protected:
 };

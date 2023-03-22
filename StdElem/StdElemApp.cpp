@@ -14,6 +14,8 @@
 #include "ADCElement.h"
 #include "BeepElement.h"
 #include "matrixelem.h"
+#include "vi54element.h"
+#include "IrqElement.h"
 
 BEGIN_MESSAGE_MAP(CStdElemApp, CWinApp)
 END_MESSAGE_MAP()
@@ -23,6 +25,7 @@ CStdElemApp theApp;
 BOOL CStdElemApp::InitInstance()
 {
 	BkColor = RGB(254, 254, 254);
+	GrayColor = RGB(0xe0, 0xe0, 0xe0);
 	BlackColor = RGB(0, 0, 0);
 	DrawColor = RGB(0, 0, 0);
 	SelectColor = GetSysColor(COLOR_HIGHLIGHT);
@@ -55,6 +58,8 @@ BOOL CStdElemApp::InitInstance()
 	ElementId[8].Icon.LoadMappedBitmap(IDB_ADC_ELEMENT);
 	ElementId[9].Icon.LoadMappedBitmap(IDB_BEEP_ELEMENT);
 	ElementId[10].Icon.LoadMappedBitmap(IDB_MATRIX_ELEMENT);
+	ElementId[11].Icon.LoadMappedBitmap(IDB_VI54_ELEMENT);
+	ElementId[12].Icon.LoadMappedBitmap(IDB_IRQ_ELEMENT);
 
 	AfxSetResourceHandle(hInstOld);
 
@@ -70,7 +75,7 @@ BOOL CStdElemApp::InitInstance()
 	DrawOnGrayNumb.CreateCompatibleDC(NULL);
 	DrawOnGrayNumbBmp.CreateBitmap(128, 8, Planes, BitsPixel, NULL);
 	DrawOnGrayNumb.SelectObject(&DrawOnGrayNumbBmp);
-	DrawOnGrayNumb.SetBkColor(GetSysColor(COLOR_BTNFACE));
+	DrawOnGrayNumb.SetBkColor(theApp.GrayColor);
 	DrawOnGrayNumb.BitBlt(0, 0, 128, 8, &OrigDC, 0, 0, SRCCOPY);
 
 	SelOnWhiteNumb.CreateCompatibleDC(NULL);
@@ -93,7 +98,7 @@ BOOL CStdElemApp::InitInstance()
 	SelOnGrayNumb.CreateCompatibleDC(NULL);
 	SelOnGrayNumbBmp.CreateBitmap(128, 8, Planes, BitsPixel, NULL);
 	SelOnGrayNumb.SelectObject(&SelOnGrayNumbBmp);
-	SelOnGrayNumb.SetBkColor(GetSysColor(COLOR_BTNFACE));
+	SelOnGrayNumb.SetBkColor(theApp.GrayColor);
 	SelOnGrayNumb.BitBlt(0, 0, 128, 8, &OrigDC, 0, 0, SRCCOPY);
 
 	for (y = 0; y < 8; y++) {
@@ -137,9 +142,10 @@ int CStdElemApp::ExitInstance()
 	return CWinApp::ExitInstance();
 }
 
-CStdElemApp::CStdElemApp()
+CStdElemApp::CStdElemApp():
+	Vi54Port(TRUE, -1)
 {
-	m_ElementsCount = 11;
+	m_ElementsCount = 13;
 
 	CString CurClsId("{6B4C02AF-DC58-4935-B438-552DEBB72761}");
 
@@ -186,6 +192,14 @@ CStdElemApp::CStdElemApp()
 	ElementId[10].Type = ET_ARCH | ET_CONSTR;
 	ElementId[10].Name = "Матричный индикатор";
 	ElementId[10].ClsId = CurClsId;
+
+	ElementId[11].Type = ET_ARCH | ET_INPUTPORT | ET_OUTPUTPORT;
+	ElementId[11].Name = "Таймер";
+	ElementId[11].ClsId = CurClsId;
+
+	ElementId[12].Type = ET_ARCH;
+	ElementId[12].Name = "Запрос прерывания";
+	ElementId[12].ClsId = CurClsId;
 }
 
 
@@ -198,22 +212,24 @@ DWORD PASCAL AssembleFile() {
 	return 0;
 }
 
-CElement* CStdElemLib::CreateElement(const CString& name, bool isArchMode, int id) {
+std::shared_ptr<CElement> CStdElemLib::CreateElement(const CString& name, bool isArchMode, int id) {
 	for (int n = 0; n < theApp.m_ElementsCount; n++) {
 		if (theApp.ElementId[n].Name != name) continue;
 
 		switch (n) {
-		case 0: return new CInputPort(isArchMode, id);
-		case 1: return new COutputPort(isArchMode, id);
-		case 2: return new CLedElement(isArchMode, id);
-		case 3: return new CButtonElement(isArchMode, id);
-		case 4: return new CLabel(isArchMode, id);
-		case 5: return new CIndicator(isArchMode, id);
-		case 6: return new CIndicatorDyn(isArchMode, id);
-		case 7: return new CKbdElement(isArchMode, id);
-		case 8: return new CADCElement(isArchMode, id);
-		case 9: return new CBeepElement(isArchMode, id);
-		case 10: return new CMatrixElement(isArchMode, id);
+		case 0: return std::make_shared<CInputPort>(isArchMode, id);
+		case 1: return std::make_shared < COutputPort>(isArchMode, id);
+		case 2: return std::make_shared < CLedElement>(isArchMode, id);
+		case 3: return std::make_shared < CButtonElement>(isArchMode, id);
+		case 4: return std::make_shared < CLabel>(isArchMode, id);
+		case 5: return std::make_shared < CIndicator>(isArchMode, id);
+		case 6: return std::make_shared < CIndicatorDyn>(isArchMode, id);
+		case 7: return std::make_shared < CKbdElement>(isArchMode, id);
+		case 8: return std::make_shared < CADCElement>(isArchMode, id);
+		case 9: return std::make_shared < CBeepElement>(isArchMode, id);
+		case 10: return std::make_shared < CMatrixElement>(isArchMode, id);
+		case 11: return std::make_shared < CVi54Element>(isArchMode, id);
+		case 12: return std::make_shared < IrqElement>(isArchMode, id);
 		}
 	}
 	return nullptr;

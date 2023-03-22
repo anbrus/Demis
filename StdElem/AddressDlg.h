@@ -20,7 +20,7 @@ protected:
 
 public:
 	WORD GetAddress();
-	void SetAddress(WORD Address);
+	void SetAddress(WORD Addresses);
 	CAddressDlg(CWnd* pParent = NULL);   // standard constructor
 
 // Dialog Data

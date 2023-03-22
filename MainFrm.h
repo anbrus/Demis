@@ -106,7 +106,6 @@ protected:
 	afx_msg void OnClose();
 	afx_msg LRESULT OnEmulatorMessage(WPARAM, LPARAM);
 	afx_msg LPARAM OnReadPort(WPARAM wParam, LPARAM lParam);
-	afx_msg LPARAM OnIntRequest(WPARAM wParam, LPARAM lParam);
 	afx_msg LPARAM OnEmulStop(WPARAM wParam, LPARAM lParam);
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()

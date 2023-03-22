@@ -22,7 +22,8 @@ CInputPort::CInputPort(BOOL ArchMode, int id)
 	: CElementBase(ArchMode, id)
 {
 	IdIndex = 0;
-	Value = 0; Address = 0;
+	Addresses.push_back(0);
+	Value = 0;
 
 	pArchElemWnd = new CInPortArchWnd(this);
 	pConstrElemWnd = NULL;
@@ -57,7 +58,7 @@ BOOL CInputPort::Load(HANDLE hFile)
 		return FALSE;
 	}
 
-	File.Read(&Address, 4);
+	File.Read(&Addresses[0], 4);
 
 	return CElementBase::Load(hFile);
 }
@@ -69,7 +70,7 @@ BOOL CInputPort::Save(HANDLE hFile)
 	DWORD Version = 0x00010000;
 	File.Write(&Version, 4);
 
-	File.Write(&Address, 4);
+	File.Write(&Addresses[0], 4);
 
 	return CElementBase::Save(hFile);
 }
@@ -128,26 +129,26 @@ void CInPortArchWnd::DrawDynamic(CDC* pDC)
 	CFont DrawFont;
 	DrawFont.CreatePointFont(80, "Arial Cyr");
 	pOldFont = pDC->SelectObject(&DrawFont);
-	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetBkColor(theApp.GrayColor);
 	pDC->SetTextColor(theApp.DrawColor);
 	CString Temp;
 	Temp.Format("(%02Xh)", ((CInputPort*)pElement)->Value);
-	pDC->FillSolidRect(CRect(17, 31, Size.cx - 1, 44), GetSysColor(COLOR_BTNFACE));
+	pDC->FillSolidRect(CRect(17, 31, Size.cx - 1, 44), theApp.GrayColor);
 	pDC->DrawText(Temp, CRect(17, 31, Size.cx - 1, 44),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
 	for (int n = 0; n < 8; n++) {
 		CDC* pCharsDc;
 		if (pElement->EditMode) {
-			pCharsDc = &theApp.DrawOnWhiteChar;
+			pCharsDc = &theApp.DrawOnWhiteNumb;
 		}
 		else {
 			if (((CInputPort*)pElement)->Value & (1 << n))
-				pCharsDc = &theApp.SelOnWhiteChar;
+				pCharsDc = &theApp.SelOnWhiteNumb;
 			else
-				pCharsDc = &theApp.DrawOnWhiteChar;
+				pCharsDc = &theApp.DrawOnWhiteNumb;
 		}
-		pDC->BitBlt(8, 4 + n * 15, 8, 8, pCharsDc, n * 8, 0, SRCCOPY);
+		pDC->BitBlt(8, 7 + n * 15, 8, 8, pCharsDc, n * 8, 0, SRCCOPY);
 	}
 
 	//Восстанавливаем контекст
@@ -161,9 +162,9 @@ void CInPortArchWnd::OnAddress()
 	HMODULE hDll = GetModuleHandle(theApp.m_pszAppName);
 	AfxSetResourceHandle(hDll);
 	CAddressDlg Dlg(this);
-	Dlg.SetAddress((WORD)pElement->Address);
+	Dlg.SetAddress((WORD)pElement->Addresses[0]);
 	if (Dlg.DoModal() == IDOK) {
-		pElement->Address = (DWORD)Dlg.GetAddress();
+		pElement->Addresses[0] = (DWORD)Dlg.GetAddress();
 		RedrawWindow();
 		pElement->ModifiedFlag = TRUE;
 		((CInputPort*)pElement)->UpdateTipText();
@@ -189,6 +190,8 @@ int CInPortArchWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 }
 
 void CInPortArchWnd::Redraw(int64_t ticks) {
+	std::lock_guard<std::mutex> lck(mutexDraw);
+
 	m_isRedrawRequired = false;
 	DrawDynamic(&MemoryDC);
 
@@ -199,6 +202,8 @@ void CInPortArchWnd::Redraw(int64_t ticks) {
 }
 
 void CInPortArchWnd::Draw(CDC *pDC) {
+	std::lock_guard<std::mutex> lck(mutexDraw);
+
 	DrawStatic(&MemoryDC);
 	DrawDynamic(&MemoryDC);
 
@@ -220,7 +225,7 @@ void CInPortArchWnd::DrawStatic(CDC *pDC)
 		pDC->FrameRect(MainRect, &SelectBrush);
 	else pDC->FrameRect(MainRect, &NormalBrush);
 
-	CBrush GrayBrush(GetSysColor(COLOR_BTNFACE));
+	CBrush GrayBrush(theApp.GrayColor);
 	CGdiObject* pOldBrush = pDC->SelectObject(&GrayBrush);
 	pDC->PatBlt(17, 1, Size.cx - 18, Size.cy - 2, PATCOPY);
 	pDC->SelectObject(pOldBrush);
@@ -252,12 +257,12 @@ void CInPortArchWnd::DrawStatic(CDC *pDC)
 	CFont DrawFont;
 	DrawFont.CreatePointFont(80, "Arial Cyr");
 	pOldFont = pDC->SelectObject(&DrawFont);
-	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetBkColor(theApp.GrayColor);
 	pDC->SetTextColor(theApp.DrawColor);
 	pDC->DrawText("RGIN", CRect(17, 5, Size.cx - 1, 18),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 	CString Temp;
-	Temp.Format("[%04Xh]", pElement->Address);
+	Temp.Format("[%04Xh]", pElement->Addresses[0]);
 	pDC->DrawText(Temp, CRect(17, 18, Size.cx - 1, 31),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
@@ -269,7 +274,7 @@ void CInPortArchWnd::DrawStatic(CDC *pDC)
 
 void CInputPort::UpdateTipText()
 {
-	TipText.Format("Порт ввода [%04Xh]", Address);
+	TipText.Format("Порт ввода [%04Xh]", Addresses[0]);
 }
 
 void CInputPort::SetPinState(DWORD NewState)
@@ -278,7 +283,7 @@ void CInputPort::SetPinState(DWORD NewState)
 	((CInPortArchWnd*)pArchElemWnd)->scheduleRedraw();
 }
 
-DWORD CInputPort::GetPortData()
+DWORD CInputPort::GetPortData(DWORD Addresses)
 {
 	return Value;
 }

@@ -22,8 +22,9 @@ COutputPort::COutputPort(BOOL ArchMode, int id)
 	: CElementBase(ArchMode, id)
 {
 	IdIndex = 1;
-	Value = 0; Address = 0;
-
+	Value = 0;
+	Addresses.push_back(0);
+	
 	pArchElemWnd = new COutPortArchWnd(this);
 	pConstrElemWnd = NULL;
 
@@ -57,7 +58,7 @@ BOOL COutputPort::Load(HANDLE hFile)
 		return FALSE;
 	}
 
-	File.Read(&Address, 4);
+	File.Read(&Addresses[0], 4);
 
 	return CElementBase::Load(hFile);
 }
@@ -69,7 +70,7 @@ BOOL COutputPort::Save(HANDLE hFile)
 	DWORD Version = 0x00010000;
 	File.Write(&Version, 4);
 
-	File.Write(&Address, 4);
+	File.Write(&Addresses[0], 4);
 
 	return CElementBase::Save(hFile);
 }
@@ -86,6 +87,7 @@ BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
 
+	reinterpret_cast<COutPortArchWnd*>(pArchElemWnd)->updateMenu(PopupMenu);
 	UpdateTipText();
 
 	return TRUE;
@@ -94,7 +96,7 @@ BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 BOOL COutputPort::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel)
 {
 	if (bEditMode) Value = 0;
-	else Value = -1;
+	else Value = 0;
 
 	return CElementBase::Reset(bEditMode, pTickCounter, TaktFreq, FreePinLevel);
 }
@@ -105,7 +107,7 @@ BOOL COutputPort::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, D
 
 BEGIN_MESSAGE_MAP(COutPortArchWnd, CElementWnd)
 	ON_COMMAND(ID_ADDRESS, OnAddress)
-	ON_COMMAND(ID_ROTATE, OnRotate)
+	ON_COMMAND_RANGE(ID_OUTPUTS_RIGHT, ID_OUTPUTS_UP, OnRotate)
 	ON_WM_CREATE()
 END_MESSAGE_MAP()
 
@@ -171,9 +173,9 @@ void COutPortArchWnd::OnAddress()
 	HMODULE hDll = GetModuleHandle(theApp.m_pszAppName);
 	AfxSetResourceHandle(hDll);
 	CAddressDlg Dlg(this);
-	Dlg.SetAddress((WORD)pElement->Address);
+	Dlg.SetAddress((WORD)pElement->Addresses[0]);
 	if (Dlg.DoModal() == IDOK) {
-		pElement->Address = (DWORD)Dlg.GetAddress();
+		pElement->Addresses[0] = (DWORD)Dlg.GetAddress();
 		RedrawWindow();
 		pElement->ModifiedFlag = TRUE;
 		((COutputPort*)pElement)->UpdateTipText();
@@ -215,7 +217,7 @@ void COutPortArchWnd::DrawStatic(CDC *pDC)
 		pTempPen = &theApp.SelectPen;
 	else pTempPen = &theApp.DrawPen;
 	pOldPen = pDC->SelectObject(pTempPen);
-	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetBkColor(theApp.GrayColor);
 	pDC->SetTextColor(theApp.DrawColor);
 
 	CString Temp;
@@ -226,7 +228,7 @@ void COutPortArchWnd::DrawStatic(CDC *pDC)
 		pDC->FrameRect(MainRect, &SelectBrush);
 	else pDC->FrameRect(MainRect, &NormalBrush);
 
-	CBrush GrayBrush(GetSysColor(COLOR_BTNFACE));
+	CBrush GrayBrush(theApp.GrayColor);
 	CGdiObject* pOldBrush = pDC->SelectObject(&GrayBrush);
 	CRect FillRect(WorkPntArray[2].x, WorkPntArray[2].y, WorkPntArray[3].x, WorkPntArray[3].y);
 	FillRect.NormalizeRect();
@@ -273,10 +275,10 @@ void COutPortArchWnd::DrawStatic(CDC *pDC)
 	}
 	pDC->DrawText("RGOUT", CRect(X, Y, X + 36, Y + 14),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
-	Temp.Format("[%04Xh]", pElement->Address & 0xFFFF);
+	Temp.Format("[%04Xh]", pElement->Addresses[0] & 0xFFFF);
 	pDC->DrawText(Temp, CRect(X, Y + 13, X + 36, Y + 2 * 13),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
-	Temp.Format("(     h)", pElement->Address & 0xFFFF);
+	Temp.Format("(     h)", pElement->Addresses[0] & 0xFFFF);
 	pDC->DrawText(Temp, CRect(X, Y + 2 * 13, X + 35, Y + 3 * 13), DT_CENTER | DT_SINGLELINE | DT_TOP);
 
 	//Восстанавливаем контекст
@@ -286,10 +288,10 @@ void COutPortArchWnd::DrawStatic(CDC *pDC)
 
 void COutputPort::UpdateTipText()
 {
-	TipText.Format("Порт вывода [%04Xh]", Address);
+	TipText.Format("Порт вывода [%04Xh]", Addresses[0]);
 }
 
-void COutputPort::SetPortData(DWORD Data)
+void COutputPort::SetPortData(DWORD Addresses, DWORD Data)
 {
 	if (Data == Value) return;
 
@@ -380,10 +382,26 @@ void COutPortArchWnd::InitializePoints()
 	}
 }
 
-void COutPortArchWnd::OnRotate()
+void COutPortArchWnd::OnRotate(UINT nId)
 {
-	Angle += 90;
-	if (Angle >= 360) Angle = 0;
+	GetParent()->SendMessage(WMU_ARCHELEM_DISCONNECT, 0, pElement->id);
+	switch (nId) {
+	case ID_OUTPUTS_RIGHT:
+		SetAngle(0);
+		break;
+	case ID_OUTPUTS_DOWN:
+		SetAngle(90);
+		break;
+	case ID_OUTPUTS_LEFT:
+		SetAngle(180);
+		break;
+	case ID_OUTPUTS_UP:
+		SetAngle(270);
+		break;
+	}
+
+	updateMenu(pElement->PopupMenu);
+
 	InitializePoints();
 
 	WINDOWPLACEMENT pls;
@@ -394,4 +412,12 @@ void COutPortArchWnd::OnRotate()
 	MemoryDC.DeleteDC();
 	createMemoryDC(&dc, &MemoryDC, Size.cx, Size.cy);
 	Invalidate();
+	GetParent()->SendMessage(WMU_ARCHELEM_CONNECT, 0, pElement->id);
+}
+
+void COutPortArchWnd::updateMenu(CMenu& PopupMenu) {
+	PopupMenu.CheckMenuItem(ID_OUTPUTS_RIGHT, MF_BYCOMMAND | (Angle == 0 ? MF_CHECKED : MF_UNCHECKED));
+	PopupMenu.CheckMenuItem(ID_OUTPUTS_DOWN, MF_BYCOMMAND | (Angle == 90 ? MF_CHECKED : MF_UNCHECKED));
+	PopupMenu.CheckMenuItem(ID_OUTPUTS_LEFT, MF_BYCOMMAND | (Angle == 180 ? MF_CHECKED : MF_UNCHECKED));
+	PopupMenu.CheckMenuItem(ID_OUTPUTS_UP, MF_BYCOMMAND | (Angle == 270 ? MF_CHECKED : MF_UNCHECKED));
 }

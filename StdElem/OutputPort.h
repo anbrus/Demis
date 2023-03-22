@@ -17,9 +17,10 @@ public:
 	COutPortArchWnd(CElementBase* pElement);
 	virtual ~COutPortArchWnd();
 
-	virtual void Draw(CDC* pDC);
+	virtual void Draw(CDC* pDC) override;
 	virtual void Redraw(int64_t ticks) override;
 	void InitializePoints();
+	void updateMenu(CMenu& PopupMenu);
 
 protected:
 	CDC MemoryDC;
@@ -29,7 +30,7 @@ protected:
 	void DrawDynamic(CDC* pDC);
 
 	afx_msg void OnAddress();
-	afx_msg void OnRotate();
+	afx_msg void OnRotate(UINT nId);
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	DECLARE_MESSAGE_MAP()
 };
@@ -40,14 +41,14 @@ public:
 	COutputPort(BOOL ArchMode, int id);
 	virtual ~COutputPort();
 
-	virtual DWORD GetPinState();
-	virtual void SetPinState(DWORD NewState);
-	virtual void SetPortData(DWORD Data);
+	virtual DWORD GetPinState() override;
+	virtual void SetPinState(DWORD NewState) override;
+	virtual void SetPortData(DWORD Addresses, DWORD Data) override;
 	DWORD Value;
-	virtual void UpdateTipText();
-	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);
-	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
-	virtual BOOL Save(HANDLE hFile);
-	virtual BOOL Load(HANDLE hFile);
-protected:
+	void UpdateTipText();
+	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel) override;
+	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd) override;
+	virtual BOOL Save(HANDLE hFile) override;
+	virtual BOOL Load(HANDLE hFile) override;
+
 };

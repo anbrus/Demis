@@ -1,0 +1,12 @@
+[INCLUDE]=00000000,utils.asm
+[INCLUDE]=00000000,mode2.asm
+[INCLUDE]=00000000,mode1.asm
+[INCLUDE]=00000000,mode0.asm
+[ARCH]=00000000,VI54.arh
+[SOURCE]=00000001,VI54.asm
+[ROMSIZE]=8
+[FREQ]=4000000
+[FREEPINLEVEL]=0
+[WND.arh]=(243,74,1282,705)C:\Projects\Demis2k\Test\VI54\VI54.arh
+[WND.asm]=(508,112,1103,654)C:\Projects\Demis2k\Test\VI54\mode2.asm
+[WND.asm]=(104,104,1329,646)C:\Projects\Demis2k\Test\VI54\VI54.asm

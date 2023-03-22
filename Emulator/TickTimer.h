@@ -11,7 +11,7 @@ public:
 	TickTimer();
 	~TickTimer();
 
-	void AddTimer(int64_t ticks, std::function<void(DWORD)>, DWORD data);
+	void AddTimer(int64_t ticks, int64_t interval, std::function<void(DWORD)>, DWORD data);
 	bool RemoveTimer(DWORD data);
 	void Clear();
 	void onTicks(int64_t ticks);
@@ -19,6 +19,7 @@ public:
 private:
 	struct TickHandler {
 		int64_t ticks;
+		int64_t interval;
 		std::function<void(DWORD)> handler;
 		DWORD data;
 	};

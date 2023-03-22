@@ -6,6 +6,7 @@
 #include "..\ElemInterface.h"
 #include "ElemInterf.h"
 #include "..\definitions.h"
+#include "StdElemApp.h"
 #include "math.h"
 
 #ifdef _DEBUG

@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "Label.h"
+
+#include "StdElemApp.h"
 #include "TextDlg.h"
 
 #ifdef _DEBUG

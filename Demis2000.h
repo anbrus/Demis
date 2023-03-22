@@ -29,11 +29,13 @@ public:
 	HostData();
 	virtual ~HostData();
 
-	virtual void SetTickTimer(int64_t ticks, DWORD hElement, std::function<void(DWORD)> handler) override;
-	//virtual void OnTickTimer(DWORD hElement) override;
+	virtual void SetTickTimer(int64_t ticks, int64_t interval, DWORD hElement, std::function<void(DWORD)> handler) override;
 	virtual void WritePort(WORD port, BYTE value) override;
 	virtual uint8_t ReadPort(WORD port) override;
 	virtual void OnPinStateChanged(DWORD PinState, int hElement) override;
+	virtual int AddInstructionListener(std::function<void(int64_t)> handler) override;
+	virtual void DeleteInstructionListener(int id) override;
+	virtual void Interrupt(int irqNumber) override;
 };
 
 
@@ -67,7 +69,7 @@ public:
 	DWORD AddBuildMessages(std::vector<struct _ErrorData>& Errors);
 	BOOL InitProgram();
 	static DWORD pascal HostCall(DWORD Message, WPARAM wParam, LPARAM lParam);
-	CElement *CreateExtElement(const CString& LibName, const CString& ElementName, BOOL ArchMode, int id);
+	std::shared_ptr<CElement> CreateExtElement(const CString& LibName, const CString& ElementName, BOOL ArchMode, int id);
 	BOOL PrepareArchForEmulation();
 	CDocument* OpenDemisDocument(const CString& PathName, CString& Type);
 

@@ -47,7 +47,7 @@ uint32_t JCond(uint8_t* pCOP)  //Условные переходы
 
 uint32_t Lea(uint8_t* pCOP) {
 	uint8_t COP2 = *(pCOP + 1);
-	uint16_t Addr = *(pCOP + 2);
+	uint16_t Addr = *reinterpret_cast<uint16_t*>(pCOP + 2);
 	SetRegister(COP2 >> 3, 1, (uint16_t)Addr);
 
 	return AddIP(4);
@@ -623,7 +623,8 @@ uint32_t Call2(uint8_t* pCOP) //Call rm16
 
 uint32_t Ret(uint8_t* pCOP)
 {
-	uint16_t Stk1, Stk2; ReadVirtMem(EmulatorData.Reg.SS, EmulatorData.Reg.SP, &Stk1, 1);
+	uint16_t Stk1, Stk2;
+	ReadVirtMem(EmulatorData.Reg.SS, EmulatorData.Reg.SP, &Stk1, 1);
 	//Восстанавливаем IP и SP
 	EmulatorData.Reg.SP += 2; EmulatorData.Reg.IP = Stk1;
 	switch (*pCOP) {
@@ -870,8 +871,11 @@ uint32_t Void(uint8_t* pCOP)  //Неисполняемые инструкции
 	return STOP_UNKNOWN_INSTRUCTION;
 }
 
-uint32_t Halt(uint8_t* pCOP) //!!!!!!!!!!!!!!!!!!!!!!!!
+uint32_t Halt(uint8_t* pCOP)
 {
+	if (EmulatorData.IntRequest && EmulatorData.Reg.Flag.IF)
+		return AddIP(1);
+
 	return AddIP(0);
 }
 

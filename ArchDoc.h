@@ -23,16 +23,14 @@ protected:
 	CArchDoc();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CArchDoc)
 
-	struct PortData {
-		DWORD Address;
-		CElement *pElement;
-	};
-	CList<PortData, PortData&> InputPortList, OutputPortList;
+	std::unordered_map<DWORD, std::vector<std::shared_ptr<CElement>>> OutputPorts;
+	std::unordered_map<DWORD, std::vector<std::shared_ptr<CElement>>> InputPorts;
 
 	// Attributes
 public:
 	//int ElemCount;
-	std::array<CElement*, 1024> Elements;
+	//std::array<CElement*, 1024> Elements;
+	std::unordered_map<int, std::shared_ptr<CElement>> Elements;
 
 	virtual void Serialize(CArchive& ar);   // overridden for document i/o
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
@@ -45,7 +43,7 @@ public:
 	DWORD ReadPort(DWORD PortAddress);
 	//void OnTickTimer(DWORD hElement);
 	void UpdateModifyStatus();
-	CElement* CreateElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show, int handle);
+	std::shared_ptr<CElement> CreateElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show, int handle);
 	BOOL AddElement(LPCTSTR GUID, LPCTSTR Name, BOOL Show);
 	BOOL DeleteElement(int ElementIndex);
 	CArchView *pView;

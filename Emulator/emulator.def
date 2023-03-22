@@ -9,3 +9,5 @@ EXPORTS
 	InitEmulator
 	SetTickTimer
     KillTickTimer
+	AddInstructionListener
+	DeleteInstructionListener

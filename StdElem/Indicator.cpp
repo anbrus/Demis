@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "Indicator.h"
+
+#include "StdElemApp.h"
 #include "utils.h"
 
 #ifdef _DEBUG

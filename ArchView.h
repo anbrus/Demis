@@ -13,7 +13,7 @@ class CArchView : public CScrollView
 {
 protected:
 	struct ConPoint {
-		CElement *pElement;
+		std::shared_ptr<CElement> pElement;
 		int PinNumber;
 	};
 	typedef CList<ConPoint, ConPoint&> PointList;
@@ -42,7 +42,8 @@ public:
 	CReBar ReBar;
 	CBitmap *BtnBmp[256];
 	CArchDoc* pDoc;
-	void FindIntersections(CElement *pElement);
+	void FindIntersections(const std::shared_ptr<CElement>& pElement);
+	void DeconnectElement(int ElemIndex);
 
 public:
 	virtual BOOL Create(LPCTSTR lpszClassName, LPCTSTR lpszWindowName, DWORD dwStyle, const RECT& rect, CWnd* pParentWnd, UINT nID, CCreateContext* pContext = NULL) override;
@@ -70,9 +71,8 @@ protected:
 
 	void ConnectSelected();
 	BOOL MoveSelected(int ShiftX, int ShiftY);
-	void DeconnectElement(int ElemIndex);
-	CPoint GetMinDist(CElement *pFixedElement, CElement *pMovedElement);
-	BOOL ConnectElements(CElement *pMovedElement, CElement *pFixedElement);
+	CPoint GetMinDist(const std::shared_ptr<CElement>& pFixedElement, const std::shared_ptr<CElement>& pMovedElement);
+	BOOL ConnectElements(const std::shared_ptr<CElement>& pMovedElement, const std::shared_ptr<CElement>& pFixedElement);
 	static void redrawChangedElements(CArchView* pArchView);
 	//static void vsync(CArchView* pArchView);
 #ifdef _DEBUG
@@ -94,6 +94,8 @@ protected:
 	afx_msg LPARAM OnElementLButtonDown(WPARAM nFlags, LPARAM hElement);
 	afx_msg LPARAM OnElementLButtonUp(WPARAM nFlags, LPARAM hElement);
 	afx_msg LPARAM OnElementMouseMove(WPARAM nFlags, LPARAM hElement);
+	afx_msg LPARAM OnArchElemDisconnect(WPARAM nFlags, LPARAM hElement);
+	afx_msg LPARAM OnArchElemConnect(WPARAM nFlags, LPARAM hElement);
 	//afx_msg LPARAM OnKillInstrCounter(WPARAM Void, LPARAM hElement);
 	afx_msg void OnKeyDown(UINT nChar, UINT nRepCnt, UINT nFlags);
 	afx_msg void OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags);

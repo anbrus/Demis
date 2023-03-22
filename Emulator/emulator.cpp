@@ -16,6 +16,7 @@ struct _EmulatorData EmulatorData;
 HostInterface *pHData;
 
 TickTimer tickTimer;
+std::unordered_map<int, std::function<void(int64_t)>> InstructionListeners;
 int64_t frequencyPerformanceCounter;
 int64_t timeRunStart;
 int64_t ticksRunStart;
@@ -62,7 +63,11 @@ DWORD EmulateCurrentInstr()  //Эмулирует исполнение тек. инструкции
 		//Инкрементируем число исполненных инструкций
 		EmulatorData.Ticks+=6;
 		tickTimer.onTicks(EmulatorData.Ticks);
+		for (const auto& entry : InstructionListeners) {
+			entry.second(EmulatorData.Ticks);
+		}
 	}
+
 	return Res;
 }
 
@@ -132,17 +137,21 @@ DWORD PASCAL StepInstruction(BOOL StepIn)
 DWORD HandleIrq()
 {
 	int VectorNumber;
-	for (VectorNumber = 0; VectorNumber < 32; VectorNumber++) {
-		if ((EmulatorData.IntRequest >> VectorNumber) && 1) break;
+	for (VectorNumber = 0; VectorNumber < 40; VectorNumber++) {
+		if ((EmulatorData.IntRequest >> VectorNumber) & 1) break;
+	}
+	bool isHlt = *reinterpret_cast<uint8_t*>(VirtToReal(EmulatorData.Reg.CS, EmulatorData.Reg.IP)) == 0xf4;
+	if (isHlt) {
+		EmulatorData.Reg.IP += 1;
 	}
 	WORD* pStk = (WORD*)VirtToReal(EmulatorData.Reg.SS, EmulatorData.Reg.SP);
 	WriteRealMem(pStk - 1, *(WORD*)&EmulatorData.Reg.Flag, 1);
 	WriteRealMem(pStk - 2, EmulatorData.Reg.CS, 1);
-	WriteRealMem(pStk - 3, EmulatorData.Reg.IP + 2, 1);
+	WriteRealMem(pStk - 3, EmulatorData.Reg.IP, 1);
 	EmulatorData.Reg.Flag.IF = 0; EmulatorData.Reg.Flag.TF = 0; EmulatorData.Reg.SP -= 6;
 	ReadVirtMem(0, VectorNumber * 4, &EmulatorData.Reg.IP, 1);
 	ReadVirtMem(0, VectorNumber * 4 + 2, &EmulatorData.Reg.CS, 1);
-	EmulatorData.IntRequest ^= 1 << VectorNumber;
+	EmulatorData.IntRequest ^= static_cast<uint64_t>(1) << VectorNumber;
 
 	return AddIP(0);
 }
@@ -175,38 +184,25 @@ DWORD PASCAL ToggleBreakpoint(DWORD Type, DWORD Addr, DWORD Count)
 //Установить/убрать точку останова
 {
 	BOOL Ok = FALSE;
-	struct _BP *pBP, *pCurBP;
+	std::unordered_map<DWORD, struct _BP> *pBP;
 	//Находим указатель на нужный массив точек останова
 	switch (Type) {
-	case BP_EXEC: pBP = EmulatorData.BPX; break;
-	case BP_MEM_READ: pBP = EmulatorData.BPR; break;
-	case BP_MEM_WRITE: pBP = EmulatorData.BPW; break;
-	case BP_INPUT: pBP = EmulatorData.BPI; break;
-	case BP_OUTPUT: pBP = EmulatorData.BPO; break;
+	case BP_EXEC: pBP = &EmulatorData.BPX; break;
+	case BP_MEM_READ: pBP = &EmulatorData.BPR; break;
+	case BP_MEM_WRITE: pBP = &EmulatorData.BPW; break;
+	case BP_INPUT: pBP = &EmulatorData.BPI; break;
+	case BP_OUTPUT: pBP = &EmulatorData.BPO; break;
 	default: return FALSE;
 	}
-	//Find Old Breakpoint
-	pCurBP = pBP;
-	//Ищем имеющуюся точку останова
-	for (DWORD n = 0; n < 8; n++) {
-		if (pCurBP->Valid && (pCurBP->Addr == Addr)) {
-			//Нашли, удаляем
-			pCurBP->Valid = FALSE;
-			Ok = TRUE; break;
-		}
-		pCurBP++;
+	if (pBP->contains(Addr))
+		pBP->erase(Addr);
+	else {
+		struct _BP bp;
+		bp.Addr = Addr;
+		bp.Count = Count;
+		(*pBP)[Addr] = bp;
 	}
-	if (Ok) return TRUE;
-	//Не нашли, ставим новую точку
-	pCurBP = pBP;
-	//Ищем первую не используемую
-	for (DWORD n = 0; n < 8; n++) {
-		if (pCurBP->Valid == FALSE) {
-			pCurBP->Addr = Addr; pCurBP->Count = Count; pCurBP->Valid = TRUE;
-			Ok = TRUE; break;
-		}
-		pCurBP++;
-	}
+
 	return Ok;
 }
 
@@ -224,6 +220,7 @@ struct _EmulatorData* PASCAL InitEmulator(HostInterface *pHostData)
 
 	//Инициализация счётчиков инструкций
 	tickTimer.Clear();
+	InstructionListeners.clear();
 
 	//Обнуляем счётчик
 	EmulatorData.Ticks = 0;
@@ -240,22 +237,40 @@ struct _EmulatorData* PASCAL InitEmulator(HostInterface *pHostData)
 	CurSeg = EmulatorData.Reg.DS;  //Текущий сегмент по умолчанию DS
 	SegChanged = FALSE;
 	//Удаляем точки останова
-	for (int n = 0; n < 8; n++) {
-		EmulatorData.BPX[n].Valid = FALSE;
-		EmulatorData.BPW[n].Valid = FALSE; EmulatorData.BPR[n].Valid = FALSE;
-		EmulatorData.BPO[n].Valid = FALSE; EmulatorData.BPI[n].Valid = FALSE;
-	}
+	EmulatorData.BPX.clear();
+	EmulatorData.BPW.clear(); EmulatorData.BPR.clear();
+	EmulatorData.BPO.clear(); EmulatorData.BPI.clear();
 	EmulatorData.Stopped = TRUE;
 
 	//Возвращаем указатель на данные эмулятора
 	return &EmulatorData;
 }
 
-DWORD PASCAL SetTickTimer(DWORD Owner, int64_t ticks, std::function<void(DWORD)> handler)
+DWORD PASCAL SetTickTimer(DWORD Owner, int64_t ticks, int64_t interval, std::function<void(DWORD)> handler)
 {
-	tickTimer.AddTimer(ticks, handler, Owner);
+	tickTimer.AddTimer(ticks, interval, handler, Owner);
 
 	return NO_ERRORS;
+}
+
+template<class T>
+static int getNewElementId(const std::unordered_map<int, T>& elements) {
+	int idNew = 0;
+	const auto iterMax = std::max_element(elements.cbegin(), elements.cend(), [](const auto& a, const auto& b) { return a.first < b.first; });
+	if (iterMax != elements.cend()) idNew = iterMax->first + 1;
+
+	return idNew;
+}
+
+int PASCAL AddInstructionListener(std::function<void(int64_t)> handler) {
+	int idNew = getNewElementId(InstructionListeners);
+	InstructionListeners[idNew]=handler;
+
+	return idNew;
+}
+
+void PASCAL DeleteInstructionListener(int id) {
+	InstructionListeners.erase(id);
 }
 
 DWORD PASCAL KillTickTimer(DWORD Owner)

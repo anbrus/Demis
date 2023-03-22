@@ -190,8 +190,9 @@ echo Warning : Cannot register Unicode DLL on Windows 95
       <ProgramDataBaseFileName>.\Debug/</ProgramDataBaseFileName>
       <WarningLevel>Level3</WarningLevel>
       <SuppressStartupBanner>true</SuppressStartupBanner>
-      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <CustomBuildStep>
       <Message>
@@ -328,6 +329,7 @@ echo regsvr32 exec. time &gt; "$(OutDir)regsvr32.trg"
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <AdditionalOptions>/Zc:threadSafeInit-</AdditionalOptions>
       <LanguageStandard>stdcpp20</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <CustomBuildStep>
       <Message>
@@ -408,12 +410,15 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <ClCompile Include="AddressDlg.cpp" />
     <ClCompile Include="BeepElement.cpp" />
     <ClCompile Include="Button.cpp" />
+    <ClCompile Include="CAdcSliderCtrl.cpp" />
     <ClCompile Include="ElementBase.cpp" />
     <ClCompile Include="ElementWnd.cpp" />
     <ClCompile Include="ElemInterf.cpp" />
     <ClCompile Include="Indicator.cpp" />
     <ClCompile Include="IndicatorDyn.cpp" />
     <ClCompile Include="InputPort.cpp" />
+    <ClCompile Include="IrqElement.cpp" />
+    <ClCompile Include="IrqSettingsDlg.cpp" />
     <ClCompile Include="KbdElement.cpp" />
     <ClCompile Include="Label.cpp" />
     <ClCompile Include="LedElement.cpp" />
@@ -430,6 +435,15 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <ClCompile Include="StdElemApp.cpp" />
     <ClCompile Include="TextDlg.cpp" />
     <ClCompile Include="utils.cpp" />
+    <ClCompile Include="vi54.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="vi54counter.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="Vi54Element.cpp" />
+    <ClCompile Include="Vi54IoPort.cpp" />
+    <ClCompile Include="Vi54SettingsDlg.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Element.rgs" />
@@ -452,12 +466,16 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <ClInclude Include="AddressDlg.h" />
     <ClInclude Include="BeepElement.h" />
     <ClInclude Include="Button.h" />
+    <ClInclude Include="CAdcSliderCtrl.h" />
+    <ClInclude Include="control_word.h" />
     <ClInclude Include="ElementBase.h" />
     <ClInclude Include="ElementWnd.h" />
     <ClInclude Include="ElemInterf.h" />
     <ClInclude Include="Indicator.h" />
     <ClInclude Include="IndicatorDyn.h" />
     <ClInclude Include="InputPort.h" />
+    <ClInclude Include="IrqElement.h" />
+    <ClInclude Include="IrqSettingsDlg.h" />
     <ClInclude Include="kbdelement.h" />
     <ClInclude Include="Label.h" />
     <ClInclude Include="LedElement.h" />
@@ -468,6 +486,11 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <ClInclude Include="StdElemApp.h" />
     <ClInclude Include="TextDlg.h" />
     <ClInclude Include="utils.h" />
+    <ClInclude Include="vi54.h" />
+    <ClInclude Include="vi54counter.h" />
+    <ClInclude Include="Vi54Element.h" />
+    <ClInclude Include="Vi54IoPort.h" />
+    <ClInclude Include="Vi54SettingsDlg.h" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\adc.bmp" />
@@ -477,12 +500,12 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <Image Include="res\button.bmp" />
     <Image Include="res\button.ico" />
     <Image Include="res\chars.bmp" />
-    <Image Include="res\icon1.ico" />
     <Image Include="res\indicato.bmp" />
     <Image Include="res\indicator.bmp" />
     <Image Include="res\indicator.ico" />
     <Image Include="res\input_port.bmp" />
     <Image Include="res\input_port.ico" />
+    <Image Include="res\irq.bmp" />
     <Image Include="res\kbd.bmp" />
     <Image Include="res\keyboard.ico" />
     <Image Include="res\label.bmp" />
@@ -495,6 +518,8 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <Image Include="res\Numbers.bmp" />
     <Image Include="res\out_port.bmp" />
     <Image Include="res\out_port.ico" />
+    <Image Include="res\vi54_icon.bmp" />
+    <Image Include="\\tsclient\_home_anton_tmp\vi54.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

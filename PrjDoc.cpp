@@ -218,7 +218,7 @@ void CPrjDoc::OnEmulatorCfg()
 	CfgDlg.m_FreePinLevel = FreePinLevel;
 	if (CfgDlg.DoModal() == IDOK) {
 		RomSize = CfgDlg.m_RomSize;
-		TaktFreq = std::round(CfgDlg.m_TaktFreq*1000000);
+		TaktFreq = static_cast<DWORD>(std::round(CfgDlg.m_TaktFreq*1000000));
 		FreePinLevel = CfgDlg.m_FreePinLevel;
 		RedrawArch();
 		//SetModifiedFlag();

@@ -330,14 +330,14 @@ void CDemis2000App::OnEmulatorCfg()
 	pPrjDoc->OnEmulatorCfg();
 }
 
-CElement* CDemis2000App::CreateExtElement(const CString& LibGUID, const CString& ElementName, BOOL ArchMode, int id)
+std::shared_ptr<CElement> CDemis2000App::CreateExtElement(const CString& LibGUID, const CString& ElementName, BOOL ArchMode, int id)
 {
 	const auto iterLib = ElementLibraries.find(std::string(LibGUID));
 	if (iterLib == ElementLibraries.cend()) {
 		return nullptr;
 	}
 	CElemLib* pLib = iterLib->second;
-	CElement* pElement = pLib->CreateElement(ElementName, ArchMode, id);
+	std::shared_ptr<CElement> pElement = pLib->CreateElement(ElementName, ArchMode, id);
 	if (pElement == nullptr) {
 		TRACE("CDemis2000App::CreateExtElement: CreateElement failed");
 		ASSERT(FALSE);
@@ -414,12 +414,14 @@ BOOL CDemis2000App::InitProgram()
 	CString ProgTitle = pPrjDoc->GetTitle();
 	int PtPos = ProgTitle.ReverseFind('.');
 	if (PtPos != -1) ProgTitle = ProgTitle.Left(PtPos);
-	ProgTitle += ".dms";
 	CString ProgName = pPrjDoc->GetPathName();
 	int SlashPos = ProgName.ReverseFind('\\');
 	if (SlashPos != -1) ProgName = ProgName.Left(SlashPos + 1);
 	else ProgName = "";
 	ProgName += ProgTitle;
+	std::string pathLst = (LPCTSTR)ProgName;
+	pathLst += ".lst";
+	ProgName += ".dms";
 	ASSERT(pPrjDoc->RomSize < 1024);
 	int ProgStart = (1024 * (1024 - pPrjDoc->RomSize) >> 4);
 	DWORD Code = LoadProgram((char*)(LPCTSTR)ProgName, ProgStart, 0x0000);
@@ -434,6 +436,9 @@ BOOL CDemis2000App::InitProgram()
 	CString Mes;
 	Mes.Format("Загружен исполняемый файл %s\r\n", ProgTitle);
 	((CMainFrame*)m_pMainWnd)->AddMessage(Mes, FALSE);
+
+	::ClearListing();
+	::ParseListing(pathLst);
 
 	return TRUE;
 }
@@ -886,6 +891,18 @@ void HostData::OnPinStateChanged(DWORD PinState, int hElement) {
 	theApp.pDebugArchDoc->pView->OnPinStateChanged(PinState, hElement);
 }
 
-void HostData::SetTickTimer(int64_t ticks, DWORD hElement, std::function<void(DWORD)> handler) {
-	::SetTickTimer(hElement, ticks, handler);
+void HostData::SetTickTimer(int64_t ticks, int64_t interval, DWORD hElement, std::function<void(DWORD)> handler) {
+	::SetTickTimer(hElement, ticks, interval, handler);
+}
+
+int HostData::AddInstructionListener(std::function<void(int64_t)> handler) {
+	return ::AddInstructionListener(handler);
+}
+
+void HostData::DeleteInstructionListener(int id) {
+	::DeleteInstructionListener(id);
+}
+
+void HostData::Interrupt(int intNumber) {
+	theApp.pEmData->IntRequest |= static_cast<uint64_t>(1) << intNumber;
 }

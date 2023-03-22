@@ -13,13 +13,11 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Russian resources
+// Russian (Russia) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_RUS)
-#ifdef _WIN32
 LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 #pragma code_page(1251)
-#endif //_WIN32
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -27,14 +25,16 @@ LANGUAGE LANG_RUSSIAN, SUBLANG_DEFAULT
 //
 
 IDR_ELEMLIB             REGISTRY                "ElemLib.rgs"
+
 IDR_ELEMENT             REGISTRY                "Element.rgs"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Menu
 //
 
-IDR_LED_MENU MENU 
+IDR_LED_MENU MENU
 BEGIN
     POPUP "Светодиод"
     BEGIN
@@ -44,16 +44,22 @@ BEGIN
     END
 END
 
-IDR_OUTPUT_PORT_MENU MENU 
+IDR_OUTPUT_PORT_MENU MENU
 BEGIN
     POPUP "Порт вывода"
     BEGIN
         MENUITEM "&Адрес",                      ID_ADDRESS
-        MENUITEM "Повернуть",                   ID_ROTATE
+        POPUP "Положение выводов"
+        BEGIN
+            MENUITEM "Выводы справа",               ID_OUTPUTS_RIGHT
+            MENUITEM "Выводы снизу",                ID_OUTPUTS_DOWN
+            MENUITEM "Выводы слева",                ID_OUTPUTS_LEFT
+            MENUITEM "Выводы сверху",               ID_OUTPUTS_UP
+        END
     END
 END
 
-IDR_LABEL_MENU MENU 
+IDR_LABEL_MENU MENU
 BEGIN
     POPUP "Метка"
     BEGIN
@@ -61,7 +67,7 @@ BEGIN
     END
 END
 
-IDR_INPUT_PORT_MENU MENU 
+IDR_INPUT_PORT_MENU MENU
 BEGIN
     POPUP "Порт ввода"
     BEGIN
@@ -69,7 +75,7 @@ BEGIN
     END
 END
 
-IDR_BUTTON_MENU MENU 
+IDR_BUTTON_MENU MENU
 BEGIN
     POPUP "Кнопка"
     BEGIN
@@ -83,7 +89,7 @@ BEGIN
     END
 END
 
-IDR_IND_MENU MENU 
+IDR_IND_MENU MENU
 BEGIN
     POPUP "Индикатор"
     BEGIN
@@ -92,7 +98,7 @@ BEGIN
     END
 END
 
-IDR_KBD_MENU MENU 
+IDR_KBD_MENU MENU
 BEGIN
     POPUP "Клавиатура"
     BEGIN
@@ -103,7 +109,7 @@ BEGIN
     END
 END
 
-IDR_ADC_MENU MENU 
+IDR_ADC_MENU MENU
 BEGIN
     POPUP "АЦП"
     BEGIN
@@ -113,7 +119,7 @@ BEGIN
     END
 END
 
-IDR_BEEP_MENU MENU 
+IDR_BEEP_MENU MENU
 BEGIN
     POPUP "Генератор звука"
     BEGIN
@@ -121,7 +127,7 @@ BEGIN
     END
 END
 
-IDR_MATRIX_MENU MENU 
+IDR_MATRIX_MENU MENU
 BEGIN
     POPUP "Матрица"
     BEGIN
@@ -131,15 +137,30 @@ BEGIN
     END
 END
 
+IDR_TIMER_MENU MENU
+BEGIN
+    POPUP "Таймер"
+    BEGIN
+        MENUITEM "Параметры",                   ID_SETTINGS
+    END
+END
+
+IDR_IRQ_MENU MENU
+BEGIN
+    POPUP "IRQ"
+    BEGIN
+        MENUITEM "Параметры",                   ID_SETTINGS
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
 // Dialog
 //
 
-IDD_ADDRESS_DLG DIALOG  0, 0, 112, 21
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
-    WS_SYSMENU
+IDD_ADDRESS_DLG DIALOG 0, 0, 112, 21
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Адрес (hex)"
 FONT 8, "MS Sans Serif"
 BEGIN
@@ -148,27 +169,23 @@ BEGIN
     PUSHBUTTON      "Отмена",IDCANCEL,76,4,31,12
 END
 
-IDD_TEXT_DLG DIALOG  0, 0, 124, 90
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | 
-    WS_SYSMENU
+IDD_TEXT_DLG DIALOG 0, 0, 124, 90
+STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Текст метки"
 FONT 8, "MS Sans Serif"
 BEGIN
-    EDITTEXT        IDC_TEXT,4,4,116,64,ES_MULTILINE | ES_AUTOVSCROLL | 
-                    ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
+    EDITTEXT        IDC_TEXT,4,4,116,64,ES_MULTILINE | ES_AUTOVSCROLL | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL | WS_HSCROLL
     DEFPUSHBUTTON   "OK",IDOK,8,72,36,12
     PUSHBUTTON      "Отмена",IDCANCEL,72,72,40,12
 END
 
-IDD_KBD_CAPTIONS_DLG DIALOG  0, 0, 134, 71
+IDD_KBD_CAPTIONS_DLG DIALOG 0, 0, 134, 71
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Надписи"
 FONT 8, "MS Sans Serif"
 BEGIN
-    COMBOBOX        IDC_X,98,3,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        IDC_Y,31,3,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_X,98,3,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_Y,31,3,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     EDITTEXT        IDC_CAPTION,41,20,36,13
     DEFPUSHBUTTON   "Следующая",ID_NEXT,3,37,126,14
     PUSHBUTTON      "OK",IDOK,3,55,45,14
@@ -178,35 +195,32 @@ BEGIN
     RTEXT           "Надпись:",IDC_STATIC,3,20,33,12,SS_CENTERIMAGE
 END
 
-IDD_KBD_SIZE_DLG DIALOG  0, 0, 138, 38
+IDD_KBD_SIZE_DLG DIALOG 0, 0, 138, 38
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Размерность"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,20,50,14
     PUSHBUTTON      "Отмена",IDCANCEL,84,20,50,14
-    COMBOBOX        IDC_X,103,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        IDC_Y,30,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_X,103,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_Y,30,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Столбцов:",IDC_STATIC,67,2,35,12,SS_CENTERIMAGE
     RTEXT           "Строк:",IDC_STATIC,4,2,24,12,SS_CENTERIMAGE
 END
 
-IDD_ADC_DELAY_DLG DIALOG  0, 0, 143, 36
+IDD_ADC_DELAY_DLG DIALOG 0, 0, 143, 36
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Время преобразования АЦП"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,18,50,14
     PUSHBUTTON      "Отмена",IDCANCEL,89,18,50,14
-    RTEXT           "Время преобразования:",IDC_STATIC,4,2,85,12,
-                    SS_CENTERIMAGE
+    RTEXT           "Время преобразования:",IDC_STATIC,4,2,85,12,SS_CENTERIMAGE
     EDITTEXT        IDC_DELAY,92,2,34,12,ES_NUMBER
     RTEXT           "мс.",IDC_STATIC,126,2,13,12,SS_CENTERIMAGE
 END
 
-IDD_ADC_LIMITS_DLG DIALOG  0, 0, 123, 52
+IDD_ADC_LIMITS_DLG DIALOG 0, 0, 123, 52
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Пределы АЦП"
 FONT 8, "MS Sans Serif"
@@ -221,7 +235,7 @@ BEGIN
     RTEXT           "В.",IDC_STATIC,110,17,9,12,SS_CENTERIMAGE
 END
 
-IDD_BEEP_FREQ_DLG DIALOG  0, 0, 115, 47
+IDD_BEEP_FREQ_DLG DIALOG 0, 0, 115, 47
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Частота генератора"
 FONT 8, "MS Sans Serif"
@@ -233,19 +247,45 @@ BEGIN
     LTEXT           "Гц",IDC_STATIC,96,7,12,12,SS_CENTERIMAGE
 END
 
-IDD_MATRIX_SIZE_DLG DIALOG  0, 0, 138, 38
+IDD_MATRIX_SIZE_DLG DIALOG 0, 0, 138, 38
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Размерность"
 FONT 8, "MS Sans Serif"
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,4,20,50,14
     PUSHBUTTON      "Отмена",IDCANCEL,84,20,50,14
-    COMBOBOX        IDC_X,103,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
-    COMBOBOX        IDC_Y,30,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | 
-                    WS_TABSTOP
+    COMBOBOX        IDC_X,103,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_Y,30,2,31,48,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Столбцов:",IDC_STATIC,67,2,35,12,SS_CENTERIMAGE
     RTEXT           "Строк:",IDC_STATIC,4,2,24,12,SS_CENTERIMAGE
+END
+
+IDD_VI54_SETTINGS_DLG DIALOGEX 0, 0, 201, 88
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "КР1810ВИ54"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "ОК",IDOK,90,67,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,145,67,49,14
+    LTEXT           "Базовый адрес таймера, hex",IDC_STATIC,7,7,104,12,SS_CENTERIMAGE
+    LTEXT           "Номер таймера",IDC_STATIC,7,27,101,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_TIMER_INDEX,115,27,79,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_ADDRESS,115,7,79,12,ES_AUTOHSCROLL
+    LTEXT           "Частота, Гц",IDC_STATIC,7,47,101,12,SS_CENTERIMAGE
+    EDITTEXT        IDC_FREQ,115,47,79,12,ES_AUTOHSCROLL | ES_NUMBER
+END
+
+IDD_IRQ_SETTINGS_DLG DIALOGEX 0, 0, 202, 68
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Запрос прерывания"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "ОК",IDOK,90,47,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,146,47,49,14
+    LTEXT           "Номер прерывания (20h-28h)",-1,7,7,104,12,SS_CENTERIMAGE
+    LTEXT           "Активация",-1,7,27,101,12,SS_CENTERIMAGE
+    COMBOBOX        IDC_LEVEL,115,27,80,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
+    EDITTEXT        IDC_ADDRESS,115,7,80,12,ES_AUTOHSCROLL
 END
 
 
@@ -255,7 +295,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_ADDRESS_DLG, DIALOG
     BEGIN
@@ -320,6 +360,31 @@ BEGIN
         TOPMARGIN, 2
         BOTTOMMARGIN, 34
     END
+
+    IDD_VI54_SETTINGS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 194
+        VERTGUIDE, 115
+        VERTGUIDE, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 81
+        HORZGUIDE, 27
+        HORZGUIDE, 47
+        HORZGUIDE, 67
+    END
+
+    IDD_IRQ_SETTINGS_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 195
+        VERTGUIDE, 115
+        VERTGUIDE, 164
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 61
+        HORZGUIDE, 27
+        HORZGUIDE, 47
+    END
 END
 #endif    // APSTUDIO_INVOKED
 
@@ -383,6 +448,26 @@ BEGIN
     0
 END
 
+IDD_VI54_SETTINGS_DLG DLGINIT
+BEGIN
+    IDC_TIMER_INDEX, 0x403, 2, 0
+0x0031, 
+    IDC_TIMER_INDEX, 0x403, 2, 0
+0x0032, 
+    IDC_TIMER_INDEX, 0x403, 2, 0
+0x0033, 
+    0
+END
+
+IDD_IRQ_SETTINGS_DLG DLGINIT
+BEGIN
+    IDC_LEVEL, 0x403, 5, 0
+0xefd1, 0xe4e0, "\000" 
+    IDC_LEVEL, 0x403, 6, 0
+0xf0d4, 0xedee, 0x00f2, 
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -390,18 +475,35 @@ END
 //
 
 IDB_NUMBERS             BITMAP                  "res\\Numbers.bmp"
+
 IDB_CHARS               BITMAP                  "res\\chars.bmp"
+
 IDB_BUTTON_ELEMENT      BITMAP                  "res\\button.bmp"
+
 IDB_INDICATOR_ELEMENT   BITMAP                  "res\\indicator.bmp"
+
 IDB_INPUT_PORT          BITMAP                  "res\\input_port.bmp"
+
 IDB_KBD_ELEMENT         BITMAP                  "res\\kbd.bmp"
+
 IDB_LABEL               BITMAP                  "res\\label.bmp"
+
 IDB_LED_ELEMENT         BITMAP                  "res\\led.bmp"
+
 IDB_MATRIX_ELEMENT      BITMAP                  "res\\matrix.bmp"
+
 IDB_OUT_PORT            BITMAP                  "res\\out_port.bmp"
+
 IDB_ADC_ELEMENT         BITMAP                  "res\\adc.bmp"
+
 IDB_BEEP_ELEMENT        BITMAP                  "res\\beep.bmp"
+
 IDB_INDIC_DYN_ELEMENT   BITMAP                  "res\\indicato.bmp"
+
+IDB_VI54_ELEMENT        BITMAP                  "res\\vi54_icon.bmp"
+
+IDB_IRQ_ELEMENT         BITMAP                  "res\\irq.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -443,10 +545,26 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_VI54_SETTINGS_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_IRQ_SETTINGS_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
 // String Table
 //
 
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     ID_HI_PRECISION         "16-ти битный режим\n16 бит"
     ID_MENUITEM32771        "Зажигать светодиод низким уровнем"
@@ -457,41 +575,39 @@ BEGIN
     ID_DREBEZG              "Включить/отключить дребезг кнопки"
     ID_KBD_CAPTIONS         "Надписи на кнопках\nНадписи"
     ID_KBD_SIZE             "Изменить размерность клавиатуры\nРазмерность клавиатуры"
-    ID_DELAY                "Установить время преобразования\nВремя преобразования"
     ID_LIMITS               "Изменить мин. и макс. напряжения АЦП\nПределы АЦП"
 END
 
-STRINGTABLE 
+STRINGTABLE
+BEGIN
+    ID_DELAY                "Установить время преобразования\nВремя преобразования"
+    ID_MATRIX_SIZE          "Изменить размерность индикатора\nРазмерность индикатора"
+    ID_ROTATE               "Повернуть элемент\nПовернуть"
+    ID_SELECT_COLOR         "Изменить цвет\nЦвет"
+    ID_BEEP_FREQ            "Частота генератора"
+END
+
+STRINGTABLE
 BEGIN
     ID_ACTIVE_HIGH          "Зажигать высоким уровнем"
     ID_ACTIVE_LOW           "Зажигать низким уровнем"
 END
 
-STRINGTABLE 
-BEGIN
-    ID_BEEP_FREQ            "Частота генератора"
-    ID_MATRIX_SIZE          "Изменить размерность индикатора\nРазмерность индикатора"
-    ID_ROTATE               "Повернуть элемент\nПовернуть"
-    ID_SELECT_COLOR         "Изменить цвет\nЦвет"
-END
-
-STRINGTABLE 
+STRINGTABLE
 BEGIN
     IDS_PROJNAME            "StdElem"
 END
 
-#endif    // Russian resources
+#endif    // Russian (Russia) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// English (U.S.) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
-#ifdef _WIN32
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -518,7 +634,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (U.S.) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

@@ -4,6 +4,9 @@
 
 #include "stdafx.h"
 #include "BeepElement.h"
+
+#include "StdElemApp.h"
+
 #include <winioctl.h>
 
 #ifdef _DEBUG

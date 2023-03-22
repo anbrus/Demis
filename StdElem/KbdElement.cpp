@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "KbdElement.h"
+
+#include "StdElemApp.h"
 #include "ElemInterf.h"
 #include "..\definitions.h"
 
@@ -349,7 +351,7 @@ void CKbdElement::OnKeyPressed(CPoint Key, BOOL Pressed)
 	if (Drebezg) {
 		int64_t msDrebezg = distributionDrebezg(rndEngine);
 		ticksDrebezgEnd = *pTickCounter + msDrebezg * TaktFreq / 1000000;
-		theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, id, [this](DWORD) { OnTickTimer(); });
+		theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, 0, id, [this](DWORD) { OnTickTimer(); });
 	}
 
 	RecalcOutputs();
@@ -772,7 +774,7 @@ void CKbdElement::OnTickTimer()
 	if (ticksDrebezgEnd > *pTickCounter) {
 		RecalcOutputs();
 		theApp.pHostInterface->OnPinStateChanged(OutputState, id);
-		theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, id, [this](DWORD) { OnTickTimer(); });
+		theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, 0, id, [this](DWORD) { OnTickTimer(); });
 	}
 	else {
 		RecalcOutputs();

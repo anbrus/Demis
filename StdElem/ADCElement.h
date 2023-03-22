@@ -1,25 +1,19 @@
-// ADCElement.h: interface for the CButtonElement class.
-//
-//////////////////////////////////////////////////////////////////////
-
-#if !defined(AFX_ADC_H__AC326D84_78BA_11D4_8288_E863E1351E47__INCLUDED_)
-#define AFX_ADC_H__AC326D84_78BA_11D4_8288_E863E1351E47__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "ElementBase.h"
 #include "ElementWnd.h"
+#include "CAdcSliderCtrl.h"
+#include "Resource.h"
 
 class CADCArchWnd : public CElementWnd
 {
 public:
+	CADCArchWnd(CElementBase* pElement);
+	virtual ~CADCArchWnd();
+
 	void SetRange(BOOL HiPrecision);
 	virtual void Draw(CDC* pDC);
 	virtual void Redraw(int64_t ticks) override;
-	CADCArchWnd(CElementBase* pElement);
-	virtual ~CADCArchWnd();
 
 protected:
 	//{{AFX_MSG(CADCArchWnd)
@@ -33,7 +27,7 @@ protected:
 
 private:
 	std::mutex mutexDraw;
-	CSliderCtrl Slider;
+	CAdcSliderCtrl Slider;
 	CDC MemoryDC;
 
 	void DrawStatic(CDC* pDC);
@@ -95,7 +89,6 @@ protected:
 	DWORD DelayTicks;
 };
 
-#endif // !defined(AFX_ADC_H__AC326D84_78BA_11D4_8288_E863E1351E47__INCLUDED_)
 /////////////////////////////////////////////////////////////////////////////
 // CADCDelayDlg dialog
 

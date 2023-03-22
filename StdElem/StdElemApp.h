@@ -1,10 +1,11 @@
 
+#pragma once
+
 #include "..\ElemInterface.h"
 #include "..\definitions.h"
 #include "resource.h"
 #include "../StdElem.h"
-
-#pragma once
+#include "Vi54IoPort.h"
 
 extern "C" class CStdElemApp : public CWinApp
 {
@@ -12,12 +13,15 @@ public:
 	HostInterface* pHostInterface;
 
 	CPen DrawPen, SelectPen;
-	COLORREF DrawColor, BkColor, SelectColor, BlackColor, OnColor;
+	COLORREF DrawColor, BkColor, SelectColor, BlackColor, OnColor, GrayColor;
 	CBrush BkBrush;
 	CDC DrawOnWhiteNumb, DrawOnGrayNumb, SelOnWhiteNumb, SelOnGrayNumb;
 	CDC DrawOnWhiteChar, SelOnWhiteChar;
 	int m_ElementsCount;
-	struct _ElementId ElementId[11];
+	struct _ElementId ElementId[13];
+	Vi54IoPort Vi54Port;
+	std::shared_ptr<CElement> pVi54Router=nullptr;
+
 	CStdElemApp();
 
 private:
@@ -53,5 +57,5 @@ public:
 	virtual CString GetElementName(DWORD Index) override;
 	virtual DWORD GetElementType(DWORD Index) override;
 	virtual HBITMAP GetElementIcon(DWORD Index) override;
-	virtual CElement* CreateElement(const CString& name, bool isArchMode, int id) override;
+	virtual std::shared_ptr<CElement> CreateElement(const CString& name, bool isArchMode, int id) override;
 };

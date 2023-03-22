@@ -2,15 +2,12 @@
 //
 //////////////////////////////////////////////////////////////////////
 
-#if !defined(AFX_INPUTPORT_H__AC326D83_78BA_11D4_8288_E863E1351E47__INCLUDED_)
-#define AFX_INPUTPORT_H__AC326D83_78BA_11D4_8288_E863E1351E47__INCLUDED_
-
-#if _MSC_VER > 1000
 #pragma once
-#endif // _MSC_VER > 1000
 
 #include "ElementBase.h"
 #include "ElementWnd.h"
+
+#include <mutex>
 
 class CInputPort;
 
@@ -28,6 +25,7 @@ public:
 
 protected:
 	CDC MemoryDC;
+	std::mutex mutexDraw;
 
 	afx_msg void OnAddress();
 	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
@@ -40,15 +38,14 @@ public:
 	CInputPort(BOOL ArchMode, int id);
 	virtual ~CInputPort();
 
-	virtual DWORD GetPinState();
-	virtual DWORD GetPortData();
-	virtual void SetPinState(DWORD NewState);
+	virtual DWORD GetPinState() override;
+	virtual DWORD GetPortData(DWORD Addresses) override;
+	virtual void SetPinState(DWORD NewState) override;
 	DWORD Value;
-	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);
-	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd);
-	virtual BOOL Save(HANDLE hFile);
-	virtual BOOL Load(HANDLE hFile);
+	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel) override;
+	virtual BOOL Show(HWND hArchParentWnd, HWND hConstrParentWnd) override;
+	virtual BOOL Save(HANDLE hFile) override;
+	virtual BOOL Load(HANDLE hFile) override;
 	void UpdateTipText();
 };
 
-#endif // !defined(AFX_INPUTPORT_H__AC326D83_78BA_11D4_8288_E863E1351E47__INCLUDED_)

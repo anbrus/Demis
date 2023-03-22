@@ -2,6 +2,7 @@
 
 #include "ElementBase.h"
 #include "ElementWnd.h"
+#include "Resource.h"
 
 #include <mutex>
 

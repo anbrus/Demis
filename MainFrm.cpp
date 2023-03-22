@@ -28,7 +28,6 @@ BEGIN_MESSAGE_MAP(CMainFrame, CMDIFrameWnd)
 	ON_WM_CLOSE()
 	ON_MESSAGE(WMU_EMULATOR_MESSAGE, OnEmulatorMessage)
 	//ON_MESSAGE(WMU_READPORT, OnReadPort)
-	ON_MESSAGE(WMU_INTREQUEST, OnIntRequest)
 	ON_MESSAGE(WMU_EMULSTOP, OnEmulStop)
 	//}}AFX_MSG_MAP
 	// Global help commands
@@ -377,12 +376,6 @@ LRESULT CMainFrame::OnEmulatorMessage(WPARAM wParam, LPARAM lParam)
 LPARAM CMainFrame::OnReadPort(WPARAM wParam, LPARAM lParam)
 {
 	if (theApp.pDebugArchDoc) return theApp.pDebugArchDoc->ReadPort(wParam);
-	return 0;
-}
-
-LPARAM CMainFrame::OnIntRequest(WPARAM wParam, LPARAM lParam)
-{
-	theApp.pEmData->IntRequest |= wParam;
 	return 0;
 }
 

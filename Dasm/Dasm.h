@@ -9,13 +9,13 @@
 #endif // _MSC_VER > 1000
 
 #ifndef __AFXWIN_H__
-	#error include 'stdafx.h' before including this file for PCH
+#error include 'stdafx.h' before including this file for PCH
 #endif
 
 #include "resource.h"		// main symbols
 #include "..\definitions.h"
 
-typedef DWORD (*_COPFunc)();
+typedef DWORD(*_COPFunc)();
 
 /////////////////////////////////////////////////////////////////////////////
 // CDasmApp
@@ -27,10 +27,10 @@ class CDasmApp : public CWinApp
 public:
 	CDasmApp();
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CDasmApp)
-	public:
+	// Overrides
+		// ClassWizard generated virtual function overrides
+		//{{AFX_VIRTUAL(CDasmApp)
+public:
 	//}}AFX_VIRTUAL
 
 	//{{AFX_MSG(CDasmApp)
@@ -71,12 +71,13 @@ DWORD Rep();
 DWORD Bound();
 DWORD Mul286();
 DWORD Ext386();
+DWORD Hlt();
 
 BYTE* pInstr;
 DWORD Unknown();
-WORD CurSeg,CurOffs,LocalSeg;
+WORD CurSeg, CurOffs, LocalSeg;
 BOOL SegChanged;
-CString CurLine,Comment,sLocalSeg;
+CString CurLine, Comment, sLocalSeg;
 BYTE W;
 struct _EmulatorData* pEmData;
 #include "Table.h"

@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "ADCElement.h"
+
+#include "StdElemApp.h"
 #include "..\definitions.h"
 #include "utils.h"
 
@@ -207,7 +209,7 @@ void CADCConstrWnd::Draw(CDC* pDC)
 		pDC->FrameRect(MainRect, &SelectBrush);
 	else pDC->FrameRect(MainRect, &NormalBrush);
 
-	CBrush GrayBrush(GetSysColor(COLOR_BTNFACE));
+	CBrush GrayBrush(theApp.GrayColor);
 	CGdiObject* pOldBrush = pDC->SelectObject(&GrayBrush);
 	pDC->PatBlt(29, 1, Size.cx - 29 - 1, Size.cy - 2, PATCOPY);
 	pDC->SelectObject(pOldBrush);
@@ -218,7 +220,7 @@ void CADCConstrWnd::Draw(CDC* pDC)
 
 	pDC->SetTextColor(theApp.DrawColor);
 
-	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetBkColor(theApp.GrayColor);
 	//Подписи к слайдеру
 	pDC->DrawText(((CADCElement*)pElement)->LoLimit, CRect(30, Size.cy - 18, Size.cx - 1, Size.cy - 7),
 		DT_LEFT | DT_SINGLELINE | DT_BOTTOM);
@@ -267,9 +269,9 @@ void CADCArchWnd::DrawStatic(CDC* pDC)
 		pTempPen = &theApp.SelectPen;
 	else pTempPen = &theApp.DrawPen;
 	pOldPen = pDC->SelectObject(pTempPen);
-	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetBkColor(theApp.GrayColor);
 
-	CBrush GrayBrush(GetSysColor(COLOR_BTNFACE));
+	CBrush GrayBrush(theApp.GrayColor);
 	CGdiObject* pOldBrush = pDC->SelectObject(&GrayBrush);
 	pDC->PatBlt(7, 1, Size.cx - 24, Size.cy - 15, PATCOPY);
 	pDC->SelectObject(pOldBrush);
@@ -387,11 +389,11 @@ void CADCArchWnd::DrawDynamic(CDC* pDC)
 	CFont DrawFont;
 	DrawFont.CreatePointFont(80, "Arial Cyr");
 	pOldFont = pDC->SelectObject(&DrawFont);
-	pDC->SetBkColor(GetSysColor(COLOR_BTNFACE));
+	pDC->SetBkColor(theApp.GrayColor);
 	pDC->SetTextColor(theApp.DrawColor);
 	CString Temp;
 	Temp.Format("(%04Xh)", Value);
-	pDC->FillSolidRect(7, 18, Size.cx - 25, 31 - 18, GetSysColor(COLOR_BTNFACE));
+	pDC->FillSolidRect(7, 18, Size.cx - 25, 31 - 18, theApp.GrayColor);
 	pDC->DrawText(Temp, CRect(7, 18, Size.cx - 16, 31),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
@@ -516,7 +518,7 @@ void CADCElement::SetPinState(DWORD NewState)
 	if ((OldStartState != StartState) && (OldStartState == 0)) {
 		if (DelayTicks) {
 			ReadyState = 0;
-			theApp.pHostInterface->SetTickTimer(*pTickCounter+DelayTicks, id, [this](DWORD) { OnTickTimer(); });
+			theApp.pHostInterface->SetTickTimer(*pTickCounter+DelayTicks, 0, id, [this](DWORD) { OnTickTimer(); });
 		}
 		else {
 			ReadyState = 1;

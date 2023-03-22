@@ -1,6 +1,8 @@
 #pragma once
 
 #include <string>
+#include <memory>
+#include <vector>
 
 class CElement
 {
@@ -16,7 +18,7 @@ public:
 	virtual CString get_sClsId() = 0;
 	virtual HWND get_hArchWnd() = 0;
 	virtual HWND get_hConstrWnd() = 0;
-	virtual DWORD get_nAddress() = 0;
+	virtual std::vector<DWORD> GetAddresses() = 0;
 	virtual BOOL get_bModifiedFlag() = 0;
 	virtual CString get_sTipText() = 0;
 	virtual BOOL get_bArchSelected() = 0;
@@ -24,8 +26,8 @@ public:
 	virtual BOOL get_bConstrSelected() = 0;
 	virtual void put_bConstrSelected(BOOL newVal) = 0;
 	virtual DWORD get_nPointCount() = 0;
-	virtual DWORD GetPortData() = 0;
-	virtual void SetPortData(DWORD newVal) = 0;
+	virtual DWORD GetPortData(DWORD Addresses) = 0;
+	virtual void SetPortData(DWORD Addresses, DWORD newVal) = 0;
 	virtual DWORD GetPinState() = 0;
 	virtual void SetPinState(DWORD newVal) = 0;
 	virtual long get_nArchAngle() = 0;
@@ -47,6 +49,7 @@ public:
 	virtual void RedrawArchWnd(int64_t ticks)=0;
 	virtual void RedrawConstrWnd(int64_t ticks)=0;
 	virtual void OnVSync() = 0;
+	virtual void OnDelete() = 0;
 protected:
 	//IElement *pInterface;
 };
@@ -63,6 +66,6 @@ public:
 	virtual CString GetElementName(DWORD Index) =0;
 	virtual DWORD GetElementType(DWORD Index) =0;
 	virtual HBITMAP GetElementIcon(DWORD Index) =0;
-	virtual CElement* CreateElement(const CString& name, bool isArchMode, int id) = 0;
+	virtual std::shared_ptr<CElement> CreateElement(const CString& name, bool isArchMode, int id) = 0;
 };
 

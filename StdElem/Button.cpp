@@ -7,6 +7,7 @@
 #include "TextDlg.h"
 #include "ElemInterf.h"
 #include "..\definitions.h"
+#include "StdElemApp.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -456,7 +457,7 @@ void CButtonElement::OnLButtonDown()
 	if (Drebezg) {
 		int64_t msDrebezg = distributionDrebezg(rndEngine);
 		ticksDrebezgEnd = *pTickCounter + msDrebezg * TaktFreq / 1000000;
-		theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, id, [this](DWORD) { OnTickTimer(); });
+		theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, 0, id, [this](DWORD) { OnTickTimer(); });
 	}
 	else {
 		CurState = (Pressed ? 1 : 0) ^ (NormalOpened ? 0 : 1) ^ FreePinLevel;
@@ -471,7 +472,7 @@ void CButtonElement::OnLButtonUp()
 		if (Drebezg) {
 			int64_t msDrebezg = distributionDrebezg(rndEngine);
 			ticksDrebezgEnd = *pTickCounter + msDrebezg * TaktFreq / 1000000;
-			theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, id, [this](DWORD) { OnTickTimer(); });
+			theApp.pHostInterface->SetTickTimer(*pTickCounter + 18, 0, id, [this](DWORD) { OnTickTimer(); });
 		}
 		else {
 			CurState = (Pressed ? 1 : 0) ^ (NormalOpened ? 0 : 1) ^ FreePinLevel;
@@ -494,7 +495,7 @@ void CButtonElement::OnTickTimer()
 	if (ticksDrebezgEnd > *pTickCounter) {
 		CurState = distributionBinary(rndEngine);
 		theApp.pHostInterface->OnPinStateChanged(CurState, id);
-		theApp.pHostInterface->SetTickTimer(*pTickCounter+18, id, [this](DWORD) { OnTickTimer(); });
+		theApp.pHostInterface->SetTickTimer(*pTickCounter+18, 0, id, [this](DWORD) { OnTickTimer(); });
 	}
 	else {
 		CurState = (Pressed ? 1 : 0) ^ (NormalOpened ? 0 : 1) ^ FreePinLevel;

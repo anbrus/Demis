@@ -4,6 +4,8 @@
 
 #include "stdafx.h"
 #include "MatrixElem.h"
+
+#include "StdElemApp.h"
 #include "utils.h"
 
 

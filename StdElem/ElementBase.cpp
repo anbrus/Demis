@@ -5,6 +5,7 @@
 #include "stdafx.h"
 #include "ElementWnd.h"
 #include "ElementBase.h"
+#include "StdElemApp.h"
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -22,7 +23,8 @@ CElementBase::CElementBase(BOOL ArchMode, int id):
 	//this->pInterface = pInterface;
 	ArchSelected = FALSE; ConstrSelected = FALSE;
 	pTickCounter = NULL;
-	EditMode = TRUE; Address = 0; ModifiedFlag = FALSE;
+	EditMode = TRUE;
+	ModifiedFlag = FALSE;
 	pArchElemWnd = NULL; pConstrElemWnd = NULL;
 	pArchParentWnd = NULL;
 	TipText = "";
@@ -63,12 +65,12 @@ BOOL CElementBase::ConnectPin(DWORD PinIndex, BOOL Connect)
 	return TRUE;
 }
 
-DWORD CElementBase::GetPortData()
+DWORD CElementBase::GetPortData(DWORD Addresses)
 {
 	return 0;
 }
 
-void CElementBase::SetPortData(DWORD Data)
+void CElementBase::SetPortData(DWORD Addresses, DWORD Data)
 {
 }
 
@@ -134,7 +136,7 @@ HWND CElementBase::get_hConstrWnd() {
 	else return NULL;
 }
 
-DWORD CElementBase::get_nAddress() { return Address; }
+std::vector<DWORD> CElementBase::GetAddresses() { return Addresses; }
 
 BOOL CElementBase::get_bModifiedFlag() { return ModifiedFlag; }
 

@@ -44,6 +44,8 @@ BEGIN_MESSAGE_MAP(CArchView, CScrollView)
 	ON_MESSAGE(WMU_ELEMENT_LBUTTONDOWN, OnElementLButtonDown)
 	ON_MESSAGE(WMU_ELEMENT_LBUTTONUP, OnElementLButtonUp)
 	ON_MESSAGE(WMU_ELEMENT_MOUSEMOVE, OnElementMouseMove)
+	ON_MESSAGE(WMU_ARCHELEM_DISCONNECT, OnArchElemDisconnect)
+	ON_MESSAGE(WMU_ARCHELEM_CONNECT, OnArchElemConnect)
 	ON_WM_KEYDOWN()
 	ON_WM_KEYUP()
 	ON_WM_ERASEBKGND()
@@ -156,7 +158,7 @@ LPARAM CArchView::OnElementLButtonDown(WPARAM nFlags, LPARAM hElement)
 {
 	CPoint point;
 	GetCursorPos(&point);
-	CElement *pElement = pDoc->Elements[(DWORD)hElement];
+	std::shared_ptr<CElement> pElement = pDoc->Elements[(DWORD)hElement];
 
 	MoveMode = TRUE; CopyMode = FALSE;
 	HWND hCaptureWnd = (HWND)(ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
@@ -167,8 +169,8 @@ LPARAM CArchView::OnElementLButtonDown(WPARAM nFlags, LPARAM hElement)
 	  //Если щелчок на выделенном элементе, то ничего не делаем
 		if (!(ArchMode ? pElement->get_bArchSelected() : pElement->get_bConstrSelected())) {
 			//Иначе выделяем текущий и снимаем выделение с остальных
-			for (CElement* pElement2 : pDoc->Elements) {
-				if (pElement2 == NULL) continue;
+			for (const auto entry2 : pDoc->Elements) {
+				std::shared_ptr<CElement> pElement2 = entry2.second;
 
 				if (ArchMode ? pElement2->get_bArchSelected() : pElement2->get_bConstrSelected()) {
 					SelectedCount--;
@@ -217,15 +219,15 @@ LPARAM CArchView::OnElementLButtonUp(WPARAM nFlags, LPARAM hElement)
 {
 	CPoint point;
 	GetCursorPos(&point);
-	CElement *pElement = pDoc->Elements[(DWORD)hElement];
+	std::shared_ptr<CElement> pElement = pDoc->Elements[(DWORD)hElement];
 
 	switch (nFlags) {
 	case 0:
 		if ((SelectedCount > 1) &&
 			(ArchMode ? pElement->get_bArchSelected() : pElement->get_bConstrSelected()) &&
 			!MoveMode) {
-			for (CElement* pElement2 : pDoc->Elements) {
-				if (pElement2 == NULL) continue;
+			for (const auto entry2 : pDoc->Elements) {
+				std::shared_ptr<CElement> pElement2 = entry2.second;
 				if (pElement2 == pElement) continue;
 
 				if (ArchMode&&pElement2->get_bArchSelected()) {
@@ -288,18 +290,24 @@ LPARAM CArchView::OnElementMouseMove(WPARAM nFlags, LPARAM hElement)
 
 void CArchView::OnArchElemDel()
 {
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		if ((ArchMode&&pDoc->Elements[n]->get_bArchSelected()) || (!ArchMode&&pDoc->Elements[n]->get_bConstrSelected())) {
-			DeconnectElement(n);
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pElement = entry.second;
+		if ((ArchMode&&pElement->get_bArchSelected()) || (!ArchMode&&pElement->get_bConstrSelected())) {
+			DeconnectElement(entry.first);
 		}
 	}
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		if ((ArchMode&&pDoc->Elements[n]->get_bArchSelected()) || (!ArchMode&&pDoc->Elements[n]->get_bConstrSelected())) {
-			pDoc->DeleteElement(n);
+
+	std::vector<int> idsToDelete;
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pElement = entry.second;
+		if ((ArchMode&&pElement->get_bArchSelected()) || (!ArchMode&&pElement->get_bConstrSelected())) {
+			idsToDelete.push_back(entry.first);
 		}
 	}
+	for(const int idToDelete : idsToDelete) {
+		pDoc->DeleteElement(idToDelete);
+	}
+
 	RedrawWindow();
 }
 
@@ -308,19 +316,19 @@ void CArchView::OnLButtonDown(UINT nFlags, CPoint point)
 	CScrollView::OnLButtonDown(nFlags, point);
 
 	MoveMode = TRUE; CopyMode = FALSE;
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pElement = entry.second;
 		if (ArchMode) {
-			if (pDoc->Elements[n]->get_bArchSelected()) {
-				pDoc->Elements[n]->put_bArchSelected(FALSE);
-				HWND hWnd = (HWND)pDoc->Elements[n]->get_hArchWnd();
+			if (pElement->get_bArchSelected()) {
+				pElement->put_bArchSelected(FALSE);
+				HWND hWnd = (HWND)pElement->get_hArchWnd();
 				if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
 			}
 		}
 		else {
-			if (pDoc->Elements[n]->get_bConstrSelected()) {
-				pDoc->Elements[n]->put_bConstrSelected(FALSE);
-				HWND hWnd = (HWND)pDoc->Elements[n]->get_hConstrWnd();
+			if (pElement->get_bConstrSelected()) {
+				pElement->put_bConstrSelected(FALSE);
+				HWND hWnd = (HWND)pElement->get_hConstrWnd();
 				if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
 			}
 		}
@@ -338,10 +346,11 @@ void CArchView::OnArchMode()
 	ToolBar.GetToolBarCtrl().CheckButton(ID_CONSTRMODE, FALSE);
 	ArchMode = TRUE;
 
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		HWND hArchWnd = (HWND)pDoc->Elements[n]->get_hArchWnd();
-		HWND hConstrWnd = (HWND)pDoc->Elements[n]->get_hConstrWnd();
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pElement = entry.second;
+
+		HWND hArchWnd = (HWND)pElement->get_hArchWnd();
+		HWND hConstrWnd = (HWND)pElement->get_hConstrWnd();
 		if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_HIDE);
 		if (hArchWnd) ::ShowWindow(hArchWnd, SW_SHOW);
 		if (hConstrWnd) ::EnableWindow(hConstrWnd, FALSE);
@@ -355,10 +364,11 @@ void CArchView::OnConstrMode()
 	ToolBar.GetToolBarCtrl().CheckButton(ID_ARCHMODE, FALSE);
 	ArchMode = FALSE;
 
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		HWND hArchWnd = (HWND)pDoc->Elements[n]->get_hArchWnd();
-		HWND hConstrWnd = (HWND)pDoc->Elements[n]->get_hConstrWnd();
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pElement = entry.second;
+
+		HWND hArchWnd = (HWND)pElement->get_hArchWnd();
+		HWND hConstrWnd = (HWND)pElement->get_hConstrWnd();
 		if (hArchWnd) ::ShowWindow(hArchWnd, SW_HIDE);
 		if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_SHOW);
 		if (hArchWnd) ::EnableWindow(hArchWnd, FALSE);
@@ -443,20 +453,20 @@ BOOL CArchView::OnPreparePrinting(CPrintInfo* pInfo)
 void CArchView::OnUpdateArchElemDel(CCmdUI* pCmdUI)
 {
 	int SelCount = 0, ElementIndex;
-	CElement* pElement;
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		if ((ArchMode&&pDoc->Elements[n]->get_bArchSelected()) ||
-			(!ArchMode&&pDoc->Elements[n]->get_bConstrSelected())) {
+	std::shared_ptr<CElement> pElement;
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pCurElement = entry.second;
+		if ((ArchMode&&pCurElement->get_bArchSelected()) ||
+			(!ArchMode&&pCurElement->get_bConstrSelected())) {
 			SelCount++;
-			pElement = pDoc->Elements[n];
-			ElementIndex = n;
+			pElement = pCurElement;
+			ElementIndex = entry.first;
 		}
 	}
 	pCmdUI->Enable(SelCount > 0);
 	if (SelCount == 1) {
 		struct _ConListElem {
-			CElement* pElement;
+			std::shared_ptr<CElement> pElement;
 			CString PinNumber;
 		}ConList[8];
 
@@ -536,26 +546,27 @@ void CArchView::OnLButtonUp(UINT nFlags, CPoint point)
 
 	CRect SelRect(StartMousePoint, LastMousePoint);
 	SelRect.NormalizeRect();
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pElement = entry.second;
+
 		WINDOWPLACEMENT ElemPlace;
 		ElemPlace.length = sizeof(ElemPlace);
-		HWND hWnd = (HWND)(ArchMode ? pDoc->Elements[n]->get_hArchWnd() :
-			pDoc->Elements[n]->get_hConstrWnd());
+		HWND hWnd = (HWND)(ArchMode ? pElement->get_hArchWnd() :
+			pElement->get_hConstrWnd());
 		if (!hWnd) continue;
 
 		::GetWindowPlacement(hWnd, &ElemPlace);
 		if (SelRect.PtInRect(CPoint(ElemPlace.rcNormalPosition.left, ElemPlace.rcNormalPosition.top)) &&
 			SelRect.PtInRect(CPoint(ElemPlace.rcNormalPosition.right, ElemPlace.rcNormalPosition.bottom))) {
 			if (ArchMode) {
-				if (!pDoc->Elements[n]->get_bArchSelected()) {
-					pDoc->Elements[n]->put_bArchSelected(TRUE);
+				if (!pElement->get_bArchSelected()) {
+					pElement->put_bArchSelected(TRUE);
 					::InvalidateRect(hWnd, NULL, FALSE);
 				}
 			}
 			else {
-				if (!pDoc->Elements[n]->get_bConstrSelected()) {
-					pDoc->Elements[n]->put_bConstrSelected(TRUE);
+				if (!pElement->get_bConstrSelected()) {
+					pElement->put_bConstrSelected(TRUE);
 					::InvalidateRect(hWnd, NULL, FALSE);
 				}
 			}
@@ -563,14 +574,14 @@ void CArchView::OnLButtonUp(UINT nFlags, CPoint point)
 		}
 		else {
 			if (ArchMode) {
-				if (pDoc->Elements[n]->get_bArchSelected()) {
-					pDoc->Elements[n]->put_bArchSelected(FALSE);
+				if (pElement->get_bArchSelected()) {
+					pElement->put_bArchSelected(FALSE);
 					::InvalidateRect(hWnd, NULL, FALSE);
 				}
 			}
 			else {
-				if (pDoc->Elements[n]->get_bConstrSelected()) {
-					pDoc->Elements[n]->put_bConstrSelected(FALSE);
+				if (pElement->get_bConstrSelected()) {
+					pElement->put_bConstrSelected(FALSE);
 					::InvalidateRect(hWnd, NULL, FALSE);
 				}
 			}
@@ -585,29 +596,30 @@ LPARAM CArchView::OnAddElementByName(WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-void CArchView::FindIntersections(CElement* pElement)
+void CArchView::FindIntersections(const std::shared_ptr<CElement>& pElement)
 {
 	CRect IntRect;
 	if (!(pElement->get_nType()&ET_ARCH)) return;
 
 	//Находим один ближайший элемент
 	CPoint MinDist(10, 10);
-	CElement* pNearestEl = NULL;
+	std::shared_ptr<CElement> pNearestEl;
 	WINDOWPLACEMENT Pls1, Pls2;
 	Pls1.length = sizeof(Pls1);
 	Pls2.length = sizeof(Pls2);
 	::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls1);
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		if (!(pDoc->Elements[n]->get_nType()&ET_ARCH)) continue;
-		if (pDoc->Elements[n] == pElement) continue;
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pCurElement = entry.second;
 
-		::GetWindowPlacement((HWND)pDoc->Elements[n]->get_hArchWnd(), &Pls2);
+		if (!(pCurElement->get_nType()&ET_ARCH)) continue;
+		if (pCurElement == pElement) continue;
+
+		::GetWindowPlacement((HWND)pCurElement->get_hArchWnd(), &Pls2);
 		if (IntRect.IntersectRect(&Pls1.rcNormalPosition, &Pls2.rcNormalPosition)) {
-			CPoint TempDist = GetMinDist(pDoc->Elements[n], pElement);
+			CPoint TempDist = GetMinDist(pCurElement, pElement);
 			if ((abs(MinDist.x) >= abs(TempDist.x)) && (abs(MinDist.y) >= abs(TempDist.y))) {
 				MinDist = TempDist;
-				pNearestEl = pDoc->Elements[n];
+				pNearestEl = pCurElement;
 			}
 		}
 	}
@@ -627,18 +639,18 @@ void CArchView::FindIntersections(CElement* pElement)
 	}
 
 	//Подсоединяем все совпавшие выводы
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		if (pDoc->Elements[n] == pElement) continue;
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pDocElement = entry.second;
+		if (pDocElement == pElement) continue;
 
-		::GetWindowPlacement((HWND)pDoc->Elements[n]->get_hArchWnd(), &Pls2);
+		::GetWindowPlacement((HWND)pDocElement->get_hArchWnd(), &Pls2);
 		if (IntRect.IntersectRect(&Pls1.rcNormalPosition, &Pls2.rcNormalPosition)) {
-			ConnectElements(pElement, pDoc->Elements[n]);
+			ConnectElements(pElement, pDocElement);
 		}
 	}
 }
 
-CPoint CArchView::GetMinDist(CElement* pFixedElement, CElement* pMovedElement)
+CPoint CArchView::GetMinDist(const std::shared_ptr<CElement>& pFixedElement, const std::shared_ptr<CElement>& pMovedElement)
 {
 	CPoint Res(10, 10);
 
@@ -675,7 +687,7 @@ CPoint CArchView::GetMinDist(CElement* pFixedElement, CElement* pMovedElement)
 	return Res;
 }
 
-BOOL CArchView::ConnectElements(CElement* pMovedElement, CElement* pFixedElement)
+BOOL CArchView::ConnectElements(const std::shared_ptr<CElement>& pMovedElement, const std::shared_ptr<CElement>& pFixedElement)
 {
 	if (pMovedElement->get_nPointCount() <= 0) return FALSE;
 	if (pFixedElement->get_nPointCount() <= 0) return FALSE;
@@ -706,10 +718,10 @@ BOOL CArchView::ConnectElements(CElement* pMovedElement, CElement* pFixedElement
 			if ((DistX == 0) && (DistY == 0)) {
 				//Находим индексы обоих элементов в массиве
 				int FixedIndex = -1, MovedIndex = -1;
-				for (size_t i = 0; i < pDoc->Elements.size(); i++) {
-					if (pDoc->Elements[i] == NULL) continue;
-					if (pDoc->Elements[i] == pFixedElement) FixedIndex = i;
-					if (pDoc->Elements[i] == pMovedElement) MovedIndex = i;
+				for (const auto entry : pDoc->Elements) {
+					std::shared_ptr<CElement> pDocElement = entry.second;
+					if (pDocElement == pFixedElement) FixedIndex = entry.first;
+					if (pDocElement == pMovedElement) MovedIndex = entry.first;
 				}
 				//Проверим не соединены ли они уже и соединим при необходимости
 				ConPoint CP;
@@ -798,13 +810,13 @@ void CArchView::OnPinStateChanged(DWORD PinState, int hElement)
 
 	if (theApp.pDebugArchDoc == NULL) return;
 
-	CElement* pElement = pDoc->Elements[(DWORD)hElement];
+	std::shared_ptr<CElement> pElement = pDoc->Elements[(DWORD)hElement];
 	PointList* pConData = ConData[(DWORD)hElement];
 
 	int PointCount = pElement->get_nPointCount();
 
 	struct _ElData {
-		CElement* pElement;
+		std::shared_ptr<CElement> pElement;
 		DWORD PinState;
 	}ElData[MAX_CONNECT_POINT * 4];
 	int CachedCount = 0;
@@ -849,13 +861,13 @@ DWORD CArchView::GetPinState(int ElementIndex)
 {
 	if (theApp.pDebugArchDoc == NULL) return 0;
 
-	CElement* pElement = pDoc->Elements[ElementIndex];
+	std::shared_ptr<CElement> pElement = pDoc->Elements[ElementIndex];
 	PointList* pConData = ConData[ElementIndex];
 
 	int PointCount = pElement->get_nPointCount();
 
 	struct _ElData {
-		CElement* pElement;  //Указатель на подключённый элемент
+		std::shared_ptr<CElement> pElement;  //Указатель на подключённый элемент
 		DWORD PinState;        //Состояние выводов подключённого элемента
 	}ElData[MAX_CONNECT_POINT * 4];
 	int CachedCount = 0;
@@ -911,9 +923,10 @@ void CArchView::DeconnectElement(int ElemIndex)
 
 			//Находим индекс подсоединённого элемента
 			BOOL Found = FALSE;
-			size_t m = 0;
-			for (m = 0; m < pDoc->Elements.size(); m++) {
-				if (CP.pElement == pDoc->Elements[m]) { Found = TRUE; break; }
+			int m = -1;
+			for (const auto entry : pDoc->Elements) {
+				std::shared_ptr<CElement> pDocElement = entry.second;
+				if (CP.pElement == pDocElement) { Found = TRUE; m = entry.first; break; }
 			}
 			if (!Found) MessageBox("Ошибка отсоединения элемента", "Ошибка", MB_OK | MB_ICONSTOP);
 			//Отключаем от соответствующего вывода m-го элемента текущий элемент
@@ -944,14 +957,15 @@ BOOL CArchView::MoveSelected(int ShiftX, int ShiftY)
 {
 	BOOL Moved = FALSE;
 
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		if (ArchMode ? pDoc->Elements[n]->get_bArchSelected() : pDoc->Elements[n]->get_bConstrSelected()) {
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pDocElement = entry.second;
+
+		if (ArchMode ? pDocElement->get_bArchSelected() : pDocElement->get_bConstrSelected()) {
 			WINDOWPLACEMENT Pls;
 			Pls.length = sizeof(Pls);
-			HWND hWnd = (HWND)pDoc->Elements[n]->get_hArchWnd();
-			::GetWindowPlacement((HWND)(ArchMode ? pDoc->Elements[n]->get_hArchWnd() :
-				pDoc->Elements[n]->get_hConstrWnd()), &Pls);
+			HWND hWnd = (HWND)pDocElement->get_hArchWnd();
+			::GetWindowPlacement((HWND)(ArchMode ? pDocElement->get_hArchWnd() :
+				pDocElement->get_hConstrWnd()), &Pls);
 			CRect CurRect(Pls.rcNormalPosition);
 			CurRect.OffsetRect(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
 			if ((ShiftX != 0) || (ShiftY != 0)) {
@@ -979,13 +993,13 @@ BOOL CArchView::MoveSelected(int ShiftX, int ShiftY)
 				int dy = GetScrollPos(SB_VERT);
 				int dx = GetScrollPos(SB_HORZ);
 				if (ArchMode) {
-					HWND hWnd = (HWND)pDoc->Elements[n]->get_hArchWnd();
+					HWND hWnd = (HWND)pDocElement->get_hArchWnd();
 					if (hWnd) ::MoveWindow(hWnd,
 						CurRect.left - dx, CurRect.top - dy, CurRect.Width(), CurRect.Height(),
 						TRUE);
 				}
 				else {
-					HWND hWnd = (HWND)pDoc->Elements[n]->get_hConstrWnd();
+					HWND hWnd = (HWND)pDocElement->get_hConstrWnd();
 					if (hWnd) ::MoveWindow(hWnd,
 						CurRect.left - dx, CurRect.top - dy, CurRect.Width(), CurRect.Height(),
 						TRUE);
@@ -1046,20 +1060,20 @@ void CArchView::OnKeyUp(UINT nChar, UINT nRepCnt, UINT nFlags)
 void CArchView::DeconnectSelected()
 {
 	pDoc->SetModifiedFlag();
-	for (size_t n = 0; n < pDoc->Elements.size(); n++) {
-		if (pDoc->Elements[n] == NULL) continue;
-		if (!pDoc->Elements[n]->get_bArchSelected()) continue;
-		DeconnectElement(n);
+	for (const auto entry : pDoc->Elements) {
+		std::shared_ptr<CElement> pDocElement = entry.second;
+		if (!pDocElement->get_bArchSelected()) continue;
+		DeconnectElement(entry.first);
 	}
 }
 
 void CArchView::ConnectSelected()
 {
 	if (ArchMode) {
-		for (size_t i = 0; i < pDoc->Elements.size(); i++) {
-			if (pDoc->Elements[i] == NULL) continue;
-			if ((!CopyMode&&pDoc->Elements[i]->get_bArchSelected()) || CopyMode)
-				FindIntersections(pDoc->Elements[i]);
+		for (const auto entry : pDoc->Elements) {
+			std::shared_ptr<CElement> pDocElement = entry.second;
+			if ((!CopyMode&&pDocElement->get_bArchSelected()) || CopyMode)
+				FindIntersections(pDocElement);
 		}
 	}
 }
@@ -1077,8 +1091,8 @@ void CArchView::redrawChangedElements(CArchView* pArchView) {
 		QueryPerformanceCounter(&li);
 		int64_t countFrameStart = li.QuadPart;
 
-		for (CElement* pElement : pArchView->pDoc->Elements) {
-			if (pElement == nullptr) continue;
+		for (const auto entry : pArchView->pDoc->Elements) {
+			std::shared_ptr<CElement> pElement = entry.second;
 
 			if (pArchView->ArchMode) {
 				if (pElement->IsArchRedrawRequired()) {
@@ -1134,11 +1148,14 @@ BOOL CArchView::CreateElementButtons()
 
 		if (pElemLib->getElementsCount() == 0) { Index++; continue; }
 		for (DWORD n = 0; n < pElemLib->getElementsCount(); n++) {
+			DWORD type = pElemLib->GetElementType(n);
+			if ((type & (ET_ARCH | ET_CONSTR)) == 0) continue;
+
 			CString ElemName = pElemLib->GetElementName(n);
 			BtnBmp[ElIndex] = CBitmap::FromHandle(pElemLib->GetElementIcon(n));
 
 			TBBUTTON Btn = { TBCtrl.AddBitmap(1,BtnBmp[ElIndex]),ID_ADD_ELEMENT0 + ElIndex,TBSTATE_ENABLED,TBSTYLE_BUTTON,0,0 };
-			TBCtrl.InsertButton(0, &Btn);
+			TBCtrl.InsertButton(ElIndex, &Btn);
 			ElIndex++;
 		}
 
@@ -1148,4 +1165,20 @@ BOOL CArchView::CreateElementButtons()
 	}
 
 	return TRUE;
+}
+
+LPARAM CArchView::OnArchElemDisconnect(WPARAM nFlags, LPARAM hElement)
+{
+	DeconnectElement(hElement);
+
+	return 0;
+}
+
+LPARAM CArchView::OnArchElemConnect(WPARAM nFlags, LPARAM hElement)
+{
+	const auto iter = pDoc->Elements.find(hElement);
+	if (iter == pDoc->Elements.cend()) return 0;
+	FindIntersections(iter->second);
+
+	return 0;
 }

@@ -50,9 +50,9 @@ END_MESSAGE_MAP()
 /////////////////////////////////////////////////////////////////////////////
 // CAddressDlg message handlers
 
-void CAddressDlg::SetAddress(WORD Address)
+void CAddressDlg::SetAddress(WORD Addresses)
 {
-  strAddress.Format("%04X",Address);
+  strAddress.Format("%04X",Addresses);
 }
 
 WORD CAddressDlg::GetAddress()

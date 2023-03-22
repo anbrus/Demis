@@ -65,9 +65,8 @@ inline DWORD AddIP(DWORD Offs)
 	EmulatorData.Reg.IP += (WORD)Offs;
 	DWORD LinAddr = EmulatorData.Reg.IP + (((DWORD)EmulatorData.Reg.CS) << 4);  //Линейный адрес
 	//Проверка на точку останова
-	for (DWORD n = 0; n < 8; n++) {
-		if (EmulatorData.BPX[n].Valid && (EmulatorData.BPX[n].Addr == LinAddr))
-			return STOP_BP_EXEC;
+	if(EmulatorData.BPX.contains(LinAddr)) {
+		return STOP_BP_EXEC;
 	}
 	return 0;
 }

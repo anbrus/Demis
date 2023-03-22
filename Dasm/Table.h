@@ -61,7 +61,7 @@ _COPFunc COPFunc[256]={
   Call1,   Jmp1,    Jmp1,    Jmp1,    //E8
   IO,      IO,      IO,      IO,      //EC
   Unknown, Unknown, Rep,     Rep,     //F0
-  Unknown, Flags,   Grp2,    Grp2,    //F4
+  Hlt,     Flags,   Grp2,    Grp2,    //F4
   Flags,   Flags,   Flags,   Flags,   //F8
   Flags,   Flags,   Grp,     Grp      //FC
 };
