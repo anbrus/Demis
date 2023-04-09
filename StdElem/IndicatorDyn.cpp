@@ -300,10 +300,10 @@ void CIndicatorDyn::DrawSegments(CDC* pDC, bool isSelected, bool isArchMode, CPo
 	}
 	COLORREF colorBackground;
 	if (isArchMode) {
-		colorBackground = RGB(0, 0, 0);
+		colorBackground = theApp.GrayColor;
 	}
 	else {
-		colorBackground = RGB(0, 0, 0);
+		colorBackground = RGB(255, 255, 255);
 	}
 	for (int n = 0; n < 8; n++) {
 		BOOL isOn = HighLighted[n] != 0;
@@ -314,7 +314,8 @@ void CIndicatorDyn::DrawSegments(CDC* pDC, bool isSelected, bool isArchMode, CPo
 		else {
 			if (isOn) {
 				float lum = luminance2(HighLighted[n], *pTickCounter, ticksAfterLight);
-				c = RGB(round(255.0 * lum), 0, 0);
+				int v = round(255.0 * lum);
+				c = RGB(255, 255-v, 255-v);
 			}
 			else {
 				c = colorBackground;
@@ -401,7 +402,7 @@ void CIndDConstrWnd::Draw(CDC* pDC) {
 
 void CIndDConstrWnd::DrawStatic(CDC* pDC)
 {
-	pDC->PatBlt(0, 0, Size.cx, Size.cy, BLACKNESS);
+	pDC->PatBlt(0, 0, Size.cx, Size.cy, WHITENESS);
 }
 
 void CIndDArchWnd::Redraw(int64_t ticks) {
@@ -450,10 +451,7 @@ void CIndDArchWnd::DrawStatic(CDC* pDC)
 		pDC->FrameRect(CRect(6, 0, Size.cx, Size.cy - 6), &SelectBrush);
 	else pDC->FrameRect(CRect(6, 0, Size.cx, Size.cy - 6), &NormalBrush);
 
-	CBrush BackBrush(RGB(0, 0, 0));
-	CGdiObject* pOldBrush = pDC->SelectObject(&BackBrush);
-	pDC->PatBlt(17, 1, Size.cx - 18, Size.cy - 8, PATCOPY);
-	pDC->SelectObject(pOldBrush);
+	pDC->FillSolidRect(CRect(17, 1, Size.cx - 1, Size.cy - 7), theApp.GrayColor);
 
 	CPen* pTempPen;
 	if (pElement->ArchSelected) pTempPen = &theApp.SelectPen;

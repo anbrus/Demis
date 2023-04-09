@@ -1,14 +1,14 @@
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/22/23 12:56:21
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/23 08:37:22
 VI54.asm						     Page 1 - 1
 
 
 				.386
 				;Задайте объём ПЗУ в байтах
- = 2000				RomSize    EQU   8192
+ = 4000				RomSize    EQU   16384
 
  0000				IntTable   SEGMENT use16 AT 0
 				;Здесь размещаются адреса обработчиков прерываний
-				           org   32*4
+				           org   20h*4        ; По этому смещению находится адрес обработчика прерывания 20h
  0080 0000			Int32HandlerPtrOffs dw ?
  0082 0000			Int32HandlerPtrSeg  dw ?
  0084				IntTable   ENDS
@@ -2126,7 +2126,6 @@ VI54.asm						     Page 1 - 1
  0B85  E8 F499		      C             call  WriteCountByte
  0B88  E8 F484		      C             call  SetClkLow
 			      C             AssertOutHi
-
  0B8B  E4 00		     1C            in    al, 0
  0B8D  0A C0		     1C            or    al, al
  0B8F  75 03		     1C            jnz   ??00E5
@@ -2891,6 +2890,7 @@ VI54.asm						     Page 1 - 1
  0FE1  B0 05		      C             mov   al, 5
  0FE3  E8 F03B		      C             call  WriteCountByte
 			      C             AssertOutHi
+
  0FE6  E4 00		     1C            in    al, 0
  0FE8  0A C0		     1C            or    al, al
  0FEA  75 03		     1C            jnz   ??013F
@@ -3024,90 +3024,3196 @@ VI54.asm						     Page 1 - 1
  10A0  C3		      C             ret
  10A1			      C Mode2_Datasheet3 ENDP
 			      C 
+				include    mode3.asm
+ 10A1			      C TestMode3  PROC NEAR
+ 10A1  51		      C            push  cx
+ 10A2  B9 0000		      C            mov   cx, 0
+ 10A5  E8 0024		      C            call  Mode3_Datasheet1
+ 10A8  C1 E0 00		      C            shl   ax, 0
+ 10AB  0B C8		      C            or    cx, ax
+ 10AD  8A C1		      C            mov   al, cl
+ 10AF  E6 13		      C            out   13h, al
+			      C 
+ 10B1  E8 0107		      C            call  Mode3_Datasheet2
+ 10B4  D1 E0		      C            shl   ax, 1
+ 10B6  0B C8		      C            or    cx, ax
+ 10B8  8A C1		      C            mov   al, cl
+ 10BA  E6 13		      C            out   13h, al
+			      C 
+ 10BC  E8 026F		      C            call  Mode3_Datasheet3
+ 10BF  C1 E0 02		      C            shl   ax, 2
+ 10C2  0B C8		      C            or    cx, ax
+ 10C4  8A C1		      C            mov   al, cl
+ 10C6  E6 13		      C            out   13h, al
+			      C 
+ 10C8  8B C1		      C            mov   ax, cx
+ 10CA  59		      C            pop   cx
+ 10CB  C3		      C            ret
+ 10CC			      C TestMode3  ENDP
+			      C 
+ 10CC			      C Mode3_Datasheet1 PROC NEAR
+ 10CC  E8 EF31		      C             call  SetGateHi
+			      C 
+ 10CF  E8 EF38		      C             call  SetClkHi
+ 10D2  B0 16		      C             mov   al, 16h
+ 10D4  E8 EF47		      C             call  WriteCw
+			      C             AssertOutHi
+ 10D7  E4 00		     1C            in    al, 0
+ 10D9  0A C0		     1C            or    al, al
+ 10DB  75 03		     1C            jnz   ??0150
+ 10DD  33 C0		     1C            xor   ax, ax
+ 10DF  C3		     1C            ret
+ 10E0			     1C ??0150:
+ 10E0  E8 EF2C		      C             call  SetClkLow
+			      C             AssertOutHi
+ 10E3  E4 00		     1C            in    al, 0
+ 10E5  0A C0		     1C            or    al, al
+ 10E7  75 03		     1C            jnz   ??0151
+ 10E9  33 C0		     1C            xor   ax, ax
+ 10EB  C3		     1C            ret
+ 10EC			     1C ??0151:
+ 10EC  E8 EF1B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 10EF  E4 00		     1C            in    al, 0
+ 10F1  0A C0		     1C            or    al, al
+ 10F3  75 03		     1C            jnz   ??0152
+ 10F5  33 C0		     1C            xor   ax, ax
+ 10F7  C3		     1C            ret
+ 10F8			     1C ??0152:
+ 10F8  E8 EF14		      C             call  SetClkLow
+			      C             AssertOutHi
+ 10FB  E4 00		     1C            in    al, 0
+ 10FD  0A C0		     1C            or    al, al
+ 10FF  75 03		     1C            jnz   ??0153
+ 1101  33 C0		     1C            xor   ax, ax
+ 1103  C3		     1C            ret
+ 1104			     1C ??0153:
+ 1104  B0 04		      C             mov   al, 4
+ 1106  E8 EF18		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1109  E4 00		     1C            in    al, 0
+ 110B  0A C0		     1C            or    al, al
+ 110D  75 03		     1C            jnz   ??0154
+ 110F  33 C0		     1C            xor   ax, ax
+ 1111  C3		     1C            ret
+ 1112			     1C ??0154:
+ 1112  E8 EEF5		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1115  E4 00		     1C            in    al, 0
+ 1117  0A C0		     1C            or    al, al
+ 1119  75 03		     1C            jnz   ??0155
+ 111B  33 C0		     1C            xor   ax, ax
+ 111D  C3		     1C            ret
+ 111E			     1C ??0155:
+ 111E  E8 EEEE		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutHi
+ 1121  E4 00		     1C            in    al, 0
+ 1123  0A C0		     1C            or    al, al
+ 1125  75 03		     1C            jnz   ??0156
+ 1127  33 C0		     1C            xor   ax, ax
+ 1129  C3		     1C            ret
+ 112A			     1C ??0156:
+			      C             AssertByteCeEq 4
+ 112A  E4 40		     1C            in    al, 40h
+ 112C  3C 04		     1C            cmp   al, 4
+ 112E  74 03		     1C            jz    ??0157
+ 1130  33 C0		     1C            xor   ax, ax
+ 1132  C3		     1C            ret
+ 1133			     1C ??0157:
+ 1133  E8 EED4		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1136  E4 00		     1C            in    al, 0
+ 1138  0A C0		     1C            or    al, al
+ 113A  75 03		     1C            jnz   ??0158
+ 113C  33 C0		     1C            xor   ax, ax
+ 113E  C3		     1C            ret
+ 113F			     1C ??0158:
+ 113F  E8 EECD		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1142  E4 00		     1C            in    al, 0
+ 1144  0A C0		     1C            or    al, al
+ 1146  75 03		     1C            jnz   ??0159
+ 1148  33 C0		     1C            xor   ax, ax
+ 114A  C3		     1C            ret
+ 114B			     1C ??0159:
+			      C             AssertByteCeEq 2
+ 114B  E4 40		     1C            in    al, 40h
+ 114D  3C 02		     1C            cmp   al, 2
+ 114F  74 03		     1C            jz    ??015A
+ 1151  33 C0		     1C            xor   ax, ax
+ 1153  C3		     1C            ret
+ 1154			     1C ??015A:
+ 1154  E8 EEB3		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1157  E4 00		     1C            in    al, 0
+ 1159  0A C0		     1C            or    al, al
+ 115B  75 03		     1C            jnz   ??015B
+ 115D  33 C0		     1C            xor   ax, ax
+ 115F  C3		     1C            ret
+ 1160			     1C ??015B:
+ 1160  E8 EEAC		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutLow
+ 1163  E4 00		     1C            in    al, 0
+ 1165  0A C0		     1C            or    al, al
+ 1167  74 03		     1C            jz    ??015C
+ 1169  33 C0		     1C            xor   ax, ax
+ 116B  C3		     1C            ret
+ 116C			     1C ??015C:           
+			      C             AssertByteCeEq 4
+ 116C  E4 40		     1C            in    al, 40h
+ 116E  3C 04		     1C            cmp   al, 4
+ 1170  74 03		     1C            jz    ??015D
+ 1172  33 C0		     1C            xor   ax, ax
+ 1174  C3		     1C            ret
+ 1175			     1C ??015D:
+ 1175  E8 EE92		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1178  E4 00		     1C            in    al, 0
+ 117A  0A C0		     1C            or    al, al
+ 117C  74 03		     1C            jz    ??015E
+ 117E  33 C0		     1C            xor   ax, ax
+ 1180  C3		     1C            ret
+ 1181			     1C ??015E:           
+ 1181  E8 EE8B		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutLow
+ 1184  E4 00		     1C            in    al, 0
+ 1186  0A C0		     1C            or    al, al
+ 1188  74 03		     1C            jz    ??015F
+ 118A  33 C0		     1C            xor   ax, ax
+ 118C  C3		     1C            ret
+ 118D			     1C ??015F:           
+			      C             AssertByteCeEq 2
+ 118D  E4 40		     1C            in    al, 40h
+ 118F  3C 02		     1C            cmp   al, 2
+ 1191  74 03		     1C            jz    ??0160
+ 1193  33 C0		     1C            xor   ax, ax
+ 1195  C3		     1C            ret
+ 1196			     1C ??0160:
+ 1196  E8 EE71		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1199  E4 00		     1C            in    al, 0
+ 119B  0A C0		     1C            or    al, al
+ 119D  74 03		     1C            jz    ??0161
+ 119F  33 C0		     1C            xor   ax, ax
+ 11A1  C3		     1C            ret
+ 11A2			     1C ??0161:           
+ 11A2  E8 EE6A		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutHi
+ 11A5  E4 00		     1C            in    al, 0
+ 11A7  0A C0		     1C            or    al, al
+ 11A9  75 03		     1C            jnz   ??0162
+ 11AB  33 C0		     1C            xor   ax, ax
+ 11AD  C3		     1C            ret
+ 11AE			     1C ??0162:
+			      C             AssertByteCeEq 4
+ 11AE  E4 40		     1C            in    al, 40h
+ 11B0  3C 04		     1C            cmp   al, 4
+ 11B2  74 03		     1C            jz    ??0163
+ 11B4  33 C0		     1C            xor   ax, ax
+ 11B6  C3		     1C            ret
+ 11B7			     1C ??0163:
+			      C             
+ 11B7  B8 0001		      C             mov  ax, 1
+ 11BA  C3		      C             ret
+ 11BB			      C Mode3_Datasheet1 ENDP
+			      C 
+ 11BB			      C Mode3_Datasheet2 PROC NEAR
+ 11BB  E8 EE42		      C             call  SetGateHi
+			      C 
+ 11BE  E8 EE49		      C             call  SetClkHi
+ 11C1  B0 16		      C             mov   al, 16h
+ 11C3  E8 EE58		      C             call  WriteCw
+			      C             AssertOutHi
+ 11C6  E4 00		     1C            in    al, 0
+ 11C8  0A C0		     1C            or    al, al
+ 11CA  75 03		     1C            jnz   ??0164
+ 11CC  33 C0		     1C            xor   ax, ax
+ 11CE  C3		     1C            ret
+ 11CF			     1C ??0164:
+ 11CF  E8 EE3D		      C             call  SetClkLow
+			      C             AssertOutHi
+ 11D2  E4 00		     1C            in    al, 0
+ 11D4  0A C0		     1C            or    al, al
+ 11D6  75 03		     1C            jnz   ??0165
+ 11D8  33 C0		     1C            xor   ax, ax
+ 11DA  C3		     1C            ret
+ 11DB			     1C ??0165:
+ 11DB  E8 EE2C		      C             call  SetClkHi
+			      C             AssertOutHi
+ 11DE  E4 00		     1C            in    al, 0
+ 11E0  0A C0		     1C            or    al, al
+ 11E2  75 03		     1C            jnz   ??0166
+ 11E4  33 C0		     1C            xor   ax, ax
+ 11E6  C3		     1C            ret
+ 11E7			     1C ??0166:
+ 11E7  E8 EE25		      C             call  SetClkLow
+			      C             AssertOutHi
+ 11EA  E4 00		     1C            in    al, 0
+ 11EC  0A C0		     1C            or    al, al
+ 11EE  75 03		     1C            jnz   ??0167
+ 11F0  33 C0		     1C            xor   ax, ax
+ 11F2  C3		     1C            ret
+ 11F3			     1C ??0167:
+ 11F3  B0 05		      C             mov   al, 5
+ 11F5  E8 EE29		      C             call WriteCountByte
+			      C             AssertOutHi
+ 11F8  E4 00		     1C            in    al, 0
+ 11FA  0A C0		     1C            or    al, al
+ 11FC  75 03		     1C            jnz   ??0168
+ 11FE  33 C0		     1C            xor   ax, ax
+ 1200  C3		     1C            ret
+ 1201			     1C ??0168:
+ 1201  E8 EE06		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1204  E4 00		     1C            in    al, 0
+ 1206  0A C0		     1C            or    al, al
+ 1208  75 03		     1C            jnz   ??0169
+ 120A  33 C0		     1C            xor   ax, ax
+ 120C  C3		     1C            ret
+ 120D			     1C ??0169:
+ 120D  E8 EDFF		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutHi
+ 1210  E4 00		     1C            in    al, 0
+ 1212  0A C0		     1C            or    al, al
+ 1214  75 03		     1C            jnz   ??016A
+ 1216  33 C0		     1C            xor   ax, ax
+ 1218  C3		     1C            ret
+ 1219			     1C ??016A:
+			      C             AssertByteCeEq 4
+ 1219  E4 40		     1C            in    al, 40h
+ 121B  3C 04		     1C            cmp   al, 4
+ 121D  74 03		     1C            jz    ??016B
+ 121F  33 C0		     1C            xor   ax, ax
+ 1221  C3		     1C            ret
+ 1222			     1C ??016B:
+ 1222  E8 EDE5		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1225  E4 00		     1C            in    al, 0
+ 1227  0A C0		     1C            or    al, al
+ 1229  75 03		     1C            jnz   ??016C
+ 122B  33 C0		     1C            xor   ax, ax
+ 122D  C3		     1C            ret
+ 122E			     1C ??016C:
+ 122E  E8 EDDE		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1231  E4 00		     1C            in    al, 0
+ 1233  0A C0		     1C            or    al, al
+ 1235  75 03		     1C            jnz   ??016D
+ 1237  33 C0		     1C            xor   ax, ax
+ 1239  C3		     1C            ret
+ 123A			     1C ??016D:
+			      C             AssertByteCeEq 2
+ 123A  E4 40		     1C            in    al, 40h
+ 123C  3C 02		     1C            cmp   al, 2
+ 123E  74 03		     1C            jz    ??016E
+ 1240  33 C0		     1C            xor   ax, ax
+ 1242  C3		     1C            ret
+ 1243			     1C ??016E:
+ 1243  E8 EDC4		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1246  E4 00		     1C            in    al, 0
+ 1248  0A C0		     1C            or    al, al
+ 124A  75 03		     1C            jnz   ??016F
+ 124C  33 C0		     1C            xor   ax, ax
+ 124E  C3		     1C            ret
+ 124F			     1C ??016F:
+ 124F  E8 EDBD		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutHi
+ 1252  E4 00		     1C            in    al, 0
+ 1254  0A C0		     1C            or    al, al
+ 1256  75 03		     1C            jnz   ??0170
+ 1258  33 C0		     1C            xor   ax, ax
+ 125A  C3		     1C            ret
+ 125B			     1C ??0170:
+			      C             AssertByteCeEq 0
+ 125B  E4 40		     1C            in    al, 40h
+ 125D  3C 00		     1C            cmp   al, 0
+ 125F  74 03		     1C            jz    ??0171
+ 1261  33 C0		     1C            xor   ax, ax
+ 1263  C3		     1C            ret
+ 1264			     1C ??0171:
+ 1264  E8 EDA3		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1267  E4 00		     1C            in    al, 0
+ 1269  0A C0		     1C            or    al, al
+ 126B  75 03		     1C            jnz   ??0172
+ 126D  33 C0		     1C            xor   ax, ax
+ 126F  C3		     1C            ret
+ 1270			     1C ??0172:
+ 1270  E8 ED9C		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutLow
+ 1273  E4 00		     1C            in    al, 0
+ 1275  0A C0		     1C            or    al, al
+ 1277  74 03		     1C            jz    ??0173
+ 1279  33 C0		     1C            xor   ax, ax
+ 127B  C3		     1C            ret
+ 127C			     1C ??0173:           
+			      C             AssertByteCeEq 4
+ 127C  E4 40		     1C            in    al, 40h
+ 127E  3C 04		     1C            cmp   al, 4
+ 1280  74 03		     1C            jz    ??0174
+ 1282  33 C0		     1C            xor   ax, ax
+ 1284  C3		     1C            ret
+ 1285			     1C ??0174:
+ 1285  E8 ED82		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1288  E4 00		     1C            in    al, 0
+ 128A  0A C0		     1C            or    al, al
+ 128C  74 03		     1C            jz    ??0175
+ 128E  33 C0		     1C            xor   ax, ax
+ 1290  C3		     1C            ret
+ 1291			     1C ??0175:           
+ 1291  E8 ED7B		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutLow
+ 1294  E4 00		     1C            in    al, 0
+ 1296  0A C0		     1C            or    al, al
+ 1298  74 03		     1C            jz    ??0176
+ 129A  33 C0		     1C            xor   ax, ax
+ 129C  C3		     1C            ret
+ 129D			     1C ??0176:           
+			      C             AssertByteCeEq 2
+ 129D  E4 40		     1C            in    al, 40h
+ 129F  3C 02		     1C            cmp   al, 2
+ 12A1  74 03		     1C            jz    ??0177
+ 12A3  33 C0		     1C            xor   ax, ax
+ 12A5  C3		     1C            ret
+ 12A6			     1C ??0177:
+ 12A6  E8 ED61		      C             call  SetClkHi
+			      C             AssertOutLow
+ 12A9  E4 00		     1C            in    al, 0
+ 12AB  0A C0		     1C            or    al, al
+ 12AD  74 03		     1C            jz    ??0178
+ 12AF  33 C0		     1C            xor   ax, ax
+ 12B1  C3		     1C            ret
+ 12B2			     1C ??0178:           
+ 12B2  E8 ED5A		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutHi
+ 12B5  E4 00		     1C            in    al, 0
+ 12B7  0A C0		     1C            or    al, al
+ 12B9  75 03		     1C            jnz   ??0179
+ 12BB  33 C0		     1C            xor   ax, ax
+ 12BD  C3		     1C            ret
+ 12BE			     1C ??0179:
+			      C             AssertByteCeEq 4
+ 12BE  E4 40		     1C            in    al, 40h
+ 12C0  3C 04		     1C            cmp   al, 4
+ 12C2  74 03		     1C            jz    ??017A
+ 12C4  33 C0		     1C            xor   ax, ax
+ 12C6  C3		     1C            ret
+ 12C7			     1C ??017A:
+ 12C7  E8 ED40		      C             call  SetClkHi
+			      C             AssertOutHi
+ 12CA  E4 00		     1C            in    al, 0
+ 12CC  0A C0		     1C            or    al, al
+ 12CE  75 03		     1C            jnz   ??017B
+ 12D0  33 C0		     1C            xor   ax, ax
+ 12D2  C3		     1C            ret
+ 12D3			     1C ??017B:
+ 12D3  E8 ED39		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 12D6  E4 00		     1C            in    al, 0
+ 12D8  0A C0		     1C            or    al, al
+ 12DA  75 03		     1C            jnz   ??017C
+ 12DC  33 C0		     1C            xor   ax, ax
+ 12DE  C3		     1C            ret
+ 12DF			     1C ??017C:
+			      C             AssertByteCeEq 2
+ 12DF  E4 40		     1C            in    al, 40h
+ 12E1  3C 02		     1C            cmp   al, 2
+ 12E3  74 03		     1C            jz    ??017D
+ 12E5  33 C0		     1C            xor   ax, ax
+ 12E7  C3		     1C            ret
+ 12E8			     1C ??017D:
+ 12E8  E8 ED1F		      C             call  SetClkHi
+			      C             AssertOutHi
+ 12EB  E4 00		     1C            in    al, 0
+ 12ED  0A C0		     1C            or    al, al
+ 12EF  75 03		     1C            jnz   ??017E
+ 12F1  33 C0		     1C            xor   ax, ax
+ 12F3  C3		     1C            ret
+ 12F4			     1C ??017E:
+ 12F4  E8 ED18		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutHi
+ 12F7  E4 00		     1C            in    al, 0
+ 12F9  0A C0		     1C            or    al, al
+ 12FB  75 03		     1C            jnz   ??017F
+ 12FD  33 C0		     1C            xor   ax, ax
+ 12FF  C3		     1C            ret
+ 1300			     1C ??017F:
+			      C             AssertByteCeEq 0
+ 1300  E4 40		     1C            in    al, 40h
+ 1302  3C 00		     1C            cmp   al, 0
+ 1304  74 03		     1C            jz    ??0180
+ 1306  33 C0		     1C            xor   ax, ax
+ 1308  C3		     1C            ret
+ 1309			     1C ??0180:
+ 1309  E8 ECFE		      C             call  SetClkHi
+			      C             AssertOutHi
+ 130C  E4 00		     1C            in    al, 0
+ 130E  0A C0		     1C            or    al, al
+ 1310  75 03		     1C            jnz   ??0181
+ 1312  33 C0		     1C            xor   ax, ax
+ 1314  C3		     1C            ret
+ 1315			     1C ??0181:
+ 1315  E8 ECF7		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutLow
+ 1318  E4 00		     1C            in    al, 0
+ 131A  0A C0		     1C            or    al, al
+ 131C  74 03		     1C            jz    ??0182
+ 131E  33 C0		     1C            xor   ax, ax
+ 1320  C3		     1C            ret
+ 1321			     1C ??0182:           
+			      C             AssertByteCeEq 4
+ 1321  E4 40		     1C            in    al, 40h
+ 1323  3C 04		     1C            cmp   al, 4
+ 1325  74 03		     1C            jz    ??0183
+ 1327  33 C0		     1C            xor   ax, ax
+ 1329  C3		     1C            ret
+ 132A			     1C ??0183:
+			      C             
+ 132A  B8 0001		      C             mov  ax, 1
+ 132D  C3		      C             ret
+ 132E			      C Mode3_Datasheet2 ENDP
+			      C 
+ 132E			      C Mode3_Datasheet3 PROC NEAR
+ 132E  E8 ECCF		      C             call  SetGateHi
+			      C 
+ 1331  E8 ECD6		      C             call  SetClkHi
+ 1334  B0 16		      C             mov   al, 16h
+ 1336  E8 ECE5		      C             call  WriteCw
+			      C             AssertOutHi
+ 1339  E4 00		     1C            in    al, 0
+ 133B  0A C0		     1C            or    al, al
+ 133D  75 03		     1C            jnz   ??0184
+ 133F  33 C0		     1C            xor   ax, ax
+ 1341  C3		     1C            ret
+ 1342			     1C ??0184:
+ 1342  E8 ECCA		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1345  E4 00		     1C            in    al, 0
+ 1347  0A C0		     1C            or    al, al
+ 1349  75 03		     1C            jnz   ??0185
+ 134B  33 C0		     1C            xor   ax, ax
+ 134D  C3		     1C            ret
+ 134E			     1C ??0185:
+ 134E  E8 ECB9		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1351  E4 00		     1C            in    al, 0
+ 1353  0A C0		     1C            or    al, al
+ 1355  75 03		     1C            jnz   ??0186
+ 1357  33 C0		     1C            xor   ax, ax
+ 1359  C3		     1C            ret
+ 135A			     1C ??0186:
+ 135A  E8 ECB2		      C             call  SetClkLow
+			      C             AssertOutHi
+ 135D  E4 00		     1C            in    al, 0
+ 135F  0A C0		     1C            or    al, al
+ 1361  75 03		     1C            jnz   ??0187
+ 1363  33 C0		     1C            xor   ax, ax
+ 1365  C3		     1C            ret
+ 1366			     1C ??0187:
+ 1366  B0 04		      C             mov   al, 4
+ 1368  E8 ECB6		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 136B  E4 00		     1C            in    al, 0
+ 136D  0A C0		     1C            or    al, al
+ 136F  75 03		     1C            jnz   ??0188
+ 1371  33 C0		     1C            xor   ax, ax
+ 1373  C3		     1C            ret
+ 1374			     1C ??0188:
+ 1374  E8 EC93		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1377  E4 00		     1C            in    al, 0
+ 1379  0A C0		     1C            or    al, al
+ 137B  75 03		     1C            jnz   ??0189
+ 137D  33 C0		     1C            xor   ax, ax
+ 137F  C3		     1C            ret
+ 1380			     1C ??0189:
+ 1380  E8 EC8C		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutHi
+ 1383  E4 00		     1C            in    al, 0
+ 1385  0A C0		     1C            or    al, al
+ 1387  75 03		     1C            jnz   ??018A
+ 1389  33 C0		     1C            xor   ax, ax
+ 138B  C3		     1C            ret
+ 138C			     1C ??018A:
+			      C             AssertByteCeEq 4
+ 138C  E4 40		     1C            in    al, 40h
+ 138E  3C 04		     1C            cmp   al, 4
+ 1390  74 03		     1C            jz    ??018B
+ 1392  33 C0		     1C            xor   ax, ax
+ 1394  C3		     1C            ret
+ 1395			     1C ??018B:
+ 1395  E8 EC72		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1398  E4 00		     1C            in    al, 0
+ 139A  0A C0		     1C            or    al, al
+ 139C  75 03		     1C            jnz   ??018C
+ 139E  33 C0		     1C            xor   ax, ax
+ 13A0  C3		     1C            ret
+ 13A1			     1C ??018C:
+ 13A1  E8 EC6B		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 13A4  E4 00		     1C            in    al, 0
+ 13A6  0A C0		     1C            or    al, al
+ 13A8  75 03		     1C            jnz   ??018D
+ 13AA  33 C0		     1C            xor   ax, ax
+ 13AC  C3		     1C            ret
+ 13AD			     1C ??018D:
+			      C             AssertByteCeEq 2
+ 13AD  E4 40		     1C            in    al, 40h
+ 13AF  3C 02		     1C            cmp   al, 2
+ 13B1  74 03		     1C            jz    ??018E
+ 13B3  33 C0		     1C            xor   ax, ax
+ 13B5  C3		     1C            ret
+ 13B6			     1C ??018E:
+ 13B6  E8 EC51		      C             call  SetClkHi
+			      C             AssertOutHi
+ 13B9  E4 00		     1C            in    al, 0
+ 13BB  0A C0		     1C            or    al, al
+ 13BD  75 03		     1C            jnz   ??018F
+ 13BF  33 C0		     1C            xor   ax, ax
+ 13C1  C3		     1C            ret
+ 13C2			     1C ??018F:
+ 13C2  E8 EC4A		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutLow
+ 13C5  E4 00		     1C            in    al, 0
+ 13C7  0A C0		     1C            or    al, al
+ 13C9  74 03		     1C            jz    ??0190
+ 13CB  33 C0		     1C            xor   ax, ax
+ 13CD  C3		     1C            ret
+ 13CE			     1C ??0190:           
+			      C             AssertByteCeEq 4
+ 13CE  E4 40		     1C            in    al, 40h
+ 13D0  3C 04		     1C            cmp   al, 4
+ 13D2  74 03		     1C            jz    ??0191
+ 13D4  33 C0		     1C            xor   ax, ax
+ 13D6  C3		     1C            ret
+ 13D7			     1C ??0191:
+ 13D7  E8 EC30		      C             call  SetClkHi
+			      C             AssertOutLow
+ 13DA  E4 00		     1C            in    al, 0
+ 13DC  0A C0		     1C            or    al, al
+ 13DE  74 03		     1C            jz    ??0192
+ 13E0  33 C0		     1C            xor   ax, ax
+ 13E2  C3		     1C            ret
+ 13E3			     1C ??0192:           
+ 13E3  E8 EC29		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutLow
+ 13E6  E4 00		     1C            in    al, 0
+ 13E8  0A C0		     1C            or    al, al
+ 13EA  74 03		     1C            jz    ??0193
+ 13EC  33 C0		     1C            xor   ax, ax
+ 13EE  C3		     1C            ret
+ 13EF			     1C ??0193:           
+			      C             AssertByteCeEq 2
+ 13EF  E4 40		     1C            in    al, 40h
+ 13F1  3C 02		     1C            cmp   al, 2
+ 13F3  74 03		     1C            jz    ??0194
+ 13F5  33 C0		     1C            xor   ax, ax
+ 13F7  C3		     1C            ret
+ 13F8			     1C ??0194:
+ 13F8  E8 EC0A		      C             call  SetGateLow
+			      C             AssertOutHi
+ 13FB  E4 00		     1C            in    al, 0
+ 13FD  0A C0		     1C            or    al, al
+ 13FF  75 03		     1C            jnz   ??0195
+ 1401  33 C0		     1C            xor   ax, ax
+ 1403  C3		     1C            ret
+ 1404			     1C ??0195:
+ 1404  E8 EC03		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1407  E4 00		     1C            in    al, 0
+ 1409  0A C0		     1C            or    al, al
+ 140B  75 03		     1C            jnz   ??0196
+ 140D  33 C0		     1C            xor   ax, ax
+ 140F  C3		     1C            ret
+ 1410			     1C ??0196:
+ 1410  E8 EBFC		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1413  E4 00		     1C            in    al, 0
+ 1415  0A C0		     1C            or    al, al
+ 1417  75 03		     1C            jnz   ??0197
+ 1419  33 C0		     1C            xor   ax, ax
+ 141B  C3		     1C            ret
+ 141C			     1C ??0197:
+			      C             AssertByteCeEq 2
+ 141C  E4 40		     1C            in    al, 40h
+ 141E  3C 02		     1C            cmp   al, 2
+ 1420  74 03		     1C            jz    ??0198
+ 1422  33 C0		     1C            xor   ax, ax
+ 1424  C3		     1C            ret
+ 1425			     1C ??0198:
+ 1425  E8 EBE2		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1428  E4 00		     1C            in    al, 0
+ 142A  0A C0		     1C            or    al, al
+ 142C  75 03		     1C            jnz   ??0199
+ 142E  33 C0		     1C            xor   ax, ax
+ 1430  C3		     1C            ret
+ 1431			     1C ??0199:
+ 1431  E8 EBDB		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1434  E4 00		     1C            in    al, 0
+ 1436  0A C0		     1C            or    al, al
+ 1438  75 03		     1C            jnz   ??019A
+ 143A  33 C0		     1C            xor   ax, ax
+ 143C  C3		     1C            ret
+ 143D			     1C ??019A:
+			      C             AssertByteCeEq 2
+ 143D  E4 40		     1C            in    al, 40h
+ 143F  3C 02		     1C            cmp   al, 2
+ 1441  74 03		     1C            jz    ??019B
+ 1443  33 C0		     1C            xor   ax, ax
+ 1445  C3		     1C            ret
+ 1446			     1C ??019B:
+ 1446  E8 EBB7		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1449  E4 00		     1C            in    al, 0
+ 144B  0A C0		     1C            or    al, al
+ 144D  75 03		     1C            jnz   ??019C
+ 144F  33 C0		     1C            xor   ax, ax
+ 1451  C3		     1C            ret
+ 1452			     1C ??019C:
+ 1452  E8 EBB5		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1455  E4 00		     1C            in    al, 0
+ 1457  0A C0		     1C            or    al, al
+ 1459  75 03		     1C            jnz   ??019D
+ 145B  33 C0		     1C            xor   ax, ax
+ 145D  C3		     1C            ret
+ 145E			     1C ??019D:
+ 145E  E8 EBAE		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutHi
+ 1461  E4 00		     1C            in    al, 0
+ 1463  0A C0		     1C            or    al, al
+ 1465  75 03		     1C            jnz   ??019E
+ 1467  33 C0		     1C            xor   ax, ax
+ 1469  C3		     1C            ret
+ 146A			     1C ??019E:
+			      C             AssertByteCeEq 4
+ 146A  E4 40		     1C            in    al, 40h
+ 146C  3C 04		     1C            cmp   al, 4
+ 146E  74 03		     1C            jz    ??019F
+ 1470  33 C0		     1C            xor   ax, ax
+ 1472  C3		     1C            ret
+ 1473			     1C ??019F:
+ 1473  E8 EB94		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1476  E4 00		     1C            in    al, 0
+ 1478  0A C0		     1C            or    al, al
+ 147A  75 03		     1C            jnz   ??01A0
+ 147C  33 C0		     1C            xor   ax, ax
+ 147E  C3		     1C            ret
+ 147F			     1C ??01A0:
+ 147F  E8 EB8D		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1482  E4 00		     1C            in    al, 0
+ 1484  0A C0		     1C            or    al, al
+ 1486  75 03		     1C            jnz   ??01A1
+ 1488  33 C0		     1C            xor   ax, ax
+ 148A  C3		     1C            ret
+ 148B			     1C ??01A1:
+			      C             AssertByteCeEq 2
+ 148B  E4 40		     1C            in    al, 40h
+ 148D  3C 02		     1C            cmp   al, 2
+ 148F  74 03		     1C            jz    ??01A2
+ 1491  33 C0		     1C            xor   ax, ax
+ 1493  C3		     1C            ret
+ 1494			     1C ??01A2:
+ 1494  E8 EB73		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1497  E4 00		     1C            in    al, 0
+ 1499  0A C0		     1C            or    al, al
+ 149B  75 03		     1C            jnz   ??01A3
+ 149D  33 C0		     1C            xor   ax, ax
+ 149F  C3		     1C            ret
+ 14A0			     1C ??01A3:
+ 14A0  E8 EB6C		      C             call  SetClkLow ; ce = cr = 4
+			      C             AssertOutLow
+ 14A3  E4 00		     1C            in    al, 0
+ 14A5  0A C0		     1C            or    al, al
+ 14A7  74 03		     1C            jz    ??01A4
+ 14A9  33 C0		     1C            xor   ax, ax
+ 14AB  C3		     1C            ret
+ 14AC			     1C ??01A4:           
+			      C             AssertByteCeEq 4
+ 14AC  E4 40		     1C            in    al, 40h
+ 14AE  3C 04		     1C            cmp   al, 4
+ 14B0  74 03		     1C            jz    ??01A5
+ 14B2  33 C0		     1C            xor   ax, ax
+ 14B4  C3		     1C            ret
+ 14B5			     1C ??01A5:
+			      C             
+ 14B5  B8 0001		      C             mov  ax, 1
+ 14B8  C3		      C             ret
+ 14B9			      C Mode3_Datasheet3 ENDP
+			      C 
+				include    mode4.asm
+ 14B9			      C TestMode4  PROC NEAR
+ 14B9  51		      C             push  cx
+ 14BA  B9 0000		      C             mov   cx, 0
+ 14BD  E8 0024		      C             call  Mode4_Datasheet1
+ 14C0  C1 E0 00		      C             shl   ax, 0
+ 14C3  0B C8		      C             or    cx, ax
+ 14C5  8A C1		      C             mov   al, cl
+ 14C7  E6 14		      C             out   14h, al
+			      C 
+ 14C9  E8 013D		      C             call  Mode4_Datasheet2
+ 14CC  D1 E0		      C             shl   ax, 1
+ 14CE  0B C8		      C             or    cx, ax
+ 14D0  8A C1		      C             mov   al, cl
+ 14D2  E6 14		      C             out   14h, al
+			      C 
+ 14D4  E8 026F		      C             call  Mode4_Datasheet3
+ 14D7  C1 E0 02		      C             shl   ax, 2
+ 14DA  0B C8		      C             or    cx, ax
+ 14DC  8A C1		      C             mov   al, cl
+ 14DE  E6 14		      C             out   14h, al
+			      C 
+ 14E0  8B C1		      C             mov   ax, cx
+ 14E2  59		      C             pop   cx
+ 14E3  C3		      C             ret
+ 14E4			      C TestMode4  ENDP
+			      C 
+ 14E4			      C Mode4_Datasheet1 PROC NEAR
+ 14E4  E8 EB19		      C             call  SetGateHi
+			      C 
+ 14E7  E8 EB20		      C             call  SetClkHi
+ 14EA  B0 18		      C             mov   al, 18h
+ 14EC  E8 EB2F		      C             call  WriteCw
+			      C             AssertOutHi
+ 14EF  E4 00		     1C            in    al, 0
+ 14F1  0A C0		     1C            or    al, al
+ 14F3  75 03		     1C            jnz   ??01A6
+ 14F5  33 C0		     1C            xor   ax, ax
+ 14F7  C3		     1C            ret
+ 14F8			     1C ??01A6:
+ 14F8  E8 EB14		      C             call  SetClkLow
+			      C             AssertOutHi
+ 14FB  E4 00		     1C            in    al, 0
+ 14FD  0A C0		     1C            or    al, al
+ 14FF  75 03		     1C            jnz   ??01A7
+ 1501  33 C0		     1C            xor   ax, ax
+ 1503  C3		     1C            ret
+ 1504			     1C ??01A7:
+ 1504  E8 EB03		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1507  E4 00		     1C            in    al, 0
+ 1509  0A C0		     1C            or    al, al
+ 150B  75 03		     1C            jnz   ??01A8
+ 150D  33 C0		     1C            xor   ax, ax
+ 150F  C3		     1C            ret
+ 1510			     1C ??01A8:
+ 1510  E8 EAFC		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1513  E4 00		     1C            in    al, 0
+ 1515  0A C0		     1C            or    al, al
+ 1517  75 03		     1C            jnz   ??01A9
+ 1519  33 C0		     1C            xor   ax, ax
+ 151B  C3		     1C            ret
+ 151C			     1C ??01A9:
+ 151C  B0 03		      C             mov   al, 3
+ 151E  E8 EB00		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1521  E4 00		     1C            in    al, 0
+ 1523  0A C0		     1C            or    al, al
+ 1525  75 03		     1C            jnz   ??01AA
+ 1527  33 C0		     1C            xor   ax, ax
+ 1529  C3		     1C            ret
+ 152A			     1C ??01AA:
+ 152A  E8 EADD		      C             call  SetClkHi
+			      C             AssertOutHi
+ 152D  E4 00		     1C            in    al, 0
+ 152F  0A C0		     1C            or    al, al
+ 1531  75 03		     1C            jnz   ??01AB
+ 1533  33 C0		     1C            xor   ax, ax
+ 1535  C3		     1C            ret
+ 1536			     1C ??01AB:
+ 1536  E8 EAD6		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1539  E4 00		     1C            in    al, 0
+ 153B  0A C0		     1C            or    al, al
+ 153D  75 03		     1C            jnz   ??01AC
+ 153F  33 C0		     1C            xor   ax, ax
+ 1541  C3		     1C            ret
+ 1542			     1C ??01AC:
+			      C             AssertByteCeEq 3
+ 1542  E4 40		     1C            in    al, 40h
+ 1544  3C 03		     1C            cmp   al, 3
+ 1546  74 03		     1C            jz    ??01AD
+ 1548  33 C0		     1C            xor   ax, ax
+ 154A  C3		     1C            ret
+ 154B			     1C ??01AD:
+ 154B  E8 EABC		      C             call  SetClkHi
+			      C             AssertOutHi
+ 154E  E4 00		     1C            in    al, 0
+ 1550  0A C0		     1C            or    al, al
+ 1552  75 03		     1C            jnz   ??01AE
+ 1554  33 C0		     1C            xor   ax, ax
+ 1556  C3		     1C            ret
+ 1557			     1C ??01AE:
+ 1557  E8 EAB5		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 155A  E4 00		     1C            in    al, 0
+ 155C  0A C0		     1C            or    al, al
+ 155E  75 03		     1C            jnz   ??01AF
+ 1560  33 C0		     1C            xor   ax, ax
+ 1562  C3		     1C            ret
+ 1563			     1C ??01AF:
+			      C             AssertByteCeEq 2
+ 1563  E4 40		     1C            in    al, 40h
+ 1565  3C 02		     1C            cmp   al, 2
+ 1567  74 03		     1C            jz    ??01B0
+ 1569  33 C0		     1C            xor   ax, ax
+ 156B  C3		     1C            ret
+ 156C			     1C ??01B0:
+ 156C  E8 EA9B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 156F  E4 00		     1C            in    al, 0
+ 1571  0A C0		     1C            or    al, al
+ 1573  75 03		     1C            jnz   ??01B1
+ 1575  33 C0		     1C            xor   ax, ax
+ 1577  C3		     1C            ret
+ 1578			     1C ??01B1:
+ 1578  E8 EA94		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 157B  E4 00		     1C            in    al, 0
+ 157D  0A C0		     1C            or    al, al
+ 157F  75 03		     1C            jnz   ??01B2
+ 1581  33 C0		     1C            xor   ax, ax
+ 1583  C3		     1C            ret
+ 1584			     1C ??01B2:
+			      C             AssertByteCeEq 1
+ 1584  E4 40		     1C            in    al, 40h
+ 1586  3C 01		     1C            cmp   al, 1
+ 1588  74 03		     1C            jz    ??01B3
+ 158A  33 C0		     1C            xor   ax, ax
+ 158C  C3		     1C            ret
+ 158D			     1C ??01B3:
+ 158D  E8 EA7A		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1590  E4 00		     1C            in    al, 0
+ 1592  0A C0		     1C            or    al, al
+ 1594  75 03		     1C            jnz   ??01B4
+ 1596  33 C0		     1C            xor   ax, ax
+ 1598  C3		     1C            ret
+ 1599			     1C ??01B4:
+ 1599  E8 EA73		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 159C  E4 00		     1C            in    al, 0
+ 159E  0A C0		     1C            or    al, al
+ 15A0  74 03		     1C            jz    ??01B5
+ 15A2  33 C0		     1C            xor   ax, ax
+ 15A4  C3		     1C            ret
+ 15A5			     1C ??01B5:           
+			      C             AssertByteCeEq 0
+ 15A5  E4 40		     1C            in    al, 40h
+ 15A7  3C 00		     1C            cmp   al, 0
+ 15A9  74 03		     1C            jz    ??01B6
+ 15AB  33 C0		     1C            xor   ax, ax
+ 15AD  C3		     1C            ret
+ 15AE			     1C ??01B6:
+ 15AE  E8 EA59		      C             call  SetClkHi
+			      C             AssertOutLow
+ 15B1  E4 00		     1C            in    al, 0
+ 15B3  0A C0		     1C            or    al, al
+ 15B5  74 03		     1C            jz    ??01B7
+ 15B7  33 C0		     1C            xor   ax, ax
+ 15B9  C3		     1C            ret
+ 15BA			     1C ??01B7:           
+ 15BA  E8 EA52		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 15BD  E4 00		     1C            in    al, 0
+ 15BF  0A C0		     1C            or    al, al
+ 15C1  75 03		     1C            jnz   ??01B8
+ 15C3  33 C0		     1C            xor   ax, ax
+ 15C5  C3		     1C            ret
+ 15C6			     1C ??01B8:
+			      C             AssertByteCeEq 0ffh
+ 15C6  E4 40		     1C            in    al, 40h
+ 15C8  3C FF		     1C            cmp   al, 0ffh
+ 15CA  74 03		     1C            jz    ??01B9
+ 15CC  33 C0		     1C            xor   ax, ax
+ 15CE  C3		     1C            ret
+ 15CF			     1C ??01B9:
+			      C 
+ 15CF  33 C0		      C             xor   ax, ax
+ 15D1  8B C8		      C             mov   cx, ax
+ 15D3			      C Mode4_Datasheet1_M1:            
+ 15D3  E8 EA34		      C             call  SetClkHi
+			      C             AssertOutHi
+ 15D6  E4 00		     1C            in    al, 0
+ 15D8  0A C0		     1C            or    al, al
+ 15DA  75 03		     1C            jnz   ??01BA
+ 15DC  33 C0		     1C            xor   ax, ax
+ 15DE  C3		     1C            ret
+ 15DF			     1C ??01BA:
+ 15DF  E8 EA2D		      C             call  SetClkLow
+			      C             AssertOutHi
+ 15E2  E4 00		     1C            in    al, 0
+ 15E4  0A C0		     1C            or    al, al
+ 15E6  75 03		     1C            jnz   ??01BB
+ 15E8  33 C0		     1C            xor   ax, ax
+ 15EA  C3		     1C            ret
+ 15EB			     1C ??01BB:
+ 15EB  E2 E6		      C             loop  Mode4_Datasheet1_M1
+			      C             
+ 15ED  E8 EA1A		      C             call  SetClkHi
+			      C             AssertOutHi
+ 15F0  E4 00		     1C            in    al, 0
+ 15F2  0A C0		     1C            or    al, al
+ 15F4  75 03		     1C            jnz   ??01BC
+ 15F6  33 C0		     1C            xor   ax, ax
+ 15F8  C3		     1C            ret
+ 15F9			     1C ??01BC:
+ 15F9  E8 EA13		      C             call  SetClkLow
+			      C             AssertOutHi
+ 15FC  E4 00		     1C            in    al, 0
+ 15FE  0A C0		     1C            or    al, al
+ 1600  75 03		     1C            jnz   ??01BD
+ 1602  33 C0		     1C            xor   ax, ax
+ 1604  C3		     1C            ret
+ 1605			     1C ??01BD:
+			      C 
+ 1605  B8 0001		      C             mov  ax, 1
+ 1608  C3		      C             ret
+ 1609			      C Mode4_Datasheet1 ENDP
+			      C 
+ 1609			      C Mode4_Datasheet2 PROC NEAR
+ 1609  E8 E9F9		      C             call  SetGateLow
+			      C 
+ 160C  E8 E9FB		      C             call  SetClkHi
+ 160F  B0 18		      C             mov   al, 18h
+ 1611  E8 EA0A		      C             call  WriteCw
+			      C             AssertOutHi
+ 1614  E4 00		     1C            in    al, 0
+ 1616  0A C0		     1C            or    al, al
+ 1618  75 03		     1C            jnz   ??01BE
+ 161A  33 C0		     1C            xor   ax, ax
+ 161C  C3		     1C            ret
+ 161D			     1C ??01BE:
+ 161D  E8 E9EF		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1620  E4 00		     1C            in    al, 0
+ 1622  0A C0		     1C            or    al, al
+ 1624  75 03		     1C            jnz   ??01BF
+ 1626  33 C0		     1C            xor   ax, ax
+ 1628  C3		     1C            ret
+ 1629			     1C ??01BF:
+ 1629  E8 E9DE		      C             call  SetClkHi
+			      C             AssertOutHi
 
- 10A1				Int32Handler     PROC FAR
- 10A1  50			           push  ax
- 10A2  1E			           push  ds
-				           
- 10A3  B8 ---- R		           mov   ax, Data
- 10A6  8E D8			           mov   ds, ax
- 10A8  FF 06 0000 R		           inc   IntCounter
-				           
- 10AC  1F			           pop   ds
- 10AD  58			           pop   ax
- 10AE  CF			           iret
- 10AF				Int32Handler     ENDP
+ 162C  E4 00		     1C            in    al, 0
+ 162E  0A C0		     1C            or    al, al
+ 1630  75 03		     1C            jnz   ??01C0
+ 1632  33 C0		     1C            xor   ax, ax
+ 1634  C3		     1C            ret
+ 1635			     1C ??01C0:
+ 1635  E8 E9D7		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1638  E4 00		     1C            in    al, 0
+ 163A  0A C0		     1C            or    al, al
+ 163C  75 03		     1C            jnz   ??01C1
+ 163E  33 C0		     1C            xor   ax, ax
+ 1640  C3		     1C            ret
+ 1641			     1C ??01C1:
+ 1641  B0 03		      C             mov   al, 3
+ 1643  E8 E9DB		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1646  E4 00		     1C            in    al, 0
+ 1648  0A C0		     1C            or    al, al
+ 164A  75 03		     1C            jnz   ??01C2
+ 164C  33 C0		     1C            xor   ax, ax
+ 164E  C3		     1C            ret
+ 164F			     1C ??01C2:
+ 164F  E8 E9B8		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1652  E4 00		     1C            in    al, 0
+ 1654  0A C0		     1C            or    al, al
+ 1656  75 03		     1C            jnz   ??01C3
+ 1658  33 C0		     1C            xor   ax, ax
+ 165A  C3		     1C            ret
+ 165B			     1C ??01C3:
+ 165B  E8 E9B1		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 165E  E4 00		     1C            in    al, 0
+ 1660  0A C0		     1C            or    al, al
+ 1662  75 03		     1C            jnz   ??01C4
+ 1664  33 C0		     1C            xor   ax, ax
+ 1666  C3		     1C            ret
+ 1667			     1C ??01C4:
+			      C             AssertByteCeEq 3
+ 1667  E4 40		     1C            in    al, 40h
+ 1669  3C 03		     1C            cmp   al, 3
+ 166B  74 03		     1C            jz    ??01C5
+ 166D  33 C0		     1C            xor   ax, ax
+ 166F  C3		     1C            ret
+ 1670			     1C ??01C5:
+ 1670  E8 E997		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1673  E4 00		     1C            in    al, 0
+ 1675  0A C0		     1C            or    al, al
+ 1677  75 03		     1C            jnz   ??01C6
+ 1679  33 C0		     1C            xor   ax, ax
+ 167B  C3		     1C            ret
+ 167C			     1C ??01C6:
+ 167C  E8 E990		      C             call  SetClkLow ; ce = 3
+			      C             AssertOutHi
+ 167F  E4 00		     1C            in    al, 0
+ 1681  0A C0		     1C            or    al, al
+ 1683  75 03		     1C            jnz   ??01C7
+ 1685  33 C0		     1C            xor   ax, ax
+ 1687  C3		     1C            ret
+ 1688			     1C ??01C7:
+			      C             AssertByteCeEq 3
+ 1688  E4 40		     1C            in    al, 40h
+ 168A  3C 03		     1C            cmp   al, 3
+ 168C  74 03		     1C            jz    ??01C8
+ 168E  33 C0		     1C            xor   ax, ax
+ 1690  C3		     1C            ret
+ 1691			     1C ??01C8:
+ 1691  E8 E976		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1694  E4 00		     1C            in    al, 0
+ 1696  0A C0		     1C            or    al, al
+ 1698  75 03		     1C            jnz   ??01C9
+ 169A  33 C0		     1C            xor   ax, ax
+ 169C  C3		     1C            ret
+ 169D			     1C ??01C9:
+ 169D  E8 E960		      C             call  SetGateHi
+			      C             AssertOutHi
+ 16A0  E4 00		     1C            in    al, 0
+ 16A2  0A C0		     1C            or    al, al
+ 16A4  75 03		     1C            jnz   ??01CA
+ 16A6  33 C0		     1C            xor   ax, ax
+ 16A8  C3		     1C            ret
+ 16A9			     1C ??01CA:
+ 16A9  E8 E963		      C             call  SetClkLow ; ce = 3
+			      C             AssertOutHi
+ 16AC  E4 00		     1C            in    al, 0
+ 16AE  0A C0		     1C            or    al, al
+ 16B0  75 03		     1C            jnz   ??01CB
+ 16B2  33 C0		     1C            xor   ax, ax
+ 16B4  C3		     1C            ret
+ 16B5			     1C ??01CB:
+			      C             AssertByteCeEq 3
+ 16B5  E4 40		     1C            in    al, 40h
+ 16B7  3C 03		     1C            cmp   al, 3
+ 16B9  74 03		     1C            jz    ??01CC
+ 16BB  33 C0		     1C            xor   ax, ax
+ 16BD  C3		     1C            ret
+ 16BE			     1C ??01CC:
+ 16BE  E8 E949		      C             call  SetClkHi
+			      C             AssertOutHi
+ 16C1  E4 00		     1C            in    al, 0
+ 16C3  0A C0		     1C            or    al, al
+ 16C5  75 03		     1C            jnz   ??01CD
+ 16C7  33 C0		     1C            xor   ax, ax
+ 16C9  C3		     1C            ret
+ 16CA			     1C ??01CD:
+ 16CA  E8 E942		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 16CD  E4 00		     1C            in    al, 0
+ 16CF  0A C0		     1C            or    al, al
+ 16D1  75 03		     1C            jnz   ??01CE
+ 16D3  33 C0		     1C            xor   ax, ax
+ 16D5  C3		     1C            ret
+ 16D6			     1C ??01CE:
+			      C             AssertByteCeEq 2
+ 16D6  E4 40		     1C            in    al, 40h
+ 16D8  3C 02		     1C            cmp   al, 2
+ 16DA  74 03		     1C            jz    ??01CF
+ 16DC  33 C0		     1C            xor   ax, ax
+ 16DE  C3		     1C            ret
+ 16DF			     1C ??01CF:
+ 16DF  E8 E928		      C             call  SetClkHi
+			      C             AssertOutHi
+ 16E2  E4 00		     1C            in    al, 0
+ 16E4  0A C0		     1C            or    al, al
+ 16E6  75 03		     1C            jnz   ??01D0
+ 16E8  33 C0		     1C            xor   ax, ax
+ 16EA  C3		     1C            ret
+ 16EB			     1C ??01D0:
+ 16EB  E8 E921		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 16EE  E4 00		     1C            in    al, 0
+ 16F0  0A C0		     1C            or    al, al
+ 16F2  75 03		     1C            jnz   ??01D1
+ 16F4  33 C0		     1C            xor   ax, ax
+ 16F6  C3		     1C            ret
+ 16F7			     1C ??01D1:
+			      C             AssertByteCeEq 1
+ 16F7  E4 40		     1C            in    al, 40h
+ 16F9  3C 01		     1C            cmp   al, 1
+ 16FB  74 03		     1C            jz    ??01D2
+ 16FD  33 C0		     1C            xor   ax, ax
+ 16FF  C3		     1C            ret
+ 1700			     1C ??01D2:
+ 1700  E8 E907		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1703  E4 00		     1C            in    al, 0
+ 1705  0A C0		     1C            or    al, al
+ 1707  75 03		     1C            jnz   ??01D3
+ 1709  33 C0		     1C            xor   ax, ax
+ 170B  C3		     1C            ret
+ 170C			     1C ??01D3:
+ 170C  E8 E900		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 170F  E4 00		     1C            in    al, 0
+ 1711  0A C0		     1C            or    al, al
+ 1713  74 03		     1C            jz    ??01D4
+ 1715  33 C0		     1C            xor   ax, ax
+ 1717  C3		     1C            ret
+ 1718			     1C ??01D4:           
+			      C             AssertByteCeEq 0
+ 1718  E4 40		     1C            in    al, 40h
+ 171A  3C 00		     1C            cmp   al, 0
+ 171C  74 03		     1C            jz    ??01D5
+ 171E  33 C0		     1C            xor   ax, ax
+ 1720  C3		     1C            ret
+ 1721			     1C ??01D5:
+ 1721  E8 E8E6		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1724  E4 00		     1C            in    al, 0
+ 1726  0A C0		     1C            or    al, al
+ 1728  74 03		     1C            jz    ??01D6
+ 172A  33 C0		     1C            xor   ax, ax
+ 172C  C3		     1C            ret
+ 172D			     1C ??01D6:           
+ 172D  E8 E8DF		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 1730  E4 00		     1C            in    al, 0
+ 1732  0A C0		     1C            or    al, al
+ 1734  75 03		     1C            jnz   ??01D7
+ 1736  33 C0		     1C            xor   ax, ax
+ 1738  C3		     1C            ret
+ 1739			     1C ??01D7:
+			      C             AssertByteCeEq 0ffh
+ 1739  E4 40		     1C            in    al, 40h
+ 173B  3C FF		     1C            cmp   al, 0ffh
+ 173D  74 03		     1C            jz    ??01D8
+ 173F  33 C0		     1C            xor   ax, ax
+ 1741  C3		     1C            ret
+ 1742			     1C ??01D8:
+			      C 
+ 1742  B8 0001		      C             mov   ax, 1
+ 1745  C3		      C             ret
+ 1746			      C Mode4_Datasheet2 ENDP
+			      C 
+ 1746			      C Mode4_Datasheet3 PROC NEAR
+ 1746  E8 E8B7		      C             call  SetGateHi
+			      C 
+ 1749  E8 E8BE		      C             call  SetClkHi
+ 174C  B0 18		      C             mov   al, 18h
+ 174E  E8 E8CD		      C             call  WriteCw
+			      C             AssertOutHi
+ 1751  E4 00		     1C            in    al, 0
+ 1753  0A C0		     1C            or    al, al
+ 1755  75 03		     1C            jnz   ??01D9
+ 1757  33 C0		     1C            xor   ax, ax
+ 1759  C3		     1C            ret
+ 175A			     1C ??01D9:
+ 175A  E8 E8B2		      C             call  SetClkLow
+			      C             AssertOutHi
+ 175D  E4 00		     1C            in    al, 0
+ 175F  0A C0		     1C            or    al, al
+ 1761  75 03		     1C            jnz   ??01DA
+ 1763  33 C0		     1C            xor   ax, ax
+ 1765  C3		     1C            ret
+ 1766			     1C ??01DA:
+ 1766  E8 E8A1		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1769  E4 00		     1C            in    al, 0
+ 176B  0A C0		     1C            or    al, al
+ 176D  75 03		     1C            jnz   ??01DB
+ 176F  33 C0		     1C            xor   ax, ax
+ 1771  C3		     1C            ret
+ 1772			     1C ??01DB:
+ 1772  E8 E89A		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1775  E4 00		     1C            in    al, 0
+ 1777  0A C0		     1C            or    al, al
+ 1779  75 03		     1C            jnz   ??01DC
+ 177B  33 C0		     1C            xor   ax, ax
+ 177D  C3		     1C            ret
+ 177E			     1C ??01DC:
+ 177E  B0 03		      C             mov   al, 3
+ 1780  E8 E89E		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1783  E4 00		     1C            in    al, 0
+ 1785  0A C0		     1C            or    al, al
+ 1787  75 03		     1C            jnz   ??01DD
+ 1789  33 C0		     1C            xor   ax, ax
+ 178B  C3		     1C            ret
+ 178C			     1C ??01DD:
+ 178C  E8 E87B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 178F  E4 00		     1C            in    al, 0
+ 1791  0A C0		     1C            or    al, al
+ 1793  75 03		     1C            jnz   ??01DE
+ 1795  33 C0		     1C            xor   ax, ax
+ 1797  C3		     1C            ret
+ 1798			     1C ??01DE:
+ 1798  E8 E874		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 179B  E4 00		     1C            in    al, 0
+ 179D  0A C0		     1C            or    al, al
+ 179F  75 03		     1C            jnz   ??01DF
+ 17A1  33 C0		     1C            xor   ax, ax
+ 17A3  C3		     1C            ret
+ 17A4			     1C ??01DF:
+			      C             AssertByteCeEq 3
+ 17A4  E4 40		     1C            in    al, 40h
+ 17A6  3C 03		     1C            cmp   al, 3
+ 17A8  74 03		     1C            jz    ??01E0
+ 17AA  33 C0		     1C            xor   ax, ax
+ 17AC  C3		     1C            ret
+ 17AD			     1C ??01E0:
+ 17AD  E8 E85A		      C             call  SetClkHi
+			      C             AssertOutHi
+ 17B0  E4 00		     1C            in    al, 0
+ 17B2  0A C0		     1C            or    al, al
+ 17B4  75 03		     1C            jnz   ??01E1
+ 17B6  33 C0		     1C            xor   ax, ax
+ 17B8  C3		     1C            ret
+ 17B9			     1C ??01E1:
+ 17B9  E8 E853		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 17BC  E4 00		     1C            in    al, 0
+ 17BE  0A C0		     1C            or    al, al
+ 17C0  75 03		     1C            jnz   ??01E2
+ 17C2  33 C0		     1C            xor   ax, ax
+ 17C4  C3		     1C            ret
+ 17C5			     1C ??01E2:
+			      C             AssertByteCeEq 2
+ 17C5  E4 40		     1C            in    al, 40h
+ 17C7  3C 02		     1C            cmp   al, 2
+ 17C9  74 03		     1C            jz    ??01E3
+ 17CB  33 C0		     1C            xor   ax, ax
+ 17CD  C3		     1C            ret
+ 17CE			     1C ??01E3:
+ 17CE  E8 E839		      C             call  SetClkHi
+			      C             AssertOutHi
+ 17D1  E4 00		     1C            in    al, 0
+ 17D3  0A C0		     1C            or    al, al
+ 17D5  75 03		     1C            jnz   ??01E4
+ 17D7  33 C0		     1C            xor   ax, ax
+ 17D9  C3		     1C            ret
+ 17DA			     1C ??01E4:
+ 17DA  E8 E832		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 17DD  E4 00		     1C            in    al, 0
+ 17DF  0A C0		     1C            or    al, al
+ 17E1  75 03		     1C            jnz   ??01E5
+ 17E3  33 C0		     1C            xor   ax, ax
+ 17E5  C3		     1C            ret
+ 17E6			     1C ??01E5:
+			      C             AssertByteCeEq 1
+ 17E6  E4 40		     1C            in    al, 40h
+ 17E8  3C 01		     1C            cmp   al, 1
+ 17EA  74 03		     1C            jz    ??01E6
+ 17EC  33 C0		     1C            xor   ax, ax
+ 17EE  C3		     1C            ret
+ 17EF			     1C ??01E6:
+ 17EF  B0 02		      C             mov   al, 2
+ 17F1  E8 E82D		      C             call  WriteCountByte ; cr = 2
+			      C             AssertOutHi
+ 17F4  E4 00		     1C            in    al, 0
+ 17F6  0A C0		     1C            or    al, al
+ 17F8  75 03		     1C            jnz   ??01E7
+ 17FA  33 C0		     1C            xor   ax, ax
+ 17FC  C3		     1C            ret
+ 17FD			     1C ??01E7:
+ 17FD  E8 E80A		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1800  E4 00		     1C            in    al, 0
+ 1802  0A C0		     1C            or    al, al
+ 1804  75 03		     1C            jnz   ??01E8
+ 1806  33 C0		     1C            xor   ax, ax
+ 1808  C3		     1C            ret
+ 1809			     1C ??01E8:
+ 1809  E8 E803		      C             call  SetClkLow ; ce = cr = 2
+			      C             AssertOutHi
+ 180C  E4 00		     1C            in    al, 0
+ 180E  0A C0		     1C            or    al, al
+ 1810  75 03		     1C            jnz   ??01E9
+ 1812  33 C0		     1C            xor   ax, ax
+ 1814  C3		     1C            ret
+ 1815			     1C ??01E9:
+			      C             AssertByteCeEq 2
+ 1815  E4 40		     1C            in    al, 40h
+ 1817  3C 02		     1C            cmp   al, 2
+ 1819  74 03		     1C            jz    ??01EA
+ 181B  33 C0		     1C            xor   ax, ax
+ 181D  C3		     1C            ret
+ 181E			     1C ??01EA:
+ 181E  E8 E7E9		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1821  E4 00		     1C            in    al, 0
+ 1823  0A C0		     1C            or    al, al
+ 1825  75 03		     1C            jnz   ??01EB
+ 1827  33 C0		     1C            xor   ax, ax
+ 1829  C3		     1C            ret
+ 182A			     1C ??01EB:
+ 182A  E8 E7E2		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 182D  E4 00		     1C            in    al, 0
+ 182F  0A C0		     1C            or    al, al
+ 1831  75 03		     1C            jnz   ??01EC
+ 1833  33 C0		     1C            xor   ax, ax
+ 1835  C3		     1C            ret
+ 1836			     1C ??01EC:
+			      C             AssertByteCeEq 1
+ 1836  E4 40		     1C            in    al, 40h
+ 1838  3C 01		     1C            cmp   al, 1
+ 183A  74 03		     1C            jz    ??01ED
+ 183C  33 C0		     1C            xor   ax, ax
+ 183E  C3		     1C            ret
+ 183F			     1C ??01ED:
+ 183F  E8 E7C8		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1842  E4 00		     1C            in    al, 0
+ 1844  0A C0		     1C            or    al, al
+ 1846  75 03		     1C            jnz   ??01EE
+ 1848  33 C0		     1C            xor   ax, ax
+ 184A  C3		     1C            ret
+ 184B			     1C ??01EE:
+ 184B  E8 E7C1		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 184E  E4 00		     1C            in    al, 0
+ 1850  0A C0		     1C            or    al, al
+ 1852  74 03		     1C            jz    ??01EF
+ 1854  33 C0		     1C            xor   ax, ax
+ 1856  C3		     1C            ret
+ 1857			     1C ??01EF:           
+			      C             AssertByteCeEq 0
+ 1857  E4 40		     1C            in    al, 40h
+ 1859  3C 00		     1C            cmp   al, 0
+ 185B  74 03		     1C            jz    ??01F0
+ 185D  33 C0		     1C            xor   ax, ax
+ 185F  C3		     1C            ret
+ 1860			     1C ??01F0:
+ 1860  E8 E7A7		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1863  E4 00		     1C            in    al, 0
+ 1865  0A C0		     1C            or    al, al
+ 1867  74 03		     1C            jz    ??01F1
+ 1869  33 C0		     1C            xor   ax, ax
+ 186B  C3		     1C            ret
+ 186C			     1C ??01F1:           
+ 186C  E8 E7A0		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 186F  E4 00		     1C            in    al, 0
+ 1871  0A C0		     1C            or    al, al
+ 1873  75 03		     1C            jnz   ??01F2
+ 1875  33 C0		     1C            xor   ax, ax
+ 1877  C3		     1C            ret
+ 1878			     1C ??01F2:
+			      C             AssertByteCeEq 0ffh
+ 1878  E4 40		     1C            in    al, 40h
+ 187A  3C FF		     1C            cmp   al, 0ffh
+ 187C  74 03		     1C            jz    ??01F3
+ 187E  33 C0		     1C            xor   ax, ax
+ 1880  C3		     1C            ret
+ 1881			     1C ??01F3:
+			      C 
+ 1881  B8 0001		      C             mov   ax, 1
+ 1884  C3		      C             ret
+ 1885			      C Mode4_Datasheet3 ENDP
+			      C 
+				include    mode5.asm
+ 1885			      C TestMode5  PROC NEAR
+ 1885  51		      C             push  cx
+			      C 
+ 1886  B9 0000		      C             mov   cx, 0
+ 1889  E8 0048		      C             call  Mode5_Datasheet1_Gate_Low
+ 188C  C1 E0 00		      C             shl   ax, 0
+ 188F  0B C8		      C             or    cx, ax
+ 1891  8A C1		      C             mov   al, cl
+ 1893  E6 15		      C             out   15h, al
+			      C 
+ 1895  E8 0194		      C             call  Mode5_Datasheet1_Gate_High
+ 1898  D1 E0		      C             shl   ax, 1
+ 189A  0B C8		      C             or    cx, ax
+ 189C  8A C1		      C             mov   al, cl
+ 189E  E6 15		      C             out   15h, al
+			      C 
+ 18A0  E8 02E1		      C             call  Mode5_Datasheet2_Gate_Low
+ 18A3  C1 E0 02		      C             shl   ax, 2
+ 18A6  0B C8		      C             or    cx, ax
+ 18A8  8A C1		      C             mov   al, cl
+ 18AA  E6 15		      C             out   15h, al
+			      C 
+ 18AC  E8 0466		      C             call  Mode5_Datasheet2_Gate_High
+ 18AF  C1 E0 03		      C             shl   ax, 3
+ 18B2  0B C8		      C             or    cx, ax
+ 18B4  8A C1		      C             mov   al, cl
+ 18B6  E6 15		      C             out   15h, al
+			      C 
+ 18B8  E8 05EB		      C             call  Mode5_Datasheet3_Gate_Low
+ 18BB  C1 E0 04		      C             shl   ax, 4
+ 18BE  0B C8		      C             or    cx, ax
+ 18C0  8A C1		      C             mov   al, cl
+ 18C2  E6 15		      C             out   15h, al
+			      C 
+ 18C4  E8 079F		      C             call  Mode5_Datasheet3_Gate_High
+ 18C7  C1 E0 05		      C             shl   ax, 5
+ 18CA  0B C8		      C             or    cx, ax
+ 18CC  8A C1		      C             mov   al, cl
+ 18CE  E6 15		      C             out   15h, al
+			      C 
+ 18D0  8B C1		      C             mov   ax, cx
+ 18D2  59		      C             pop   cx
+ 18D3  C3		      C             ret
+ 18D4			      C TestMode5  ENDP
+			      C 
+ 18D4			      C Mode5_Datasheet1_Gate_Low PROC NEAR
+ 18D4  E8 E72E		      C             call  SetGateLow
+			      C 
+ 18D7  E8 E730		      C             call  SetClkHi
+ 18DA  B0 1A		      C             mov   al, 1ah
+ 18DC  E8 E73F		      C             call  WriteCw
+			      C             AssertOutHi
+ 18DF  E4 00		     1C            in    al, 0
+ 18E1  0A C0		     1C            or    al, al
+ 18E3  75 03		     1C            jnz   ??01F4
+ 18E5  33 C0		     1C            xor   ax, ax
+ 18E7  C3		     1C            ret
+ 18E8			     1C ??01F4:
+ 18E8  E8 E724		      C             call  SetClkLow
+			      C             AssertOutHi
+ 18EB  E4 00		     1C            in    al, 0
+ 18ED  0A C0		     1C            or    al, al
+ 18EF  75 03		     1C            jnz   ??01F5
+ 18F1  33 C0		     1C            xor   ax, ax
+ 18F3  C3		     1C            ret
+ 18F4			     1C ??01F5:
+ 18F4  E8 E713		      C             call  SetClkHi
+			      C             AssertOutHi
+ 18F7  E4 00		     1C            in    al, 0
+ 18F9  0A C0		     1C            or    al, al
+ 18FB  75 03		     1C            jnz   ??01F6
+ 18FD  33 C0		     1C            xor   ax, ax
+ 18FF  C3		     1C            ret
+ 1900			     1C ??01F6:
+ 1900  E8 E70C		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1903  E4 00		     1C            in    al, 0
+ 1905  0A C0		     1C            or    al, al
+ 1907  75 03		     1C            jnz   ??01F7
+ 1909  33 C0		     1C            xor   ax, ax
+ 190B  C3		     1C            ret
+ 190C			     1C ??01F7:
+ 190C  B0 03		      C             mov   al, 3
+ 190E  E8 E710		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1911  E4 00		     1C            in    al, 0
+ 1913  0A C0		     1C            or    al, al
+ 1915  75 03		     1C            jnz   ??01F8
+ 1917  33 C0		     1C            xor   ax, ax
+ 1919  C3		     1C            ret
+ 191A			     1C ??01F8:
+ 191A  E8 E6ED		      C             call  SetClkHi
+			      C             AssertOutHi
+ 191D  E4 00		     1C            in    al, 0
+ 191F  0A C0		     1C            or    al, al
+ 1921  75 03		     1C            jnz   ??01F9
+ 1923  33 C0		     1C            xor   ax, ax
+ 1925  C3		     1C            ret
+ 1926			     1C ??01F9:
+ 1926  E8 E6E6		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1929  E4 00		     1C            in    al, 0
+ 192B  0A C0		     1C            or    al, al
+ 192D  75 03		     1C            jnz   ??01FA
+ 192F  33 C0		     1C            xor   ax, ax
+ 1931  C3		     1C            ret
+ 1932			     1C ??01FA:
+ 1932  E8 E6CB		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1935  E4 00		     1C            in    al, 0
+ 1937  0A C0		     1C            or    al, al
+ 1939  75 03		     1C            jnz   ??01FB
+ 193B  33 C0		     1C            xor   ax, ax
+ 193D  C3		     1C            ret
+ 193E			     1C ??01FB:
+ 193E  E8 E6C4		      C             call  SetGateLow
+			      C             AssertOutHi
+ 1941  E4 00		     1C            in    al, 0
+ 1943  0A C0		     1C            or    al, al
+ 1945  75 03		     1C            jnz   ??01FC
+ 1947  33 C0		     1C            xor   ax, ax
+ 1949  C3		     1C            ret
+ 194A			     1C ??01FC:
+ 194A  E8 E6BD		      C             call  SetClkHi
+			      C             AssertOutHi
+ 194D  E4 00		     1C            in    al, 0
+ 194F  0A C0		     1C            or    al, al
+ 1951  75 03		     1C            jnz   ??01FD
+ 1953  33 C0		     1C            xor   ax, ax
+ 1955  C3		     1C            ret
+ 1956			     1C ??01FD:
+ 1956  E8 E6B6		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1959  E4 00		     1C            in    al, 0
+ 195B  0A C0		     1C            or    al, al
+ 195D  75 03		     1C            jnz   ??01FE
+ 195F  33 C0		     1C            xor   ax, ax
+ 1961  C3		     1C            ret
+ 1962			     1C ??01FE:
+			      C             AssertByteCeEq 3
+ 1962  E4 40		     1C            in    al, 40h
+ 1964  3C 03		     1C            cmp   al, 3
+ 1966  74 03		     1C            jz    ??01FF
+ 1968  33 C0		     1C            xor   ax, ax
+ 196A  C3		     1C            ret
+ 196B			     1C ??01FF:
+ 196B  E8 E69C		      C             call  SetClkHi
+			      C             AssertOutHi
+ 196E  E4 00		     1C            in    al, 0
+ 1970  0A C0		     1C            or    al, al
+ 1972  75 03		     1C            jnz   ??0200
+ 1974  33 C0		     1C            xor   ax, ax
+ 1976  C3		     1C            ret
+ 1977			     1C ??0200:
+ 1977  E8 E695		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 197A  E4 00		     1C            in    al, 0
+ 197C  0A C0		     1C            or    al, al
+ 197E  75 03		     1C            jnz   ??0201
+ 1980  33 C0		     1C            xor   ax, ax
+ 1982  C3		     1C            ret
+ 1983			     1C ??0201:
+			      C             AssertByteCeEq 2
+ 1983  E4 40		     1C            in    al, 40h
+ 1985  3C 02		     1C            cmp   al, 2
+ 1987  74 03		     1C            jz    ??0202
+ 1989  33 C0		     1C            xor   ax, ax
+ 198B  C3		     1C            ret
+ 198C			     1C ??0202:
+ 198C  E8 E67B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 198F  E4 00		     1C            in    al, 0
+ 1991  0A C0		     1C            or    al, al
+ 1993  75 03		     1C            jnz   ??0203
+ 1995  33 C0		     1C            xor   ax, ax
+ 1997  C3		     1C            ret
+ 1998			     1C ??0203:
+ 1998  E8 E674		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 199B  E4 00		     1C            in    al, 0
+ 199D  0A C0		     1C            or    al, al
+ 199F  75 03		     1C            jnz   ??0204
+ 19A1  33 C0		     1C            xor   ax, ax
+ 19A3  C3		     1C            ret
+ 19A4			     1C ??0204:
+			      C             AssertByteCeEq 1
+ 19A4  E4 40		     1C            in    al, 40h
+ 19A6  3C 01		     1C            cmp   al, 1
+ 19A8  74 03		     1C            jz    ??0205
+ 19AA  33 C0		     1C            xor   ax, ax
+ 19AC  C3		     1C            ret
+ 19AD			     1C ??0205:
+ 19AD  E8 E65A		      C             call  SetClkHi
+			      C             AssertOutHi
+ 19B0  E4 00		     1C            in    al, 0
+ 19B2  0A C0		     1C            or    al, al
+ 19B4  75 03		     1C            jnz   ??0206
+ 19B6  33 C0		     1C            xor   ax, ax
+ 19B8  C3		     1C            ret
+ 19B9			     1C ??0206:
+ 19B9  E8 E653		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 19BC  E4 00		     1C            in    al, 0
+ 19BE  0A C0		     1C            or    al, al
+ 19C0  74 03		     1C            jz    ??0207
+ 19C2  33 C0		     1C            xor   ax, ax
+ 19C4  C3		     1C            ret
+ 19C5			     1C ??0207:           
+			      C             AssertByteCeEq 0
+ 19C5  E4 40		     1C            in    al, 40h
+ 19C7  3C 00		     1C            cmp   al, 0
+ 19C9  74 03		     1C            jz    ??0208
+ 19CB  33 C0		     1C            xor   ax, ax
+ 19CD  C3		     1C            ret
+ 19CE			     1C ??0208:
+ 19CE  E8 E639		      C             call  SetClkHi
+			      C             AssertOutLow
+ 19D1  E4 00		     1C            in    al, 0
+ 19D3  0A C0		     1C            or    al, al
+ 19D5  74 03		     1C            jz    ??0209
+ 19D7  33 C0		     1C            xor   ax, ax
+ 19D9  C3		     1C            ret
+ 19DA			     1C ??0209:           
+ 19DA  E8 E623		      C             call  SetGateHi
+			      C             AssertOutLow
+ 19DD  E4 00		     1C            in    al, 0
+ 19DF  0A C0		     1C            or    al, al
+ 19E1  74 03		     1C            jz    ??020A
+ 19E3  33 C0		     1C            xor   ax, ax
+ 19E5  C3		     1C            ret
+ 19E6			     1C ??020A:           
+ 19E6  E8 E626		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 19E9  E4 00		     1C            in    al, 0
+ 19EB  0A C0		     1C            or    al, al
+ 19ED  75 03		     1C            jnz   ??020B
+ 19EF  33 C0		     1C            xor   ax, ax
+ 19F1  C3		     1C            ret
+ 19F2			     1C ??020B:
+			      C             AssertByteCeEq 0ffh
+ 19F2  E4 40		     1C            in    al, 40h
+ 19F4  3C FF		     1C            cmp   al, 0ffh
+ 19F6  74 03		     1C            jz    ??020C
+ 19F8  33 C0		     1C            xor   ax, ax
+ 19FA  C3		     1C            ret
+ 19FB			     1C ??020C:
+ 19FB  E8 E607		      C             call  SetGateLow
+			      C             AssertOutHi
+ 19FE  E4 00		     1C            in    al, 0
+ 1A00  0A C0		     1C            or    al, al
+ 1A02  75 03		     1C            jnz   ??020D
+ 1A04  33 C0		     1C            xor   ax, ax
+ 1A06  C3		     1C            ret
+ 1A07			     1C ??020D:
+ 1A07  E8 E600		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1A0A  E4 00		     1C            in    al, 0
+ 1A0C  0A C0		     1C            or    al, al
+ 1A0E  75 03		     1C            jnz   ??020E
+ 1A10  33 C0		     1C            xor   ax, ax
+ 1A12  C3		     1C            ret
+ 1A13			     1C ??020E:
+ 1A13  E8 E5F9		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1A16  E4 00		     1C            in    al, 0
+ 1A18  0A C0		     1C            or    al, al
+ 1A1A  75 03		     1C            jnz   ??020F
+ 1A1C  33 C0		     1C            xor   ax, ax
+ 1A1E  C3		     1C            ret
+ 1A1F			     1C ??020F:
+			      C             AssertByteCeEq 3
+ 1A1F  E4 40		     1C            in    al, 40h
+ 1A21  3C 03		     1C            cmp   al, 3
+ 1A23  74 03		     1C            jz    ??0210
+ 1A25  33 C0		     1C            xor   ax, ax
+ 1A27  C3		     1C            ret
+ 1A28			     1C ??0210:
+			      C             
+ 1A28  B8 0001		      C             mov   ax, 1
+ 1A2B  C3		      C             ret
+ 1A2C			      C Mode5_Datasheet1_Gate_Low ENDP
+			      C 
+ 1A2C			      C Mode5_Datasheet1_Gate_High PROC NEAR
+ 1A2C  E8 E5D1		      C             call  SetGateHi
+			      C 
+ 1A2F  E8 E5D8		      C             call  SetClkHi
+ 1A32  B0 1A		      C             mov   al, 1ah
+ 1A34  E8 E5E7		      C             call  WriteCw
+			      C             AssertOutHi
+ 1A37  E4 00		     1C            in    al, 0
+ 1A39  0A C0		     1C            or    al, al
+ 1A3B  75 03		     1C            jnz   ??0211
+ 1A3D  33 C0		     1C            xor   ax, ax
+ 1A3F  C3		     1C            ret
+ 1A40			     1C ??0211:
+ 1A40  E8 E5CC		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1A43  E4 00		     1C            in    al, 0
+ 1A45  0A C0		     1C            or    al, al
+ 1A47  75 03		     1C            jnz   ??0212
+ 1A49  33 C0		     1C            xor   ax, ax
+ 1A4B  C3		     1C            ret
+ 1A4C			     1C ??0212:
+ 1A4C  E8 E5BB		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1A4F  E4 00		     1C            in    al, 0
+ 1A51  0A C0		     1C            or    al, al
+ 1A53  75 03		     1C            jnz   ??0213
+ 1A55  33 C0		     1C            xor   ax, ax
+ 1A57  C3		     1C            ret
+ 1A58			     1C ??0213:
+ 1A58  E8 E5B4		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1A5B  E4 00		     1C            in    al, 0
+ 1A5D  0A C0		     1C            or    al, al
+ 1A5F  75 03		     1C            jnz   ??0214
+ 1A61  33 C0		     1C            xor   ax, ax
+ 1A63  C3		     1C            ret
+ 1A64			     1C ??0214:
+ 1A64  B0 03		      C             mov   al, 3
+ 1A66  E8 E5B8		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1A69  E4 00		     1C            in    al, 0
+ 1A6B  0A C0		     1C            or    al, al
+ 1A6D  75 03		     1C            jnz   ??0215
+ 1A6F  33 C0		     1C            xor   ax, ax
+ 1A71  C3		     1C            ret
+ 1A72			     1C ??0215:
+ 1A72  E8 E595		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1A75  E4 00		     1C            in    al, 0
+ 1A77  0A C0		     1C            or    al, al
+ 1A79  75 03		     1C            jnz   ??0216
+ 1A7B  33 C0		     1C            xor   ax, ax
+ 1A7D  C3		     1C            ret
+ 1A7E			     1C ??0216:
+ 1A7E  E8 E584		      C             call  SetGateLow
+			      C             AssertOutHi
+ 1A81  E4 00		     1C            in    al, 0
+ 1A83  0A C0		     1C            or    al, al
+ 1A85  75 03		     1C            jnz   ??0217
+ 1A87  33 C0		     1C            xor   ax, ax
+ 1A89  C3		     1C            ret
+ 1A8A			     1C ??0217:
+ 1A8A  E8 E582		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1A8D  E4 00		     1C            in    al, 0
+ 1A8F  0A C0		     1C            or    al, al
+ 1A91  75 03		     1C            jnz   ??0218
+ 1A93  33 C0		     1C            xor   ax, ax
+ 1A95  C3		     1C            ret
+ 1A96			     1C ??0218:
+ 1A96  E8 E567		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1A99  E4 00		     1C            in    al, 0
+ 1A9B  0A C0		     1C            or    al, al
+ 1A9D  75 03		     1C            jnz   ??0219
+ 1A9F  33 C0		     1C            xor   ax, ax
+ 1AA1  C3		     1C            ret
+ 1AA2			     1C ??0219:
+ 1AA2  E8 E565		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1AA5  E4 00		     1C            in    al, 0
+ 1AA7  0A C0		     1C            or    al, al
+ 1AA9  75 03		     1C            jnz   ??021A
+ 1AAB  33 C0		     1C            xor   ax, ax
+ 1AAD  C3		     1C            ret
+ 1AAE			     1C ??021A:
+ 1AAE  E8 E55E		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1AB1  E4 00		     1C            in    al, 0
+ 1AB3  0A C0		     1C            or    al, al
+ 1AB5  75 03		     1C            jnz   ??021B
+ 1AB7  33 C0		     1C            xor   ax, ax
+ 1AB9  C3		     1C            ret
+ 1ABA			     1C ??021B:
+			      C             AssertByteCeEq 3
+ 1ABA  E4 40		     1C            in    al, 40h
+ 1ABC  3C 03		     1C            cmp   al, 3
+ 1ABE  74 03		     1C            jz    ??021C
+ 1AC0  33 C0		     1C            xor   ax, ax
+ 1AC2  C3		     1C            ret
+ 1AC3			     1C ??021C:
+ 1AC3  E8 E544		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1AC6  E4 00		     1C            in    al, 0
+ 1AC8  0A C0		     1C            or    al, al
+ 1ACA  75 03		     1C            jnz   ??021D
+ 1ACC  33 C0		     1C            xor   ax, ax
+ 1ACE  C3		     1C            ret
+ 1ACF			     1C ??021D:
+ 1ACF  E8 E53D		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1AD2  E4 00		     1C            in    al, 0
+ 1AD4  0A C0		     1C            or    al, al
+ 1AD6  75 03		     1C            jnz   ??021E
+ 1AD8  33 C0		     1C            xor   ax, ax
+ 1ADA  C3		     1C            ret
+ 1ADB			     1C ??021E:
+			      C             AssertByteCeEq 2
+ 1ADB  E4 40		     1C            in    al, 40h
+ 1ADD  3C 02		     1C            cmp   al, 2
+ 1ADF  74 03		     1C            jz    ??021F
+ 1AE1  33 C0		     1C            xor   ax, ax
+ 1AE3  C3		     1C            ret
+ 1AE4			     1C ??021F:
+ 1AE4  E8 E523		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1AE7  E4 00		     1C            in    al, 0
+ 1AE9  0A C0		     1C            or    al, al
+ 1AEB  75 03		     1C            jnz   ??0220
+ 1AED  33 C0		     1C            xor   ax, ax
+ 1AEF  C3		     1C            ret
+ 1AF0			     1C ??0220:
+ 1AF0  E8 E51C		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 1AF3  E4 00		     1C            in    al, 0
+ 1AF5  0A C0		     1C            or    al, al
+ 1AF7  75 03		     1C            jnz   ??0221
+ 1AF9  33 C0		     1C            xor   ax, ax
+ 1AFB  C3		     1C            ret
+ 1AFC			     1C ??0221:
+			      C             AssertByteCeEq 1
+ 1AFC  E4 40		     1C            in    al, 40h
+ 1AFE  3C 01		     1C            cmp   al, 1
+ 1B00  74 03		     1C            jz    ??0222
+ 1B02  33 C0		     1C            xor   ax, ax
+ 1B04  C3		     1C            ret
+ 1B05			     1C ??0222:
+ 1B05  E8 E502		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1B08  E4 00		     1C            in    al, 0
+ 1B0A  0A C0		     1C            or    al, al
+ 1B0C  75 03		     1C            jnz   ??0223
+ 1B0E  33 C0		     1C            xor   ax, ax
+ 1B10  C3		     1C            ret
+ 1B11			     1C ??0223:
+ 1B11  E8 E4FB		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 1B14  E4 00		     1C            in    al, 0
+ 1B16  0A C0		     1C            or    al, al
+ 1B18  74 03		     1C            jz    ??0224
+ 1B1A  33 C0		     1C            xor   ax, ax
+ 1B1C  C3		     1C            ret
+ 1B1D			     1C ??0224:           
+			      C             AssertByteCeEq 0
+ 1B1D  E4 40		     1C            in    al, 40h
+ 1B1F  3C 00		     1C            cmp   al, 0
+ 1B21  74 03		     1C            jz    ??0225
+ 1B23  33 C0		     1C            xor   ax, ax
+ 1B25  C3		     1C            ret
+ 1B26			     1C ??0225:
+ 1B26  E8 E4E1		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1B29  E4 00		     1C            in    al, 0
+ 1B2B  0A C0		     1C            or    al, al
+ 1B2D  74 03		     1C            jz    ??0226
+ 1B2F  33 C0		     1C            xor   ax, ax
+ 1B31  C3		     1C            ret
+ 1B32			     1C ??0226:           
+ 1B32  E8 E4D0		      C             call  SetGateLow
+			      C             AssertOutLow
+ 1B35  E4 00		     1C            in    al, 0
+ 1B37  0A C0		     1C            or    al, al
+ 1B39  74 03		     1C            jz    ??0227
+ 1B3B  33 C0		     1C            xor   ax, ax
+ 1B3D  C3		     1C            ret
+ 1B3E			     1C ??0227:           
+ 1B3E  E8 E4BF		      C             call  SetGateHi
+			      C             AssertOutLow
+ 1B41  E4 00		     1C            in    al, 0
+ 1B43  0A C0		     1C            or    al, al
+ 1B45  74 03		     1C            jz    ??0228
+ 1B47  33 C0		     1C            xor   ax, ax
+ 1B49  C3		     1C            ret
+ 1B4A			     1C ??0228:           
+ 1B4A  E8 E4C2		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 1B4D  E4 00		     1C            in    al, 0
+ 1B4F  0A C0		     1C            or    al, al
+ 1B51  75 03		     1C            jnz   ??0229
+ 1B53  33 C0		     1C            xor   ax, ax
+ 1B55  C3		     1C            ret
+ 1B56			     1C ??0229:
+			      C             AssertByteCeEq 0ffh
+ 1B56  E4 40		     1C            in    al, 40h
+ 1B58  3C FF		     1C            cmp   al, 0ffh
+ 1B5A  74 03		     1C            jz    ??022A
+ 1B5C  33 C0		     1C            xor   ax, ax
+ 1B5E  C3		     1C            ret
+ 1B5F			     1C ??022A:
+ 1B5F  E8 E4A8		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1B62  E4 00		     1C            in    al, 0
+ 1B64  0A C0		     1C            or    al, al
+ 1B66  75 03		     1C            jnz   ??022B
+ 1B68  33 C0		     1C            xor   ax, ax
+ 1B6A  C3		     1C            ret
+ 1B6B			     1C ??022B:
+ 1B6B  E8 E4A1		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1B6E  E4 00		     1C            in    al, 0
+ 1B70  0A C0		     1C            or    al, al
+ 1B72  75 03		     1C            jnz   ??022C
+ 1B74  33 C0		     1C            xor   ax, ax
+ 1B76  C3		     1C            ret
+ 1B77			     1C ??022C:
+			      C             AssertByteCeEq 3
+ 1B77  E4 40		     1C            in    al, 40h
+ 1B79  3C 03		     1C            cmp   al, 3
+ 1B7B  74 03		     1C            jz    ??022D
+ 1B7D  33 C0		     1C            xor   ax, ax
+ 1B7F  C3		     1C            ret
+ 1B80			     1C ??022D:
+			      C 
+ 1B80  B8 0001		      C             mov   ax, 1
+ 1B83  C3		      C             ret
+ 1B84			      C Mode5_Datasheet1_Gate_High ENDP
+			      C 
+ 1B84			      C Mode5_Datasheet2_Gate_Low PROC NEAR
+ 1B84  E8 E47E		      C             call  SetGateLow
+			      C 
+ 1B87  E8 E480		      C             call  SetClkHi
+ 1B8A  B0 1A		      C             mov   al, 1ah
+ 1B8C  E8 E48F		      C             call  WriteCw
+			      C             AssertOutHi
+ 1B8F  E4 00		     1C            in    al, 0
+ 1B91  0A C0		     1C            or    al, al
+ 1B93  75 03		     1C            jnz   ??022E
+ 1B95  33 C0		     1C            xor   ax, ax
+ 1B97  C3		     1C            ret
+ 1B98			     1C ??022E:
+ 1B98  E8 E474		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1B9B  E4 00		     1C            in    al, 0
+ 1B9D  0A C0		     1C            or    al, al
+ 1B9F  75 03		     1C            jnz   ??022F
+ 1BA1  33 C0		     1C            xor   ax, ax
+ 1BA3  C3		     1C            ret
+ 1BA4			     1C ??022F:
+ 1BA4  E8 E463		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1BA7  E4 00		     1C            in    al, 0
+ 1BA9  0A C0		     1C            or    al, al
+ 1BAB  75 03		     1C            jnz   ??0230
+ 1BAD  33 C0		     1C            xor   ax, ax
+ 1BAF  C3		     1C            ret
+ 1BB0			     1C ??0230:
+ 1BB0  E8 E45C		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1BB3  E4 00		     1C            in    al, 0
+ 1BB5  0A C0		     1C            or    al, al
+ 1BB7  75 03		     1C            jnz   ??0231
+ 1BB9  33 C0		     1C            xor   ax, ax
+ 1BBB  C3		     1C            ret
+ 1BBC			     1C ??0231:
+ 1BBC  B0 03		      C             mov   al, 3
+ 1BBE  E8 E460		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1BC1  E4 00		     1C            in    al, 0
+ 1BC3  0A C0		     1C            or    al, al
+ 1BC5  75 03		     1C            jnz   ??0232
+ 1BC7  33 C0		     1C            xor   ax, ax
+ 1BC9  C3		     1C            ret
+ 1BCA			     1C ??0232:
+ 1BCA  E8 E43D		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1BCD  E4 00		     1C            in    al, 0
+ 1BCF  0A C0		     1C            or    al, al
+ 1BD1  75 03		     1C            jnz   ??0233
+ 1BD3  33 C0		     1C            xor   ax, ax
+ 1BD5  C3		     1C            ret
+ 1BD6			     1C ??0233:
+ 1BD6  E8 E436		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1BD9  E4 00		     1C            in    al, 0
+ 1BDB  0A C0		     1C            or    al, al
+ 1BDD  75 03		     1C            jnz   ??0234
+ 1BDF  33 C0		     1C            xor   ax, ax
+ 1BE1  C3		     1C            ret
+ 1BE2			     1C ??0234:
+ 1BE2  E8 E425		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1BE5  E4 00		     1C            in    al, 0
+ 1BE7  0A C0		     1C            or    al, al
+ 1BE9  75 03		     1C            jnz   ??0235
+ 1BEB  33 C0		     1C            xor   ax, ax
+ 1BED  C3		     1C            ret
+ 1BEE			     1C ??0235:
+ 1BEE  E8 E41E		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1BF1  E4 00		     1C            in    al, 0
+ 1BF3  0A C0		     1C            or    al, al
+ 1BF5  75 03		     1C            jnz   ??0236
+ 1BF7  33 C0		     1C            xor   ax, ax
+ 1BF9  C3		     1C            ret
+ 1BFA			     1C ??0236:
+ 1BFA  E8 E403		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1BFD  E4 00		     1C            in    al, 0
+ 1BFF  0A C0		     1C            or    al, al
+ 1C01  75 03		     1C            jnz   ??0237
+ 1C03  33 C0		     1C            xor   ax, ax
+ 1C05  C3		     1C            ret
+ 1C06			     1C ??0237:
+ 1C06  E8 E3FC		      C             call  SetGateLow
+			      C             AssertOutHi
+ 1C09  E4 00		     1C            in    al, 0
+ 1C0B  0A C0		     1C            or    al, al
+ 1C0D  75 03		     1C            jnz   ??0238
+ 1C0F  33 C0		     1C            xor   ax, ax
+ 1C11  C3		     1C            ret
+ 1C12			     1C ??0238:
+ 1C12  E8 E3F5		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1C15  E4 00		     1C            in    al, 0
+ 1C17  0A C0		     1C            or    al, al
+ 1C19  75 03		     1C            jnz   ??0239
+ 1C1B  33 C0		     1C            xor   ax, ax
+ 1C1D  C3		     1C            ret
+ 1C1E			     1C ??0239:
+ 1C1E  E8 E3EE		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1C21  E4 00		     1C            in    al, 0
+ 1C23  0A C0		     1C            or    al, al
+ 1C25  75 03		     1C            jnz   ??023A
+ 1C27  33 C0		     1C            xor   ax, ax
+ 1C29  C3		     1C            ret
+ 1C2A			     1C ??023A:
+			      C             AssertByteCeEq 3
+ 1C2A  E4 40		     1C            in    al, 40h
+ 1C2C  3C 03		     1C            cmp   al, 3
+ 1C2E  74 03		     1C            jz    ??023B
+ 1C30  33 C0		     1C            xor   ax, ax
+ 1C32  C3		     1C            ret
+ 1C33			     1C ??023B:
+ 1C33  E8 E3D4		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1C36  E4 00		     1C            in    al, 0
+ 1C38  0A C0		     1C            or    al, al
+ 1C3A  75 03		     1C            jnz   ??023C
+ 1C3C  33 C0		     1C            xor   ax, ax
+ 1C3E  C3		     1C            ret
+ 1C3F			     1C ??023C:
+ 1C3F  E8 E3BE		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1C42  E4 00		     1C            in    al, 0
+ 1C44  0A C0		     1C            or    al, al
+ 1C46  75 03		     1C            jnz   ??023D
+ 1C48  33 C0		     1C            xor   ax, ax
+ 1C4A  C3		     1C            ret
+ 1C4B			     1C ??023D:
+ 1C4B  E8 E3C1		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1C4E  E4 00		     1C            in    al, 0
+ 1C50  0A C0		     1C            or    al, al
+ 1C52  75 03		     1C            jnz   ??023E
+ 1C54  33 C0		     1C            xor   ax, ax
+ 1C56  C3		     1C            ret
+ 1C57			     1C ??023E:
+			      C             AssertByteCeEq 2
+ 1C57  E4 40		     1C            in    al, 40h
+ 1C59  3C 02		     1C            cmp   al, 2
+ 1C5B  74 03		     1C            jz    ??023F
+ 1C5D  33 C0		     1C            xor   ax, ax
+ 1C5F  C3		     1C            ret
+ 1C60			     1C ??023F:
+ 1C60  E8 E3A2		      C             call  SetGateLow
+			      C             AssertOutHi
+ 1C63  E4 00		     1C            in    al, 0
+ 1C65  0A C0		     1C            or    al, al
+ 1C67  75 03		     1C            jnz   ??0240
+ 1C69  33 C0		     1C            xor   ax, ax
+ 1C6B  C3		     1C            ret
+ 1C6C			     1C ??0240:
+ 1C6C  E8 E39B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1C6F  E4 00		     1C            in    al, 0
+ 1C71  0A C0		     1C            or    al, al
+ 1C73  75 03		     1C            jnz   ??0241
+ 1C75  33 C0		     1C            xor   ax, ax
+ 1C77  C3		     1C            ret
+ 1C78			     1C ??0241:
+ 1C78  E8 E394		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1C7B  E4 00		     1C            in    al, 0
+ 1C7D  0A C0		     1C            or    al, al
+ 1C7F  75 03		     1C            jnz   ??0242
+ 1C81  33 C0		     1C            xor   ax, ax
+ 1C83  C3		     1C            ret
+ 1C84			     1C ??0242:
+			      C             AssertByteCeEq 3
+ 1C84  E4 40		     1C            in    al, 40h
+ 1C86  3C 03		     1C            cmp   al, 3
+ 1C88  74 03		     1C            jz    ??0243
+ 1C8A  33 C0		     1C            xor   ax, ax
+ 1C8C  C3		     1C            ret
+ 1C8D			     1C ??0243:
+ 1C8D  E8 E37A		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1C90  E4 00		     1C            in    al, 0
+ 1C92  0A C0		     1C            or    al, al
+ 1C94  75 03		     1C            jnz   ??0244
+ 1C96  33 C0		     1C            xor   ax, ax
+ 1C98  C3		     1C            ret
+ 1C99			     1C ??0244:
+ 1C99  E8 E373		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1C9C  E4 00		     1C            in    al, 0
+ 1C9E  0A C0		     1C            or    al, al
+ 1CA0  75 03		     1C            jnz   ??0245
+ 1CA2  33 C0		     1C            xor   ax, ax
+ 1CA4  C3		     1C            ret
+ 1CA5			     1C ??0245:
+			      C             AssertByteCeEq 2
+ 1CA5  E4 40		     1C            in    al, 40h
+ 1CA7  3C 02		     1C            cmp   al, 2
+ 1CA9  74 03		     1C            jz    ??0246
+ 1CAB  33 C0		     1C            xor   ax, ax
+ 1CAD  C3		     1C            ret
+ 1CAE			     1C ??0246:
+ 1CAE  E8 E359		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1CB1  E4 00		     1C            in    al, 0
+ 1CB3  0A C0		     1C            or    al, al
+ 1CB5  75 03		     1C            jnz   ??0247
+ 1CB7  33 C0		     1C            xor   ax, ax
+ 1CB9  C3		     1C            ret
+ 1CBA			     1C ??0247:
+ 1CBA  E8 E352		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 1CBD  E4 00		     1C            in    al, 0
+ 1CBF  0A C0		     1C            or    al, al
+ 1CC1  75 03		     1C            jnz   ??0248
+ 1CC3  33 C0		     1C            xor   ax, ax
+ 1CC5  C3		     1C            ret
+ 1CC6			     1C ??0248:
+			      C             AssertByteCeEq 1
+ 1CC6  E4 40		     1C            in    al, 40h
+ 1CC8  3C 01		     1C            cmp   al, 1
+ 1CCA  74 03		     1C            jz    ??0249
+ 1CCC  33 C0		     1C            xor   ax, ax
+ 1CCE  C3		     1C            ret
+ 1CCF			     1C ??0249:
+ 1CCF  E8 E338		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1CD2  E4 00		     1C            in    al, 0
+ 1CD4  0A C0		     1C            or    al, al
+ 1CD6  75 03		     1C            jnz   ??024A
+ 1CD8  33 C0		     1C            xor   ax, ax
+ 1CDA  C3		     1C            ret
+ 1CDB			     1C ??024A:
+ 1CDB  E8 E331		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 1CDE  E4 00		     1C            in    al, 0
+ 1CE0  0A C0		     1C            or    al, al
+ 1CE2  74 03		     1C            jz    ??024B
+ 1CE4  33 C0		     1C            xor   ax, ax
+ 1CE6  C3		     1C            ret
+ 1CE7			     1C ??024B:           
+			      C             AssertByteCeEq 0
+ 1CE7  E4 40		     1C            in    al, 40h
+ 1CE9  3C 00		     1C            cmp   al, 0
+ 1CEB  74 03		     1C            jz    ??024C
+ 1CED  33 C0		     1C            xor   ax, ax
+ 1CEF  C3		     1C            ret
+ 1CF0			     1C ??024C:
+ 1CF0  E8 E317		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1CF3  E4 00		     1C            in    al, 0
+ 1CF5  0A C0		     1C            or    al, al
+ 1CF7  74 03		     1C            jz    ??024D
+ 1CF9  33 C0		     1C            xor   ax, ax
+ 1CFB  C3		     1C            ret
+ 1CFC			     1C ??024D:           
+ 1CFC  E8 E310		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 1CFF  E4 00		     1C            in    al, 0
+ 1D01  0A C0		     1C            or    al, al
+ 1D03  75 03		     1C            jnz   ??024E
+ 1D05  33 C0		     1C            xor   ax, ax
+ 1D07  C3		     1C            ret
+ 1D08			     1C ??024E:
+			      C             AssertByteCeEq 0ffh
+ 1D08  E4 40		     1C            in    al, 40h
+ 1D0A  3C FF		     1C            cmp   al, 0ffh
+ 1D0C  74 03		     1C            jz    ??024F
+ 1D0E  33 C0		     1C            xor   ax, ax
+ 1D10  C3		     1C            ret
+ 1D11			     1C ??024F:
+			      C 
+ 1D11  B8 0001		      C             mov   ax, 1
+ 1D14  C3		      C             ret
+ 1D15			      C Mode5_Datasheet2_Gate_Low ENDP
+			      C 
+ 1D15			      C Mode5_Datasheet2_Gate_High PROC NEAR
+ 1D15  E8 E2E8		      C             call  SetGateHi
+			      C 
+ 1D18  E8 E2EF		      C             call  SetClkHi
+ 1D1B  B0 1A		      C             mov   al, 1ah
+ 1D1D  E8 E2FE		      C             call  WriteCw
+			      C             AssertOutHi
+ 1D20  E4 00		     1C            in    al, 0
+ 1D22  0A C0		     1C            or    al, al
+ 1D24  75 03		     1C            jnz   ??0250
+ 1D26  33 C0		     1C            xor   ax, ax
+ 1D28  C3		     1C            ret
+ 1D29			     1C ??0250:
+ 1D29  E8 E2E3		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1D2C  E4 00		     1C            in    al, 0
+ 1D2E  0A C0		     1C            or    al, al
+ 1D30  75 03		     1C            jnz   ??0251
+ 1D32  33 C0		     1C            xor   ax, ax
+ 1D34  C3		     1C            ret
+ 1D35			     1C ??0251:
+ 1D35  E8 E2D2		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1D38  E4 00		     1C            in    al, 0
+ 1D3A  0A C0		     1C            or    al, al
+ 1D3C  75 03		     1C            jnz   ??0252
+ 1D3E  33 C0		     1C            xor   ax, ax
+ 1D40  C3		     1C            ret
+ 1D41			     1C ??0252:
+ 1D41  E8 E2CB		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1D44  E4 00		     1C            in    al, 0
+ 1D46  0A C0		     1C            or    al, al
+ 1D48  75 03		     1C            jnz   ??0253
+ 1D4A  33 C0		     1C            xor   ax, ax
+ 1D4C  C3		     1C            ret
+ 1D4D			     1C ??0253:
+ 1D4D  B0 03		      C             mov   al, 3
+ 1D4F  E8 E2CF		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1D52  E4 00		     1C            in    al, 0
+ 1D54  0A C0		     1C            or    al, al
+ 1D56  75 03		     1C            jnz   ??0254
+ 1D58  33 C0		     1C            xor   ax, ax
+ 1D5A  C3		     1C            ret
+ 1D5B			     1C ??0254:
+ 1D5B  E8 E2AC		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1D5E  E4 00		     1C            in    al, 0
+ 1D60  0A C0		     1C            or    al, al
+ 1D62  75 03		     1C            jnz   ??0255
+ 1D64  33 C0		     1C            xor   ax, ax
+ 1D66  C3		     1C            ret
+ 1D67			     1C ??0255:
+ 1D67  E8 E2A5		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1D6A  E4 00		     1C            in    al, 0
+ 1D6C  0A C0		     1C            or    al, al
+ 1D6E  75 03		     1C            jnz   ??0256
+ 1D70  33 C0		     1C            xor   ax, ax
+ 1D72  C3		     1C            ret
+ 1D73			     1C ??0256:
+ 1D73  E8 E294		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1D76  E4 00		     1C            in    al, 0
+ 1D78  0A C0		     1C            or    al, al
+ 1D7A  75 03		     1C            jnz   ??0257
+ 1D7C  33 C0		     1C            xor   ax, ax
+ 1D7E  C3		     1C            ret
+ 1D7F			     1C ??0257:
+ 1D7F  E8 E28D		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1D82  E4 00		     1C            in    al, 0
+ 1D84  0A C0		     1C            or    al, al
+ 1D86  75 03		     1C            jnz   ??0258
+ 1D88  33 C0		     1C            xor   ax, ax
+ 1D8A  C3		     1C            ret
+ 1D8B			     1C ??0258:
+ 1D8B  E8 E277		      C             call  SetGateLow
+			      C             AssertOutHi
+ 1D8E  E4 00		     1C            in    al, 0
+ 1D90  0A C0		     1C            or    al, al
+ 1D92  75 03		     1C            jnz   ??0259
+ 1D94  33 C0		     1C            xor   ax, ax
+ 1D96  C3		     1C            ret
+ 1D97			     1C ??0259:
+ 1D97  E8 E266		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1D9A  E4 00		     1C            in    al, 0
+ 1D9C  0A C0		     1C            or    al, al
+ 1D9E  75 03		     1C            jnz   ??025A
+ 1DA0  33 C0		     1C            xor   ax, ax
+ 1DA2  C3		     1C            ret
+ 1DA3			     1C ??025A:
+ 1DA3  E8 E264		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1DA6  E4 00		     1C            in    al, 0
+ 1DA8  0A C0		     1C            or    al, al
+ 1DAA  75 03		     1C            jnz   ??025B
+ 1DAC  33 C0		     1C            xor   ax, ax
+ 1DAE  C3		     1C            ret
+ 1DAF			     1C ??025B:
+ 1DAF  E8 E25D		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1DB2  E4 00		     1C            in    al, 0
+ 1DB4  0A C0		     1C            or    al, al
+ 1DB6  75 03		     1C            jnz   ??025C
+ 1DB8  33 C0		     1C            xor   ax, ax
+ 1DBA  C3		     1C            ret
+ 1DBB			     1C ??025C:
+			      C             AssertByteCeEq 3
+ 1DBB  E4 40		     1C            in    al, 40h
+ 1DBD  3C 03		     1C            cmp   al, 3
+ 1DBF  74 03		     1C            jz    ??025D
+ 1DC1  33 C0		     1C            xor   ax, ax
+ 1DC3  C3		     1C            ret
+ 1DC4			     1C ??025D:
+ 1DC4  E8 E243		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1DC7  E4 00		     1C            in    al, 0
+ 1DC9  0A C0		     1C            or    al, al
+ 1DCB  75 03		     1C            jnz   ??025E
+ 1DCD  33 C0		     1C            xor   ax, ax
+ 1DCF  C3		     1C            ret
+ 1DD0			     1C ??025E:
+ 1DD0  E8 E232		      C             call  SetGateLow
+			      C             AssertOutHi
+ 1DD3  E4 00		     1C            in    al, 0
+ 1DD5  0A C0		     1C            or    al, al
+ 1DD7  75 03		     1C            jnz   ??025F
+ 1DD9  33 C0		     1C            xor   ax, ax
+ 1DDB  C3		     1C            ret
+ 1DDC			     1C ??025F:
+ 1DDC  E8 E221		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1DDF  E4 00		     1C            in    al, 0
+ 1DE1  0A C0		     1C            or    al, al
+ 1DE3  75 03		     1C            jnz   ??0260
+ 1DE5  33 C0		     1C            xor   ax, ax
+ 1DE7  C3		     1C            ret
+ 1DE8			     1C ??0260:
+ 1DE8  E8 E224		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1DEB  E4 00		     1C            in    al, 0
+ 1DED  0A C0		     1C            or    al, al
+ 1DEF  75 03		     1C            jnz   ??0261
+ 1DF1  33 C0		     1C            xor   ax, ax
+ 1DF3  C3		     1C            ret
+ 1DF4			     1C ??0261:
+			      C             AssertByteCeEq 2
+ 1DF4  E4 40		     1C            in    al, 40h
+ 1DF6  3C 02		     1C            cmp   al, 2
+ 1DF8  74 03		     1C            jz    ??0262
+ 1DFA  33 C0		     1C            xor   ax, ax
+ 1DFC  C3		     1C            ret
+ 1DFD			     1C ??0262:
+ 1DFD  E8 E20A		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1E00  E4 00		     1C            in    al, 0
+ 1E02  0A C0		     1C            or    al, al
+ 1E04  75 03		     1C            jnz   ??0263
+ 1E06  33 C0		     1C            xor   ax, ax
+ 1E08  C3		     1C            ret
+ 1E09			     1C ??0263:
+ 1E09  E8 E203		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1E0C  E4 00		     1C            in    al, 0
+ 1E0E  0A C0		     1C            or    al, al
+ 1E10  75 03		     1C            jnz   ??0264
+ 1E12  33 C0		     1C            xor   ax, ax
+ 1E14  C3		     1C            ret
+ 1E15			     1C ??0264:
+			      C             AssertByteCeEq 3
+ 1E15  E4 40		     1C            in    al, 40h
+ 1E17  3C 03		     1C            cmp   al, 3
+ 1E19  74 03		     1C            jz    ??0265
+ 1E1B  33 C0		     1C            xor   ax, ax
+ 1E1D  C3		     1C            ret
+ 1E1E			     1C ??0265:
+ 1E1E  E8 E1E9		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1E21  E4 00		     1C            in    al, 0
+ 1E23  0A C0		     1C            or    al, al
+ 1E25  75 03		     1C            jnz   ??0266
+ 1E27  33 C0		     1C            xor   ax, ax
+ 1E29  C3		     1C            ret
+ 1E2A			     1C ??0266:
+ 1E2A  E8 E1E2		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1E2D  E4 00		     1C            in    al, 0
+ 1E2F  0A C0		     1C            or    al, al
+ 1E31  75 03		     1C            jnz   ??0267
+ 1E33  33 C0		     1C            xor   ax, ax
+ 1E35  C3		     1C            ret
+ 1E36			     1C ??0267:
+			      C             AssertByteCeEq 2
+ 1E36  E4 40		     1C            in    al, 40h
+ 1E38  3C 02		     1C            cmp   al, 2
+ 1E3A  74 03		     1C            jz    ??0268
+ 1E3C  33 C0		     1C            xor   ax, ax
+ 1E3E  C3		     1C            ret
+ 1E3F			     1C ??0268:
+ 1E3F  E8 E1C8		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1E42  E4 00		     1C            in    al, 0
+ 1E44  0A C0		     1C            or    al, al
+ 1E46  75 03		     1C            jnz   ??0269
+ 1E48  33 C0		     1C            xor   ax, ax
+ 1E4A  C3		     1C            ret
+ 1E4B			     1C ??0269:
+ 1E4B  E8 E1C1		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 1E4E  E4 00		     1C            in    al, 0
+ 1E50  0A C0		     1C            or    al, al
+ 1E52  75 03		     1C            jnz   ??026A
+ 1E54  33 C0		     1C            xor   ax, ax
+ 1E56  C3		     1C            ret
+ 1E57			     1C ??026A:
+			      C             AssertByteCeEq 1
+ 1E57  E4 40		     1C            in    al, 40h
+ 1E59  3C 01		     1C            cmp   al, 1
+ 1E5B  74 03		     1C            jz    ??026B
+ 1E5D  33 C0		     1C            xor   ax, ax
+ 1E5F  C3		     1C            ret
+ 1E60			     1C ??026B:
+ 1E60  E8 E1A7		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1E63  E4 00		     1C            in    al, 0
+ 1E65  0A C0		     1C            or    al, al
+ 1E67  75 03		     1C            jnz   ??026C
+ 1E69  33 C0		     1C            xor   ax, ax
+ 1E6B  C3		     1C            ret
+ 1E6C			     1C ??026C:
+ 1E6C  E8 E1A0		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 1E6F  E4 00		     1C            in    al, 0
+ 1E71  0A C0		     1C            or    al, al
+ 1E73  74 03		     1C            jz    ??026D
+ 1E75  33 C0		     1C            xor   ax, ax
+ 1E77  C3		     1C            ret
+ 1E78			     1C ??026D:           
+			      C             AssertByteCeEq 0
+ 1E78  E4 40		     1C            in    al, 40h
+ 1E7A  3C 00		     1C            cmp   al, 0
+ 1E7C  74 03		     1C            jz    ??026E
+ 1E7E  33 C0		     1C            xor   ax, ax
+ 1E80  C3		     1C            ret
+ 1E81			     1C ??026E:
+ 1E81  E8 E186		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1E84  E4 00		     1C            in    al, 0
+ 1E86  0A C0		     1C            or    al, al
+ 1E88  74 03		     1C            jz    ??026F
+ 1E8A  33 C0		     1C            xor   ax, ax
+ 1E8C  C3		     1C            ret
+ 1E8D			     1C ??026F:           
+ 1E8D  E8 E17F		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 1E90  E4 00		     1C            in    al, 0
+ 1E92  0A C0		     1C            or    al, al
+ 1E94  75 03		     1C            jnz   ??0270
+ 1E96  33 C0		     1C            xor   ax, ax
+ 1E98  C3		     1C            ret
+ 1E99			     1C ??0270:
+			      C             AssertByteCeEq 0ffh
+ 1E99  E4 40		     1C            in    al, 40h
+ 1E9B  3C FF		     1C            cmp   al, 0ffh
+ 1E9D  74 03		     1C            jz    ??0271
+ 1E9F  33 C0		     1C            xor   ax, ax
+ 1EA1  C3		     1C            ret
+ 1EA2			     1C ??0271:
+			      C 
+ 1EA2  B8 0001		      C             mov   ax, 1
+ 1EA5  C3		      C             ret
+ 1EA6			      C Mode5_Datasheet2_Gate_High ENDP
+			      C 
+ 1EA6			      C Mode5_Datasheet3_Gate_Low PROC NEAR
+ 1EA6  E8 E15C		      C             call  SetGateLow
+			      C 
+ 1EA9  E8 E15E		      C             call  SetClkHi
+ 1EAC  B0 1A		      C             mov   al, 1ah
+ 1EAE  E8 E16D		      C             call  WriteCw
+			      C             AssertOutHi
+ 1EB1  E4 00		     1C            in    al, 0
+ 1EB3  0A C0		     1C            or    al, al
+ 1EB5  75 03		     1C            jnz   ??0272
+ 1EB7  33 C0		     1C            xor   ax, ax
+ 1EB9  C3		     1C            ret
+ 1EBA			     1C ??0272:
+ 1EBA  E8 E152		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1EBD  E4 00		     1C            in    al, 0
+ 1EBF  0A C0		     1C            or    al, al
+ 1EC1  75 03		     1C            jnz   ??0273
+ 1EC3  33 C0		     1C            xor   ax, ax
+ 1EC5  C3		     1C            ret
+ 1EC6			     1C ??0273:
+ 1EC6  E8 E141		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1EC9  E4 00		     1C            in    al, 0
+ 1ECB  0A C0		     1C            or    al, al
+ 1ECD  75 03		     1C            jnz   ??0274
+ 1ECF  33 C0		     1C            xor   ax, ax
+ 1ED1  C3		     1C            ret
+ 1ED2			     1C ??0274:
+ 1ED2  E8 E13A		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1ED5  E4 00		     1C            in    al, 0
+ 1ED7  0A C0		     1C            or    al, al
+ 1ED9  75 03		     1C            jnz   ??0275
+ 1EDB  33 C0		     1C            xor   ax, ax
+ 1EDD  C3		     1C            ret
+ 1EDE			     1C ??0275:
+ 1EDE  B0 03		      C             mov   al, 3
+ 1EE0  E8 E13E		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1EE3  E4 00		     1C            in    al, 0
+ 1EE5  0A C0		     1C            or    al, al
+ 1EE7  75 03		     1C            jnz   ??0276
+ 1EE9  33 C0		     1C            xor   ax, ax
+ 1EEB  C3		     1C            ret
+ 1EEC			     1C ??0276:
+ 1EEC  E8 E11B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1EEF  E4 00		     1C            in    al, 0
+ 1EF1  0A C0		     1C            or    al, al
+ 1EF3  75 03		     1C            jnz   ??0277
+ 1EF5  33 C0		     1C            xor   ax, ax
+ 1EF7  C3		     1C            ret
+ 1EF8			     1C ??0277:
+ 1EF8  E8 E114		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1EFB  E4 00		     1C            in    al, 0
+ 1EFD  0A C0		     1C            or    al, al
+ 1EFF  75 03		     1C            jnz   ??0278
+ 1F01  33 C0		     1C            xor   ax, ax
+ 1F03  C3		     1C            ret
+ 1F04			     1C ??0278:
+ 1F04  E8 E103		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1F07  E4 00		     1C            in    al, 0
+ 1F09  0A C0		     1C            or    al, al
+ 1F0B  75 03		     1C            jnz   ??0279
+ 1F0D  33 C0		     1C            xor   ax, ax
+ 1F0F  C3		     1C            ret
+ 1F10			     1C ??0279:
+ 1F10  E8 E0FC		      C             call  SetClkLow
+			      C             AssertOutHi
+ 1F13  E4 00		     1C            in    al, 0
+ 1F15  0A C0		     1C            or    al, al
+ 1F17  75 03		     1C            jnz   ??027A
+ 1F19  33 C0		     1C            xor   ax, ax
+ 1F1B  C3		     1C            ret
+ 1F1C			     1C ??027A:
+ 1F1C  E8 E0E1		      C             call  SetGateHi
+			      C             AssertOutHi
+ 1F1F  E4 00		     1C            in    al, 0
+ 1F21  0A C0		     1C            or    al, al
+ 1F23  75 03		     1C            jnz   ??027B
+ 1F25  33 C0		     1C            xor   ax, ax
+ 1F27  C3		     1C            ret
+ 1F28			     1C ??027B:
+ 1F28  E8 E0DA		      C             call  SetGateLow
+			      C             AssertOutHi
+ 1F2B  E4 00		     1C            in    al, 0
+ 1F2D  0A C0		     1C            or    al, al
+ 1F2F  75 03		     1C            jnz   ??027C
+ 1F31  33 C0		     1C            xor   ax, ax
+ 1F33  C3		     1C            ret
+ 1F34			     1C ??027C:
+ 1F34  E8 E0D3		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1F37  E4 00		     1C            in    al, 0
+ 1F39  0A C0		     1C            or    al, al
+ 1F3B  75 03		     1C            jnz   ??027D
+ 1F3D  33 C0		     1C            xor   ax, ax
+ 1F3F  C3		     1C            ret
+ 1F40			     1C ??027D:
+ 1F40  E8 E0CC		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 1F43  E4 00		     1C            in    al, 0
+ 1F45  0A C0		     1C            or    al, al
+ 1F47  75 03		     1C            jnz   ??027E
+ 1F49  33 C0		     1C            xor   ax, ax
+ 1F4B  C3		     1C            ret
+ 1F4C			     1C ??027E:
+			      C             AssertByteCeEq 3
+ 1F4C  E4 40		     1C            in    al, 40h
+ 1F4E  3C 03		     1C            cmp   al, 3
+ 1F50  74 03		     1C            jz    ??027F
+ 1F52  33 C0		     1C            xor   ax, ax
+ 1F54  C3		     1C            ret
+ 1F55			     1C ??027F:
+ 1F55  E8 E0B2		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1F58  E4 00		     1C            in    al, 0
+ 1F5A  0A C0		     1C            or    al, al
+ 1F5C  75 03		     1C            jnz   ??0280
+ 1F5E  33 C0		     1C            xor   ax, ax
+ 1F60  C3		     1C            ret
+ 1F61			     1C ??0280:
+ 1F61  E8 E0AB		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 1F64  E4 00		     1C            in    al, 0
+ 1F66  0A C0		     1C            or    al, al
+ 1F68  75 03		     1C            jnz   ??0281
+ 1F6A  33 C0		     1C            xor   ax, ax
+ 1F6C  C3		     1C            ret
+ 1F6D			     1C ??0281:
+			      C             AssertByteCeEq 2
+ 1F6D  E4 40		     1C            in    al, 40h
+ 1F6F  3C 02		     1C            cmp   al, 2
+ 1F71  74 03		     1C            jz    ??0282
+ 1F73  33 C0		     1C            xor   ax, ax
+ 1F75  C3		     1C            ret
+ 1F76			     1C ??0282:
+ 1F76  B0 05		      C             mov   al, 5
+ 1F78  E8 E0A6		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 1F7B  E4 00		     1C            in    al, 0
+ 1F7D  0A C0		     1C            or    al, al
+ 1F7F  75 03		     1C            jnz   ??0283
+ 1F81  33 C0		     1C            xor   ax, ax
+ 1F83  C3		     1C            ret
+ 1F84			     1C ??0283:
+ 1F84  E8 E083		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1F87  E4 00		     1C            in    al, 0
+ 1F89  0A C0		     1C            or    al, al
+ 1F8B  75 03		     1C            jnz   ??0284
+ 1F8D  33 C0		     1C            xor   ax, ax
+ 1F8F  C3		     1C            ret
+ 1F90			     1C ??0284:
+ 1F90  E8 E07C		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 1F93  E4 00		     1C            in    al, 0
+ 1F95  0A C0		     1C            or    al, al
+ 1F97  75 03		     1C            jnz   ??0285
+ 1F99  33 C0		     1C            xor   ax, ax
+ 1F9B  C3		     1C            ret
+ 1F9C			     1C ??0285:
+			      C             AssertByteCeEq 1
+ 1F9C  E4 40		     1C            in    al, 40h
+ 1F9E  3C 01		     1C            cmp   al, 1
+ 1FA0  74 03		     1C            jz    ??0286
+ 1FA2  33 C0		     1C            xor   ax, ax
+ 1FA4  C3		     1C            ret
+ 1FA5			     1C ??0286:
+ 1FA5  E8 E062		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1FA8  E4 00		     1C            in    al, 0
+ 1FAA  0A C0		     1C            or    al, al
+ 1FAC  75 03		     1C            jnz   ??0287
+ 1FAE  33 C0		     1C            xor   ax, ax
+ 1FB0  C3		     1C            ret
+ 1FB1			     1C ??0287:
+ 1FB1  E8 E05B		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 1FB4  E4 00		     1C            in    al, 0
+ 1FB6  0A C0		     1C            or    al, al
+ 1FB8  74 03		     1C            jz    ??0288
+ 1FBA  33 C0		     1C            xor   ax, ax
+ 1FBC  C3		     1C            ret
+ 1FBD			     1C ??0288:           
+			      C             AssertByteCeEq 0
+ 1FBD  E4 40		     1C            in    al, 40h
+ 1FBF  3C 00		     1C            cmp   al, 0
+ 1FC1  74 03		     1C            jz    ??0289
+ 1FC3  33 C0		     1C            xor   ax, ax
+ 1FC5  C3		     1C            ret
+ 1FC6			     1C ??0289:
+ 1FC6  E8 E041		      C             call  SetClkHi
+			      C             AssertOutLow
+ 1FC9  E4 00		     1C            in    al, 0
+ 1FCB  0A C0		     1C            or    al, al
+ 1FCD  74 03		     1C            jz    ??028A
+ 1FCF  33 C0		     1C            xor   ax, ax
+ 1FD1  C3		     1C            ret
+ 1FD2			     1C ??028A:           
+ 1FD2  E8 E03A		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 1FD5  E4 00		     1C            in    al, 0
+ 1FD7  0A C0		     1C            or    al, al
+ 1FD9  75 03		     1C            jnz   ??028B
+ 1FDB  33 C0		     1C            xor   ax, ax
+ 1FDD  C3		     1C            ret
+ 1FDE			     1C ??028B:
+			      C             AssertByteCeEq 0ffh
+ 1FDE  E4 40		     1C            in    al, 40h
+ 1FE0  3C FF		     1C            cmp   al, 0ffh
+ 1FE2  74 03		     1C            jz    ??028C
+ 1FE4  33 C0		     1C            xor   ax, ax
+ 1FE6  C3		     1C            ret
+ 1FE7			     1C ??028C:
+ 1FE7  E8 E020		      C             call  SetClkHi
+			      C             AssertOutHi
+ 1FEA  E4 00		     1C            in    al, 0
+ 1FEC  0A C0		     1C            or    al, al
+ 1FEE  75 03		     1C            jnz   ??028D
+ 1FF0  33 C0		     1C            xor   ax, ax
+ 1FF2  C3		     1C            ret
+ 1FF3			     1C ??028D:
+ 1FF3  E8 E019		      C             call  SetClkLow ; ce = 0xfffe
+			      C             AssertOutHi
+ 1FF6  E4 00		     1C            in    al, 0
+ 1FF8  0A C0		     1C            or    al, al
+ 1FFA  75 03		     1C            jnz   ??028E
+ 1FFC  33 C0		     1C            xor   ax, ax
+ 1FFE  C3		     1C            ret
+ 1FFF			     1C ??028E:
+			      C             AssertByteCeEq 0feh
+ 1FFF  E4 40		     1C            in    al, 40h
+ 2001  3C FE		     1C            cmp   al, 0feh
+ 2003  74 03		     1C            jz    ??028F
+ 2005  33 C0		     1C            xor   ax, ax
+ 2007  C3		     1C            ret
+ 2008			     1C ??028F:
+ 2008  E8 DFF5		      C             call  SetGateHi
+			      C             AssertOutHi
+ 200B  E4 00		     1C            in    al, 0
+ 200D  0A C0		     1C            or    al, al
+ 200F  75 03		     1C            jnz   ??0290
+ 2011  33 C0		     1C            xor   ax, ax
+ 2013  C3		     1C            ret
+ 2014			     1C ??0290:
+ 2014  E8 DFEE		      C             call  SetGateLow
+			      C             AssertOutHi
+ 2017  E4 00		     1C            in    al, 0
+ 2019  0A C0		     1C            or    al, al
+ 201B  75 03		     1C            jnz   ??0291
+ 201D  33 C0		     1C            xor   ax, ax
+ 201F  C3		     1C            ret
+ 2020			     1C ??0291:
+ 2020  E8 DFE7		      C             call  SetClkHi
+			      C             AssertOutHi
+ 2023  E4 00		     1C            in    al, 0
+ 2025  0A C0		     1C            or    al, al
+ 2027  75 03		     1C            jnz   ??0292
+ 2029  33 C0		     1C            xor   ax, ax
+ 202B  C3		     1C            ret
+ 202C			     1C ??0292:
+ 202C  E8 DFE0		      C             call  SetClkLow ; ce = cr = 5
+			      C             AssertOutHi
+ 202F  E4 00		     1C            in    al, 0
+ 2031  0A C0		     1C            or    al, al
+ 2033  75 03		     1C            jnz   ??0293
+ 2035  33 C0		     1C            xor   ax, ax
+ 2037  C3		     1C            ret
+ 2038			     1C ??0293:
+			      C             AssertByteCeEq 5
+ 2038  E4 40		     1C            in    al, 40h
+ 203A  3C 05		     1C            cmp   al, 5
+ 203C  74 03		     1C            jz    ??0294
+ 203E  33 C0		     1C            xor   ax, ax
+ 2040  C3		     1C            ret
+ 2041			     1C ??0294:
+ 2041  E8 DFC6		      C             call  SetClkHi
+			      C             AssertOutHi
+ 2044  E4 00		     1C            in    al, 0
+ 2046  0A C0		     1C            or    al, al
+ 2048  75 03		     1C            jnz   ??0295
+ 204A  33 C0		     1C            xor   ax, ax
+ 204C  C3		     1C            ret
+ 204D			     1C ??0295:
+ 204D  E8 DFBF		      C             call  SetClkLow ; ce = 4
+			      C             AssertOutHi
+ 2050  E4 00		     1C            in    al, 0
+ 2052  0A C0		     1C            or    al, al
+ 2054  75 03		     1C            jnz   ??0296
+ 2056  33 C0		     1C            xor   ax, ax
+ 2058  C3		     1C            ret
+ 2059			     1C ??0296:
+			      C             AssertByteCeEq 4
+ 2059  E4 40		     1C            in    al, 40h
+ 205B  3C 04		     1C            cmp   al, 4
+ 205D  74 03		     1C            jz    ??0297
+ 205F  33 C0		     1C            xor   ax, ax
+ 2061  C3		     1C            ret
+ 2062			     1C ??0297:
+			      C 
+ 2062  B8 0001		      C             mov   ax, 1
+ 2065  C3		      C             ret
+ 2066			      C Mode5_Datasheet3_Gate_Low ENDP
+			      C 
+ 2066			      C Mode5_Datasheet3_Gate_High PROC NEAR
+ 2066  E8 DF97		      C             call  SetGateHi
+			      C 
+ 2069  E8 DF9E		      C             call  SetClkHi
+ 206C  B0 1A		      C             mov   al, 1ah
+ 206E  E8 DFAD		      C             call  WriteCw
+			      C             AssertOutHi
+ 2071  E4 00		     1C            in    al, 0
+ 2073  0A C0		     1C            or    al, al
+ 2075  75 03		     1C            jnz   ??0298
+ 2077  33 C0		     1C            xor   ax, ax
+ 2079  C3		     1C            ret
+ 207A			     1C ??0298:
+ 207A  E8 DF92		      C             call  SetClkLow
+			      C             AssertOutHi
+ 207D  E4 00		     1C            in    al, 0
+ 207F  0A C0		     1C            or    al, al
+ 2081  75 03		     1C            jnz   ??0299
+ 2083  33 C0		     1C            xor   ax, ax
+ 2085  C3		     1C            ret
+ 2086			     1C ??0299:
+ 2086  E8 DF81		      C             call  SetClkHi
+			      C             AssertOutHi
+ 2089  E4 00		     1C            in    al, 0
+ 208B  0A C0		     1C            or    al, al
+ 208D  75 03		     1C            jnz   ??029A
+ 208F  33 C0		     1C            xor   ax, ax
+ 2091  C3		     1C            ret
+ 2092			     1C ??029A:
+ 2092  E8 DF7A		      C             call  SetClkLow
+			      C             AssertOutHi
+ 2095  E4 00		     1C            in    al, 0
+ 2097  0A C0		     1C            or    al, al
+ 2099  75 03		     1C            jnz   ??029B
+ 209B  33 C0		     1C            xor   ax, ax
+ 209D  C3		     1C            ret
+ 209E			     1C ??029B:
+ 209E  B0 03		      C             mov   al, 3
+ 20A0  E8 DF7E		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 20A3  E4 00		     1C            in    al, 0
+ 20A5  0A C0		     1C            or    al, al
+ 20A7  75 03		     1C            jnz   ??029C
+ 20A9  33 C0		     1C            xor   ax, ax
+ 20AB  C3		     1C            ret
+ 20AC			     1C ??029C:
+ 20AC  E8 DF5B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 20AF  E4 00		     1C            in    al, 0
+ 20B1  0A C0		     1C            or    al, al
+ 20B3  75 03		     1C            jnz   ??029D
+ 20B5  33 C0		     1C            xor   ax, ax
+ 20B7  C3		     1C            ret
+ 20B8			     1C ??029D:
+ 20B8  E8 DF54		      C             call  SetClkLow
+			      C             AssertOutHi
+ 20BB  E4 00		     1C            in    al, 0
+ 20BD  0A C0		     1C            or    al, al
+ 20BF  75 03		     1C            jnz   ??029E
+ 20C1  33 C0		     1C            xor   ax, ax
+ 20C3  C3		     1C            ret
+ 20C4			     1C ??029E:
+ 20C4  E8 DF43		      C             call  SetClkHi
+			      C             AssertOutHi
+ 20C7  E4 00		     1C            in    al, 0
+ 20C9  0A C0		     1C            or    al, al
+ 20CB  75 03		     1C            jnz   ??029F
+ 20CD  33 C0		     1C            xor   ax, ax
+ 20CF  C3		     1C            ret
+ 20D0			     1C ??029F:
+ 20D0  E8 DF32		      C             call  SetGateLow
+			      C             AssertOutHi
+ 20D3  E4 00		     1C            in    al, 0
+ 20D5  0A C0		     1C            or    al, al
+ 20D7  75 03		     1C            jnz   ??02A0
+ 20D9  33 C0		     1C            xor   ax, ax
+ 20DB  C3		     1C            ret
+ 20DC			     1C ??02A0:
+ 20DC  E8 DF30		      C             call  SetClkLow
+			      C             AssertOutHi
+ 20DF  E4 00		     1C            in    al, 0
+ 20E1  0A C0		     1C            or    al, al
+ 20E3  75 03		     1C            jnz   ??02A1
+ 20E5  33 C0		     1C            xor   ax, ax
+ 20E7  C3		     1C            ret
+ 20E8			     1C ??02A1:
+ 20E8  E8 DF15		      C             call  SetGateHi
+			      C             AssertOutHi
+ 20EB  E4 00		     1C            in    al, 0
+ 20ED  0A C0		     1C            or    al, al
+ 20EF  75 03		     1C            jnz   ??02A2
+ 20F1  33 C0		     1C            xor   ax, ax
+ 20F3  C3		     1C            ret
+ 20F4			     1C ??02A2:
+ 20F4  E8 DF13		      C             call  SetClkHi
+			      C             AssertOutHi
+ 20F7  E4 00		     1C            in    al, 0
+ 20F9  0A C0		     1C            or    al, al
+ 20FB  75 03		     1C            jnz   ??02A3
+ 20FD  33 C0		     1C            xor   ax, ax
+ 20FF  C3		     1C            ret
+ 2100			     1C ??02A3:
+ 2100  E8 DF0C		      C             call  SetClkLow ; ce = cr = 3
+			      C             AssertOutHi
+ 2103  E4 00		     1C            in    al, 0
+ 2105  0A C0		     1C            or    al, al
+ 2107  75 03		     1C            jnz   ??02A4
+ 2109  33 C0		     1C            xor   ax, ax
+ 210B  C3		     1C            ret
+ 210C			     1C ??02A4:
+			      C             AssertByteCeEq 3
+ 210C  E4 40		     1C            in    al, 40h
+ 210E  3C 03		     1C            cmp   al, 3
+ 2110  74 03		     1C            jz    ??02A5
+ 2112  33 C0		     1C            xor   ax, ax
+ 2114  C3		     1C            ret
+ 2115			     1C ??02A5:
+ 2115  E8 DEF2		      C             call  SetClkHi
+			      C             AssertOutHi
+ 2118  E4 00		     1C            in    al, 0
+ 211A  0A C0		     1C            or    al, al
+ 211C  75 03		     1C            jnz   ??02A6
+ 211E  33 C0		     1C            xor   ax, ax
+ 2120  C3		     1C            ret
+ 2121			     1C ??02A6:
+ 2121  E8 DEEB		      C             call  SetClkLow ; ce = 2
+			      C             AssertOutHi
+ 2124  E4 00		     1C            in    al, 0
+ 2126  0A C0		     1C            or    al, al
+ 2128  75 03		     1C            jnz   ??02A7
+ 212A  33 C0		     1C            xor   ax, ax
+ 212C  C3		     1C            ret
+ 212D			     1C ??02A7:
+			      C             AssertByteCeEq 2
+ 212D  E4 40		     1C            in    al, 40h
+ 212F  3C 02		     1C            cmp   al, 2
+ 2131  74 03		     1C            jz    ??02A8
+ 2133  33 C0		     1C            xor   ax, ax
+ 2135  C3		     1C            ret
+ 2136			     1C ??02A8:
+ 2136  B0 05		      C             mov   al, 5
+ 2138  E8 DEE6		      C             call  WriteCountByte
+			      C             AssertOutHi
+ 213B  E4 00		     1C            in    al, 0
+ 213D  0A C0		     1C            or    al, al
+ 213F  75 03		     1C            jnz   ??02A9
+ 2141  33 C0		     1C            xor   ax, ax
+ 2143  C3		     1C            ret
+ 2144			     1C ??02A9:
+ 2144  E8 DEC3		      C             call  SetClkHi
+			      C             AssertOutHi
+ 2147  E4 00		     1C            in    al, 0
+ 2149  0A C0		     1C            or    al, al
+ 214B  75 03		     1C            jnz   ??02AA
+ 214D  33 C0		     1C            xor   ax, ax
+ 214F  C3		     1C            ret
+ 2150			     1C ??02AA:
+ 2150  E8 DEBC		      C             call  SetClkLow ; ce = 1
+			      C             AssertOutHi
+ 2153  E4 00		     1C            in    al, 0
+ 2155  0A C0		     1C            or    al, al
+ 2157  75 03		     1C            jnz   ??02AB
+ 2159  33 C0		     1C            xor   ax, ax
+ 215B  C3		     1C            ret
+ 215C			     1C ??02AB:
+			      C             AssertByteCeEq 1
+ 215C  E4 40		     1C            in    al, 40h
+ 215E  3C 01		     1C            cmp   al, 1
+ 2160  74 03		     1C            jz    ??02AC
+ 2162  33 C0		     1C            xor   ax, ax
+ 2164  C3		     1C            ret
+ 2165			     1C ??02AC:
+ 2165  E8 DEA2		      C             call  SetClkHi
+			      C             AssertOutHi
+ 2168  E4 00		     1C            in    al, 0
+ 216A  0A C0		     1C            or    al, al
+ 216C  75 03		     1C            jnz   ??02AD
+ 216E  33 C0		     1C            xor   ax, ax
+ 2170  C3		     1C            ret
+ 2171			     1C ??02AD:
+ 2171  E8 DE9B		      C             call  SetClkLow ; ce = 0
+			      C             AssertOutLow
+ 2174  E4 00		     1C            in    al, 0
+ 2176  0A C0		     1C            or    al, al
+ 2178  74 03		     1C            jz    ??02AE
+ 217A  33 C0		     1C            xor   ax, ax
+ 217C  C3		     1C            ret
+ 217D			     1C ??02AE:           
+			      C             AssertByteCeEq 0
+ 217D  E4 40		     1C            in    al, 40h
+ 217F  3C 00		     1C            cmp   al, 0
+ 2181  74 03		     1C            jz    ??02AF
+ 2183  33 C0		     1C            xor   ax, ax
+ 2185  C3		     1C            ret
+ 2186			     1C ??02AF:
+ 2186  E8 DE81		      C             call  SetClkHi
+			      C             AssertOutLow
+ 2189  E4 00		     1C            in    al, 0
+ 218B  0A C0		     1C            or    al, al
+ 218D  74 03		     1C            jz    ??02B0
+ 218F  33 C0		     1C            xor   ax, ax
+ 2191  C3		     1C            ret
+ 2192			     1C ??02B0:           
+ 2192  E8 DE7A		      C             call  SetClkLow ; ce = 0ffffh
+			      C             AssertOutHi
+ 2195  E4 00		     1C            in    al, 0
+ 2197  0A C0		     1C            or    al, al
+ 2199  75 03		     1C            jnz   ??02B1
+ 219B  33 C0		     1C            xor   ax, ax
+ 219D  C3		     1C            ret
+ 219E			     1C ??02B1:
+			      C             AssertByteCeEq 0ffh
+ 219E  E4 40		     1C            in    al, 40h
+ 21A0  3C FF		     1C            cmp   al, 0ffh
+ 21A2  74 03		     1C            jz    ??02B2
+ 21A4  33 C0		     1C            xor   ax, ax
+ 21A6  C3		     1C            ret
+ 21A7			     1C ??02B2:
+ 21A7  E8 DE60		      C             call  SetClkHi
+			      C             AssertOutHi
+ 21AA  E4 00		     1C            in    al, 0
+ 21AC  0A C0		     1C            or    al, al
+ 21AE  75 03		     1C            jnz   ??02B3
+ 21B0  33 C0		     1C            xor   ax, ax
+ 21B2  C3		     1C            ret
+ 21B3			     1C ??02B3:
+ 21B3  E8 DE4F		      C             call  SetGateLow
+			      C             AssertOutHi
+ 21B6  E4 00		     1C            in    al, 0
+ 21B8  0A C0		     1C            or    al, al
+ 21BA  75 03		     1C            jnz   ??02B4
+ 21BC  33 C0		     1C            xor   ax, ax
+ 21BE  C3		     1C            ret
+ 21BF			     1C ??02B4:
+ 21BF  E8 DE4D		      C             call  SetClkLow ; ce = 0fffeh
+			      C             AssertOutHi
+ 21C2  E4 00		     1C            in    al, 0
+ 21C4  0A C0		     1C            or    al, al
+ 21C6  75 03		     1C            jnz   ??02B5
+ 21C8  33 C0		     1C            xor   ax, ax
+ 21CA  C3		     1C            ret
+ 21CB			     1C ??02B5:
+			      C             AssertByteCeEq 0feh
+ 21CB  E4 40		     1C            in    al, 40h
+ 21CD  3C FE		     1C            cmp   al, 0feh
+ 21CF  74 03		     1C            jz    ??02B6
+ 21D1  33 C0		     1C            xor   ax, ax
+ 21D3  C3		     1C            ret
+ 21D4			     1C ??02B6:
+ 21D4  E8 DE29		      C             call  SetGateHi
+			      C             AssertOutHi
+ 21D7  E4 00		     1C            in    al, 0
+ 21D9  0A C0		     1C            or    al, al
+ 21DB  75 03		     1C            jnz   ??02B7
+ 21DD  33 C0		     1C            xor   ax, ax
+ 21DF  C3		     1C            ret
+ 21E0			     1C ??02B7:
+ 21E0  E8 DE22		      C             call  SetGateLow
+			      C             AssertOutHi
+ 21E3  E4 00		     1C            in    al, 0
+ 21E5  0A C0		     1C            or    al, al
+ 21E7  75 03		     1C            jnz   ??02B8
+ 21E9  33 C0		     1C            xor   ax, ax
+ 21EB  C3		     1C            ret
+ 21EC			     1C ??02B8:
+ 21EC  E8 DE1B		      C             call  SetClkHi
+			      C             AssertOutHi
+ 21EF  E4 00		     1C            in    al, 0
+ 21F1  0A C0		     1C            or    al, al
+ 21F3  75 03		     1C            jnz   ??02B9
+ 21F5  33 C0		     1C            xor   ax, ax
+ 21F7  C3		     1C            ret
+ 21F8			     1C ??02B9:
+ 21F8  E8 DE14		      C             call  SetClkLow ; ce = cr = 5
+			      C             AssertOutHi
+ 21FB  E4 00		     1C            in    al, 0
+ 21FD  0A C0		     1C            or    al, al
+ 21FF  75 03		     1C            jnz   ??02BA
+ 2201  33 C0		     1C            xor   ax, ax
+ 2203  C3		     1C            ret
+ 2204			     1C ??02BA:
+			      C             AssertByteCeEq 5
+ 2204  E4 40		     1C            in    al, 40h
+ 2206  3C 05		     1C            cmp   al, 5
+ 2208  74 03		     1C            jz    ??02BB
+ 220A  33 C0		     1C            xor   ax, ax
+ 220C  C3		     1C            ret
+ 220D			     1C ??02BB:
+ 220D  E8 DDFA		      C             call  SetClkHi
+			      C             AssertOutHi
+ 2210  E4 00		     1C            in    al, 0
+ 2212  0A C0		     1C            or    al, al
+ 2214  75 03		     1C            jnz   ??02BC
+ 2216  33 C0		     1C            xor   ax, ax
+ 2218  C3		     1C            ret
+ 2219			     1C ??02BC:
+ 2219  E8 DDF3		      C             call  SetClkLow ; ce = 4
+			      C             AssertOutHi
+ 221C  E4 00		     1C            in    al, 0
+ 221E  0A C0		     1C            or    al, al
+ 2220  75 03		     1C            jnz   ??02BD
+ 2222  33 C0		     1C            xor   ax, ax
+ 2224  C3		     1C            ret
+ 2225			     1C ??02BD:
+			      C             AssertByteCeEq 4
+ 2225  E4 40		     1C            in    al, 40h
+ 2227  3C 04		     1C            cmp   al, 4
+ 2229  74 03		     1C            jz    ??02BE
+ 222B  33 C0		     1C            xor   ax, ax
+ 222D  C3		     1C            ret
+ 222E			     1C ??02BE:
+			      C 
+ 222E  B8 0001		      C             mov   ax, 1
+ 2231  C3		      C             ret
+ 2232			      C Mode5_Datasheet3_Gate_High ENDP
+			      C 
 
- 10AF				InitFlash  PROC  NEAR
- 10AF  B0 74			           mov   al,  74h
- 10B1  E6 43			           out   43h, al
- 10B3  B0 0A			           mov   al,  10
- 10B5  E6 41			           out   41h, al
- 10B7  B0 00			           mov   al,  0
- 10B9  E6 41			           out   41h, al
+ 2232				Int32Handler     PROC FAR    ; Обработчик прерывания 20h
+ 2232  50			           push  ax
+ 2233  1E			           push  ds
 				           
- 10BB  C3			           ret
- 10BC				InitFlash  ENDP
+ 2234  B8 ---- R		           mov   ax, Data
+ 2237  8E D8			           mov   ds, ax
+ 2239  FF 06 0000 R		           inc   IntCounter
+				           
+ 223D  1F			           pop   ds
+ 223E  58			           pop   ax
+ 223F  CF			           iret
+ 2240				Int32Handler     ENDP
 
- 10BC				InitCounter      PROC  NEAR
- 10BC  33 C0			           xor   ax, ax
- 10BE  A3 0000 R		           mov   IntCounter, ax
+ 2240				InitFlash  PROC  NEAR
+				           ; Программируем таймер 1: режим 2, коэффициент деления 10
+				           ; Режим 2 выглядит так: ----_----_----_- ...
+ 2240  B0 74			           mov   al,  74h
+ 2242  E6 43			           out   43h, al
+ 2244  B0 0A			           mov   al,  10
+ 2246  E6 41			           out   41h, al
+ 2248  B0 00			           mov   al,  0
+ 224A  E6 41			           out   41h, al
 				           
- 10C1  B0 B4			           mov   al,  0B4h
- 10C3  E6 43			           out   43h, al
- 10C5  B0 0A			           mov   al,  10
- 10C7  E6 42			           out   42h, al
- 10C9  B0 00			           mov   al,  0
- 10CB  E6 42			           out   42h, al
-				           
- 10CD  1E			           push  ds
- 10CE  B8 ---- R		           mov   ax, IntTable
- 10D1  8E D8			           mov   ds, ax
- 10D3  B8 10A1 R		           mov   ax, cs:Int32Handler
- 10D6  A3 0080 R		           mov   ds:Int32HandlerPtrOffs, ax
- 10D9  B8 ---- R		           mov   ax, Code
- 10DC  A3 0082 R		           mov   ds:Int32HandlerPtrSeg, ax
- 10DF  1F			           pop   ds
-				           
- 10E0  C3			           ret
- 10E1				InitCounter      ENDP
+ 224C  C3			           ret
+ 224D				InitFlash  ENDP
 
- 10E1				ShowCounter      PROC NEAR
- 10E1  A1 0000 R		           mov   ax,  IntCounter
- 10E4  E6 20			           out   20h, al
- 10E6  C3			           ret
- 10E7				ShowCounter      ENDP
+ 224D				InitCounter      PROC  NEAR
+				           ; Обнуляем счётчик прерываний
+ 224D  33 C0			           xor   ax, ax
+ 224F  A3 0000 R		           mov   IntCounter, ax
+				           
+				           ; Программируем таймер 2: режим 2, коэффициент деления 10
+				           ; Режим 2 выглядит так: ----_----_----_- ...
+ 2252  B0 B4			           mov   al,  0B4h
+ 2254  E6 43			           out   43h, al
+ 2256  B0 0A			           mov   al,  10
+ 2258  E6 42			           out   42h, al
+ 225A  B0 00			           mov   al,  0
+ 225C  E6 42			           out   42h, al
+				           
+				           ; Установка обработчика прерывания
+ 225E  1E			           push  ds
+ 225F  B8 ---- R		           mov   ax, IntTable
+ 2262  8E D8			           mov   ds, ax
+ 2264  B8 2232 R		           mov   ax, cs:Int32Handler
+ 2267  A3 0080 R		           mov   ds:Int32HandlerPtrOffs, ax
+ 226A  B8 ---- R		           mov   ax, Code
+ 226D  A3 0082 R		           mov   ds:Int32HandlerPtrSeg, ax
+ 2270  1F			           pop   ds
+				           
+ 2271  C3			           ret
+ 2272				InitCounter      ENDP
 
- 10E7				Start:
- 10E7  B8 ---- R		           mov   ax, Data
- 10EA  8E D8			           mov   ds, ax
- 10EC  8E C0			           mov   es, ax
- 10EE  B8 ---- R		           mov   ax, Stk
- 10F1  8E D0			           mov   ss, ax
- 10F3  8D 26 0200 R		           lea   sp, StkTop
+				           ; Выводит содержимое счётчика прерываний в порт 20h
+ 2272				ShowCounter      PROC NEAR
+ 2272  A1 0000 R		           mov   ax,  IntCounter
+ 2275  E6 20			           out   20h, al
+ 2277  C3			           ret
+ 2278				ShowCounter      ENDP
+
+ 2278				Start:
+ 2278  B8 ---- R		           mov   ax, Data
+ 227B  8E D8			           mov   ds, ax
+ 227D  8E C0			           mov   es, ax
+ 227F  B8 ---- R		           mov   ax, Stk
+ 2282  8E D0			           mov   ss, ax
+ 2284  8D 26 0200 R		           lea   sp, StkTop
 				;Здесь размещается код программы
 				           
- 10F7  E8 FFB5			           call  InitFlash
- 10FA  E8 FFBF			           call  InitCounter
- 10FD  FB			           sti
+ 2288  E8 FFB5			           call  InitFlash   ; Инициализация таймера мигающего светодиода
+ 228B  E8 FFBF			           call  InitCounter ; Инициализация таймера со счётчиком прерываний
+ 228E  FB			           sti
 				           
-				           ;call  TestMode0
-				           ;call  TestMode1
-				           ;call  TestMode2
+				           ; Тесты режимов таймера согласно осциллограмм из документации
+				           ; Смотри 8254.pdf из папки проекта
+ 228F  E8 DD99			           call  TestMode0
+ 2292  E8 E177			           call  TestMode1
+ 2295  E8 EA10			           call  TestMode2
+ 2298  E8 EE06			           call  TestMode3
+ 229B  E8 F21B			           call  TestMode4
+ 229E  E8 F5E4			           call  TestMode5
 				      
- 10FE  CD 20			           int   20h     
- 1100				MLoop:
- 1100  E8 FFDE			           call  ShowCounter
- 1103  F4			           hlt
- 1104  EB FA			           jmp   MLoop
+ 22A1  CD 20			           int   20h         ; Проверка программного вызова прерываний
+ 22A3				MLoop:
+ 22A3  E8 FFCC			           call  ShowCounter ; Обновление порта вывода счётчика прерываний
+ 22A6  F4			           hlt               ; Ждём прерывания
+ 22A7  EB FA			           jmp   MLoop       ; Бесконечный цикл
 
 				;В следующей строке необходимо указать смещение стартовой точки
 				           org   RomSize-16-((InitDataEnd-InitDataStart+15) AND 0FFF0h)
 				           ASSUME cs:NOTHING
- 1FF0  EA ---- 10E7 R		           jmp   Far Ptr Start
- 1FF5				Code       ENDS
-				END		Start
-Microsoft (R) Macro Assembler Version 6.14.8444		    03/22/23 12:56:21
+ 3FF0  EA ---- 2278 R		           jmp   Far Ptr Start
+ 3FF5				Code       ENDS
+				END	   Start
+Microsoft (R) Macro Assembler Version 6.14.8444		    03/27/23 08:37:22
 VI54.asm						     Symbols 2 - 1
 
 
@@ -3128,7 +6234,7 @@ Segments and Groups:
 
                 N a m e                 Size     Length   Align   Combine Class
 
-Code . . . . . . . . . . . . . .	16 Bit	 1FF5	  Para	  Private 
+Code . . . . . . . . . . . . . .	16 Bit	 3FF5	  Para	  Private 
 Data . . . . . . . . . . . . . .	16 Bit	 0002	  Abs	  Private 
 InitData . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
 IntTable . . . . . . . . . . . .	16 Bit	 0084	  Abs	  Private 
@@ -3141,9 +6247,9 @@ Procedures,  parameters and locals:
 
 GetCeByte  . . . . . . . . . . .	P Near	 0019	  Code	Length= 0005 Public
 GetOut . . . . . . . . . . . . .	P Near	 0014	  Code	Length= 0005 Public
-InitCounter  . . . . . . . . . .	P Near	 10BC	  Code	Length= 0025 Public
-InitFlash  . . . . . . . . . . .	P Near	 10AF	  Code	Length= 000D Public
-Int32Handler . . . . . . . . . .	P Far	 10A1	  Code	Length= 000E Public
+InitCounter  . . . . . . . . . .	P Near	 224D	  Code	Length= 0025 Public
+InitFlash  . . . . . . . . . . .	P Near	 2240	  Code	Length= 000D Public
+Int32Handler . . . . . . . . . .	P Far	 2232	  Code	Length= 000E Public
 Mode0_Datasheet1 . . . . . . . .	P Near	 0056	  Code	Length= 0149 Public
   ??0000 . . . . . . . . . . . .	L Near	 006A	  Code	
   ??0001 . . . . . . . . . . . .	L Near	 0076	  Code	
@@ -3494,14 +6600,397 @@ Mode2_Datasheet3 . . . . . . . .	P Near	 0F59	  Code	Length= 0148 Public
   ??014D . . . . . . . . . . . .	L Near	 1088	  Code	
   ??014E . . . . . . . . . . . .	L Near	 1094	  Code	
   ??014F . . . . . . . . . . . .	L Near	 109D	  Code	
+Mode3_Datasheet1 . . . . . . . .	P Near	 10CC	  Code	Length= 00EF Public
+  ??0150 . . . . . . . . . . . .	L Near	 10E0	  Code	
+  ??0151 . . . . . . . . . . . .	L Near	 10EC	  Code	
+  ??0152 . . . . . . . . . . . .	L Near	 10F8	  Code	
+  ??0153 . . . . . . . . . . . .	L Near	 1104	  Code	
+  ??0154 . . . . . . . . . . . .	L Near	 1112	  Code	
+  ??0155 . . . . . . . . . . . .	L Near	 111E	  Code	
+  ??0156 . . . . . . . . . . . .	L Near	 112A	  Code	
+  ??0157 . . . . . . . . . . . .	L Near	 1133	  Code	
+  ??0158 . . . . . . . . . . . .	L Near	 113F	  Code	
+  ??0159 . . . . . . . . . . . .	L Near	 114B	  Code	
+  ??015A . . . . . . . . . . . .	L Near	 1154	  Code	
+  ??015B . . . . . . . . . . . .	L Near	 1160	  Code	
+  ??015C . . . . . . . . . . . .	L Near	 116C	  Code	
+  ??015D . . . . . . . . . . . .	L Near	 1175	  Code	
+  ??015E . . . . . . . . . . . .	L Near	 1181	  Code	
+  ??015F . . . . . . . . . . . .	L Near	 118D	  Code	
+  ??0160 . . . . . . . . . . . .	L Near	 1196	  Code	
+  ??0161 . . . . . . . . . . . .	L Near	 11A2	  Code	
+  ??0162 . . . . . . . . . . . .	L Near	 11AE	  Code	
+  ??0163 . . . . . . . . . . . .	L Near	 11B7	  Code	
+Mode3_Datasheet2 . . . . . . . .	P Near	 11BB	  Code	Length= 0173 Public
+  ??0164 . . . . . . . . . . . .	L Near	 11CF	  Code	
+  ??0165 . . . . . . . . . . . .	L Near	 11DB	  Code	
+  ??0166 . . . . . . . . . . . .	L Near	 11E7	  Code	
+  ??0167 . . . . . . . . . . . .	L Near	 11F3	  Code	
+  ??0168 . . . . . . . . . . . .	L Near	 1201	  Code	
+  ??0169 . . . . . . . . . . . .	L Near	 120D	  Code	
+  ??016A . . . . . . . . . . . .	L Near	 1219	  Code	
+  ??016B . . . . . . . . . . . .	L Near	 1222	  Code	
+  ??016C . . . . . . . . . . . .	L Near	 122E	  Code	
+  ??016D . . . . . . . . . . . .	L Near	 123A	  Code	
+  ??016E . . . . . . . . . . . .	L Near	 1243	  Code	
+  ??016F . . . . . . . . . . . .	L Near	 124F	  Code	
+  ??0170 . . . . . . . . . . . .	L Near	 125B	  Code	
+  ??0171 . . . . . . . . . . . .	L Near	 1264	  Code	
+  ??0172 . . . . . . . . . . . .	L Near	 1270	  Code	
+  ??0173 . . . . . . . . . . . .	L Near	 127C	  Code	
+  ??0174 . . . . . . . . . . . .	L Near	 1285	  Code	
+  ??0175 . . . . . . . . . . . .	L Near	 1291	  Code	
+  ??0176 . . . . . . . . . . . .	L Near	 129D	  Code	
+  ??0177 . . . . . . . . . . . .	L Near	 12A6	  Code	
+  ??0178 . . . . . . . . . . . .	L Near	 12B2	  Code	
+  ??0179 . . . . . . . . . . . .	L Near	 12BE	  Code	
+  ??017A . . . . . . . . . . . .	L Near	 12C7	  Code	
+  ??017B . . . . . . . . . . . .	L Near	 12D3	  Code	
+  ??017C . . . . . . . . . . . .	L Near	 12DF	  Code	
+  ??017D . . . . . . . . . . . .	L Near	 12E8	  Code	
+  ??017E . . . . . . . . . . . .	L Near	 12F4	  Code	
+  ??017F . . . . . . . . . . . .	L Near	 1300	  Code	
+  ??0180 . . . . . . . . . . . .	L Near	 1309	  Code	
+  ??0181 . . . . . . . . . . . .	L Near	 1315	  Code	
+  ??0182 . . . . . . . . . . . .	L Near	 1321	  Code	
+  ??0183 . . . . . . . . . . . .	L Near	 132A	  Code	
+Mode3_Datasheet3 . . . . . . . .	P Near	 132E	  Code	Length= 018B Public
+  ??0184 . . . . . . . . . . . .	L Near	 1342	  Code	
+  ??0185 . . . . . . . . . . . .	L Near	 134E	  Code	
+  ??0186 . . . . . . . . . . . .	L Near	 135A	  Code	
+  ??0187 . . . . . . . . . . . .	L Near	 1366	  Code	
+  ??0188 . . . . . . . . . . . .	L Near	 1374	  Code	
+  ??0189 . . . . . . . . . . . .	L Near	 1380	  Code	
+  ??018A . . . . . . . . . . . .	L Near	 138C	  Code	
+  ??018B . . . . . . . . . . . .	L Near	 1395	  Code	
+  ??018C . . . . . . . . . . . .	L Near	 13A1	  Code	
+  ??018D . . . . . . . . . . . .	L Near	 13AD	  Code	
+  ??018E . . . . . . . . . . . .	L Near	 13B6	  Code	
+  ??018F . . . . . . . . . . . .	L Near	 13C2	  Code	
+  ??0190 . . . . . . . . . . . .	L Near	 13CE	  Code	
+  ??0191 . . . . . . . . . . . .	L Near	 13D7	  Code	
+  ??0192 . . . . . . . . . . . .	L Near	 13E3	  Code	
+  ??0193 . . . . . . . . . . . .	L Near	 13EF	  Code	
+  ??0194 . . . . . . . . . . . .	L Near	 13F8	  Code	
+  ??0195 . . . . . . . . . . . .	L Near	 1404	  Code	
+  ??0196 . . . . . . . . . . . .	L Near	 1410	  Code	
+  ??0197 . . . . . . . . . . . .	L Near	 141C	  Code	
+  ??0198 . . . . . . . . . . . .	L Near	 1425	  Code	
+  ??0199 . . . . . . . . . . . .	L Near	 1431	  Code	
+  ??019A . . . . . . . . . . . .	L Near	 143D	  Code	
+  ??019B . . . . . . . . . . . .	L Near	 1446	  Code	
+  ??019C . . . . . . . . . . . .	L Near	 1452	  Code	
+  ??019D . . . . . . . . . . . .	L Near	 145E	  Code	
+  ??019E . . . . . . . . . . . .	L Near	 146A	  Code	
+  ??019F . . . . . . . . . . . .	L Near	 1473	  Code	
+  ??01A0 . . . . . . . . . . . .	L Near	 147F	  Code	
+  ??01A1 . . . . . . . . . . . .	L Near	 148B	  Code	
+  ??01A2 . . . . . . . . . . . .	L Near	 1494	  Code	
+  ??01A3 . . . . . . . . . . . .	L Near	 14A0	  Code	
+  ??01A4 . . . . . . . . . . . .	L Near	 14AC	  Code	
+  ??01A5 . . . . . . . . . . . .	L Near	 14B5	  Code	
+Mode4_Datasheet1 . . . . . . . .	P Near	 14E4	  Code	Length= 0125 Public
+  ??01A6 . . . . . . . . . . . .	L Near	 14F8	  Code	
+  ??01A7 . . . . . . . . . . . .	L Near	 1504	  Code	
+  ??01A8 . . . . . . . . . . . .	L Near	 1510	  Code	
+  ??01A9 . . . . . . . . . . . .	L Near	 151C	  Code	
+  ??01AA . . . . . . . . . . . .	L Near	 152A	  Code	
+  ??01AB . . . . . . . . . . . .	L Near	 1536	  Code	
+  ??01AC . . . . . . . . . . . .	L Near	 1542	  Code	
+  ??01AD . . . . . . . . . . . .	L Near	 154B	  Code	
+  ??01AE . . . . . . . . . . . .	L Near	 1557	  Code	
+  ??01AF . . . . . . . . . . . .	L Near	 1563	  Code	
+  ??01B0 . . . . . . . . . . . .	L Near	 156C	  Code	
+  ??01B1 . . . . . . . . . . . .	L Near	 1578	  Code	
+  ??01B2 . . . . . . . . . . . .	L Near	 1584	  Code	
+  ??01B3 . . . . . . . . . . . .	L Near	 158D	  Code	
+  ??01B4 . . . . . . . . . . . .	L Near	 1599	  Code	
+  ??01B5 . . . . . . . . . . . .	L Near	 15A5	  Code	
+  ??01B6 . . . . . . . . . . . .	L Near	 15AE	  Code	
+  ??01B7 . . . . . . . . . . . .	L Near	 15BA	  Code	
+  ??01B8 . . . . . . . . . . . .	L Near	 15C6	  Code	
+  ??01B9 . . . . . . . . . . . .	L Near	 15CF	  Code	
+  Mode4_Datasheet1_M1  . . . . .	L Near	 15D3	  Code	
+  ??01BA . . . . . . . . . . . .	L Near	 15DF	  Code	
+  ??01BB . . . . . . . . . . . .	L Near	 15EB	  Code	
+  ??01BC . . . . . . . . . . . .	L Near	 15F9	  Code	
+  ??01BD . . . . . . . . . . . .	L Near	 1605	  Code	
+Mode4_Datasheet2 . . . . . . . .	P Near	 1609	  Code	Length= 013D Public
+  ??01BE . . . . . . . . . . . .	L Near	 161D	  Code	
+  ??01BF . . . . . . . . . . . .	L Near	 1629	  Code	
+  ??01C0 . . . . . . . . . . . .	L Near	 1635	  Code	
+  ??01C1 . . . . . . . . . . . .	L Near	 1641	  Code	
+  ??01C2 . . . . . . . . . . . .	L Near	 164F	  Code	
+  ??01C3 . . . . . . . . . . . .	L Near	 165B	  Code	
+  ??01C4 . . . . . . . . . . . .	L Near	 1667	  Code	
+  ??01C5 . . . . . . . . . . . .	L Near	 1670	  Code	
+  ??01C6 . . . . . . . . . . . .	L Near	 167C	  Code	
+  ??01C7 . . . . . . . . . . . .	L Near	 1688	  Code	
+  ??01C8 . . . . . . . . . . . .	L Near	 1691	  Code	
+  ??01C9 . . . . . . . . . . . .	L Near	 169D	  Code	
+  ??01CA . . . . . . . . . . . .	L Near	 16A9	  Code	
+  ??01CB . . . . . . . . . . . .	L Near	 16B5	  Code	
+  ??01CC . . . . . . . . . . . .	L Near	 16BE	  Code	
+  ??01CD . . . . . . . . . . . .	L Near	 16CA	  Code	
+  ??01CE . . . . . . . . . . . .	L Near	 16D6	  Code	
+  ??01CF . . . . . . . . . . . .	L Near	 16DF	  Code	
+  ??01D0 . . . . . . . . . . . .	L Near	 16EB	  Code	
+  ??01D1 . . . . . . . . . . . .	L Near	 16F7	  Code	
+  ??01D2 . . . . . . . . . . . .	L Near	 1700	  Code	
+  ??01D3 . . . . . . . . . . . .	L Near	 170C	  Code	
+  ??01D4 . . . . . . . . . . . .	L Near	 1718	  Code	
+  ??01D5 . . . . . . . . . . . .	L Near	 1721	  Code	
+  ??01D6 . . . . . . . . . . . .	L Near	 172D	  Code	
+  ??01D7 . . . . . . . . . . . .	L Near	 1739	  Code	
+  ??01D8 . . . . . . . . . . . .	L Near	 1742	  Code	
+Mode4_Datasheet3 . . . . . . . .	P Near	 1746	  Code	Length= 013F Public
+  ??01D9 . . . . . . . . . . . .	L Near	 175A	  Code	
+  ??01DA . . . . . . . . . . . .	L Near	 1766	  Code	
+  ??01DB . . . . . . . . . . . .	L Near	 1772	  Code	
+  ??01DC . . . . . . . . . . . .	L Near	 177E	  Code	
+  ??01DD . . . . . . . . . . . .	L Near	 178C	  Code	
+  ??01DE . . . . . . . . . . . .	L Near	 1798	  Code	
+  ??01DF . . . . . . . . . . . .	L Near	 17A4	  Code	
+  ??01E0 . . . . . . . . . . . .	L Near	 17AD	  Code	
+  ??01E1 . . . . . . . . . . . .	L Near	 17B9	  Code	
+  ??01E2 . . . . . . . . . . . .	L Near	 17C5	  Code	
+  ??01E3 . . . . . . . . . . . .	L Near	 17CE	  Code	
+  ??01E4 . . . . . . . . . . . .	L Near	 17DA	  Code	
+  ??01E5 . . . . . . . . . . . .	L Near	 17E6	  Code	
+  ??01E6 . . . . . . . . . . . .	L Near	 17EF	  Code	
+  ??01E7 . . . . . . . . . . . .	L Near	 17FD	  Code	
+  ??01E8 . . . . . . . . . . . .	L Near	 1809	  Code	
+  ??01E9 . . . . . . . . . . . .	L Near	 1815	  Code	
+  ??01EA . . . . . . . . . . . .	L Near	 181E	  Code	
+  ??01EB . . . . . . . . . . . .	L Near	 182A	  Code	
+  ??01EC . . . . . . . . . . . .	L Near	 1836	  Code	
+  ??01ED . . . . . . . . . . . .	L Near	 183F	  Code	
+  ??01EE . . . . . . . . . . . .	L Near	 184B	  Code	
+  ??01EF . . . . . . . . . . . .	L Near	 1857	  Code	
+  ??01F0 . . . . . . . . . . . .	L Near	 1860	  Code	
+  ??01F1 . . . . . . . . . . . .	L Near	 186C	  Code	
+  ??01F2 . . . . . . . . . . . .	L Near	 1878	  Code	
+  ??01F3 . . . . . . . . . . . .	L Near	 1881	  Code	
+Mode5_Datasheet1_Gate_High . . .	P Near	 1A2C	  Code	Length= 0158 Public
+  ??0211 . . . . . . . . . . . .	L Near	 1A40	  Code	
+  ??0212 . . . . . . . . . . . .	L Near	 1A4C	  Code	
+  ??0213 . . . . . . . . . . . .	L Near	 1A58	  Code	
+  ??0214 . . . . . . . . . . . .	L Near	 1A64	  Code	
+  ??0215 . . . . . . . . . . . .	L Near	 1A72	  Code	
+  ??0216 . . . . . . . . . . . .	L Near	 1A7E	  Code	
+  ??0217 . . . . . . . . . . . .	L Near	 1A8A	  Code	
+  ??0218 . . . . . . . . . . . .	L Near	 1A96	  Code	
+  ??0219 . . . . . . . . . . . .	L Near	 1AA2	  Code	
+  ??021A . . . . . . . . . . . .	L Near	 1AAE	  Code	
+  ??021B . . . . . . . . . . . .	L Near	 1ABA	  Code	
+  ??021C . . . . . . . . . . . .	L Near	 1AC3	  Code	
+  ??021D . . . . . . . . . . . .	L Near	 1ACF	  Code	
+  ??021E . . . . . . . . . . . .	L Near	 1ADB	  Code	
+  ??021F . . . . . . . . . . . .	L Near	 1AE4	  Code	
+  ??0220 . . . . . . . . . . . .	L Near	 1AF0	  Code	
+  ??0221 . . . . . . . . . . . .	L Near	 1AFC	  Code	
+  ??0222 . . . . . . . . . . . .	L Near	 1B05	  Code	
+  ??0223 . . . . . . . . . . . .	L Near	 1B11	  Code	
+  ??0224 . . . . . . . . . . . .	L Near	 1B1D	  Code	
+  ??0225 . . . . . . . . . . . .	L Near	 1B26	  Code	
+  ??0226 . . . . . . . . . . . .	L Near	 1B32	  Code	
+  ??0227 . . . . . . . . . . . .	L Near	 1B3E	  Code	
+  ??0228 . . . . . . . . . . . .	L Near	 1B4A	  Code	
+  ??0229 . . . . . . . . . . . .	L Near	 1B56	  Code	
+  ??022A . . . . . . . . . . . .	L Near	 1B5F	  Code	
+  ??022B . . . . . . . . . . . .	L Near	 1B6B	  Code	
+  ??022C . . . . . . . . . . . .	L Near	 1B77	  Code	
+  ??022D . . . . . . . . . . . .	L Near	 1B80	  Code	
+Mode5_Datasheet1_Gate_Low  . . .	P Near	 18D4	  Code	Length= 0158 Public
+  ??01F4 . . . . . . . . . . . .	L Near	 18E8	  Code	
+  ??01F5 . . . . . . . . . . . .	L Near	 18F4	  Code	
+  ??01F6 . . . . . . . . . . . .	L Near	 1900	  Code	
+  ??01F7 . . . . . . . . . . . .	L Near	 190C	  Code	
+  ??01F8 . . . . . . . . . . . .	L Near	 191A	  Code	
+  ??01F9 . . . . . . . . . . . .	L Near	 1926	  Code	
+  ??01FA . . . . . . . . . . . .	L Near	 1932	  Code	
+  ??01FB . . . . . . . . . . . .	L Near	 193E	  Code	
+  ??01FC . . . . . . . . . . . .	L Near	 194A	  Code	
+  ??01FD . . . . . . . . . . . .	L Near	 1956	  Code	
+  ??01FE . . . . . . . . . . . .	L Near	 1962	  Code	
+  ??01FF . . . . . . . . . . . .	L Near	 196B	  Code	
+  ??0200 . . . . . . . . . . . .	L Near	 1977	  Code	
+  ??0201 . . . . . . . . . . . .	L Near	 1983	  Code	
+  ??0202 . . . . . . . . . . . .	L Near	 198C	  Code	
+  ??0203 . . . . . . . . . . . .	L Near	 1998	  Code	
+  ??0204 . . . . . . . . . . . .	L Near	 19A4	  Code	
+  ??0205 . . . . . . . . . . . .	L Near	 19AD	  Code	
+  ??0206 . . . . . . . . . . . .	L Near	 19B9	  Code	
+  ??0207 . . . . . . . . . . . .	L Near	 19C5	  Code	
+  ??0208 . . . . . . . . . . . .	L Near	 19CE	  Code	
+  ??0209 . . . . . . . . . . . .	L Near	 19DA	  Code	
+  ??020A . . . . . . . . . . . .	L Near	 19E6	  Code	
+  ??020B . . . . . . . . . . . .	L Near	 19F2	  Code	
+  ??020C . . . . . . . . . . . .	L Near	 19FB	  Code	
+  ??020D . . . . . . . . . . . .	L Near	 1A07	  Code	
+  ??020E . . . . . . . . . . . .	L Near	 1A13	  Code	
+  ??020F . . . . . . . . . . . .	L Near	 1A1F	  Code	
+  ??0210 . . . . . . . . . . . .	L Near	 1A28	  Code	
+Mode5_Datasheet2_Gate_High . . .	P Near	 1D15	  Code	Length= 0191 Public
+  ??0250 . . . . . . . . . . . .	L Near	 1D29	  Code	
+  ??0251 . . . . . . . . . . . .	L Near	 1D35	  Code	
+  ??0252 . . . . . . . . . . . .	L Near	 1D41	  Code	
+  ??0253 . . . . . . . . . . . .	L Near	 1D4D	  Code	
+  ??0254 . . . . . . . . . . . .	L Near	 1D5B	  Code	
+  ??0255 . . . . . . . . . . . .	L Near	 1D67	  Code	
+  ??0256 . . . . . . . . . . . .	L Near	 1D73	  Code	
+  ??0257 . . . . . . . . . . . .	L Near	 1D7F	  Code	
+  ??0258 . . . . . . . . . . . .	L Near	 1D8B	  Code	
+  ??0259 . . . . . . . . . . . .	L Near	 1D97	  Code	
+  ??025A . . . . . . . . . . . .	L Near	 1DA3	  Code	
+  ??025B . . . . . . . . . . . .	L Near	 1DAF	  Code	
+  ??025C . . . . . . . . . . . .	L Near	 1DBB	  Code	
+  ??025D . . . . . . . . . . . .	L Near	 1DC4	  Code	
+  ??025E . . . . . . . . . . . .	L Near	 1DD0	  Code	
+  ??025F . . . . . . . . . . . .	L Near	 1DDC	  Code	
+  ??0260 . . . . . . . . . . . .	L Near	 1DE8	  Code	
+  ??0261 . . . . . . . . . . . .	L Near	 1DF4	  Code	
+  ??0262 . . . . . . . . . . . .	L Near	 1DFD	  Code	
+  ??0263 . . . . . . . . . . . .	L Near	 1E09	  Code	
+  ??0264 . . . . . . . . . . . .	L Near	 1E15	  Code	
+  ??0265 . . . . . . . . . . . .	L Near	 1E1E	  Code	
+  ??0266 . . . . . . . . . . . .	L Near	 1E2A	  Code	
+  ??0267 . . . . . . . . . . . .	L Near	 1E36	  Code	
+  ??0268 . . . . . . . . . . . .	L Near	 1E3F	  Code	
+  ??0269 . . . . . . . . . . . .	L Near	 1E4B	  Code	
+  ??026A . . . . . . . . . . . .	L Near	 1E57	  Code	
+  ??026B . . . . . . . . . . . .	L Near	 1E60	  Code	
+  ??026C . . . . . . . . . . . .	L Near	 1E6C	  Code	
+  ??026D . . . . . . . . . . . .	L Near	 1E78	  Code	
+  ??026E . . . . . . . . . . . .	L Near	 1E81	  Code	
+  ??026F . . . . . . . . . . . .	L Near	 1E8D	  Code	
+  ??0270 . . . . . . . . . . . .	L Near	 1E99	  Code	
+  ??0271 . . . . . . . . . . . .	L Near	 1EA2	  Code	
+Mode5_Datasheet2_Gate_Low  . . .	P Near	 1B84	  Code	Length= 0191 Public
+  ??022E . . . . . . . . . . . .	L Near	 1B98	  Code	
+  ??022F . . . . . . . . . . . .	L Near	 1BA4	  Code	
+  ??0230 . . . . . . . . . . . .	L Near	 1BB0	  Code	
+  ??0231 . . . . . . . . . . . .	L Near	 1BBC	  Code	
+  ??0232 . . . . . . . . . . . .	L Near	 1BCA	  Code	
+  ??0233 . . . . . . . . . . . .	L Near	 1BD6	  Code	
+  ??0234 . . . . . . . . . . . .	L Near	 1BE2	  Code	
+  ??0235 . . . . . . . . . . . .	L Near	 1BEE	  Code	
+  ??0236 . . . . . . . . . . . .	L Near	 1BFA	  Code	
+  ??0237 . . . . . . . . . . . .	L Near	 1C06	  Code	
+  ??0238 . . . . . . . . . . . .	L Near	 1C12	  Code	
+  ??0239 . . . . . . . . . . . .	L Near	 1C1E	  Code	
+  ??023A . . . . . . . . . . . .	L Near	 1C2A	  Code	
+  ??023B . . . . . . . . . . . .	L Near	 1C33	  Code	
+  ??023C . . . . . . . . . . . .	L Near	 1C3F	  Code	
+  ??023D . . . . . . . . . . . .	L Near	 1C4B	  Code	
+  ??023E . . . . . . . . . . . .	L Near	 1C57	  Code	
+  ??023F . . . . . . . . . . . .	L Near	 1C60	  Code	
+  ??0240 . . . . . . . . . . . .	L Near	 1C6C	  Code	
+  ??0241 . . . . . . . . . . . .	L Near	 1C78	  Code	
+  ??0242 . . . . . . . . . . . .	L Near	 1C84	  Code	
+  ??0243 . . . . . . . . . . . .	L Near	 1C8D	  Code	
+  ??0244 . . . . . . . . . . . .	L Near	 1C99	  Code	
+  ??0245 . . . . . . . . . . . .	L Near	 1CA5	  Code	
+  ??0246 . . . . . . . . . . . .	L Near	 1CAE	  Code	
+  ??0247 . . . . . . . . . . . .	L Near	 1CBA	  Code	
+  ??0248 . . . . . . . . . . . .	L Near	 1CC6	  Code	
+  ??0249 . . . . . . . . . . . .	L Near	 1CCF	  Code	
+  ??024A . . . . . . . . . . . .	L Near	 1CDB	  Code	
+  ??024B . . . . . . . . . . . .	L Near	 1CE7	  Code	
+  ??024C . . . . . . . . . . . .	L Near	 1CF0	  Code	
+  ??024D . . . . . . . . . . . .	L Near	 1CFC	  Code	
+  ??024E . . . . . . . . . . . .	L Near	 1D08	  Code	
+  ??024F . . . . . . . . . . . .	L Near	 1D11	  Code	
+Mode5_Datasheet3_Gate_High . . .	P Near	 2066	  Code	Length= 01CC Public
+  ??0298 . . . . . . . . . . . .	L Near	 207A	  Code	
+  ??0299 . . . . . . . . . . . .	L Near	 2086	  Code	
+  ??029A . . . . . . . . . . . .	L Near	 2092	  Code	
+  ??029B . . . . . . . . . . . .	L Near	 209E	  Code	
+  ??029C . . . . . . . . . . . .	L Near	 20AC	  Code	
+  ??029D . . . . . . . . . . . .	L Near	 20B8	  Code	
+  ??029E . . . . . . . . . . . .	L Near	 20C4	  Code	
+  ??029F . . . . . . . . . . . .	L Near	 20D0	  Code	
+  ??02A0 . . . . . . . . . . . .	L Near	 20DC	  Code	
+  ??02A1 . . . . . . . . . . . .	L Near	 20E8	  Code	
+  ??02A2 . . . . . . . . . . . .	L Near	 20F4	  Code	
+  ??02A3 . . . . . . . . . . . .	L Near	 2100	  Code	
+  ??02A4 . . . . . . . . . . . .	L Near	 210C	  Code	
+  ??02A5 . . . . . . . . . . . .	L Near	 2115	  Code	
+  ??02A6 . . . . . . . . . . . .	L Near	 2121	  Code	
+  ??02A7 . . . . . . . . . . . .	L Near	 212D	  Code	
+  ??02A8 . . . . . . . . . . . .	L Near	 2136	  Code	
+  ??02A9 . . . . . . . . . . . .	L Near	 2144	  Code	
+  ??02AA . . . . . . . . . . . .	L Near	 2150	  Code	
+  ??02AB . . . . . . . . . . . .	L Near	 215C	  Code	
+  ??02AC . . . . . . . . . . . .	L Near	 2165	  Code	
+  ??02AD . . . . . . . . . . . .	L Near	 2171	  Code	
+  ??02AE . . . . . . . . . . . .	L Near	 217D	  Code	
+  ??02AF . . . . . . . . . . . .	L Near	 2186	  Code	
+  ??02B0 . . . . . . . . . . . .	L Near	 2192	  Code	
+  ??02B1 . . . . . . . . . . . .	L Near	 219E	  Code	
+  ??02B2 . . . . . . . . . . . .	L Near	 21A7	  Code	
+  ??02B3 . . . . . . . . . . . .	L Near	 21B3	  Code	
+  ??02B4 . . . . . . . . . . . .	L Near	 21BF	  Code	
+  ??02B5 . . . . . . . . . . . .	L Near	 21CB	  Code	
+  ??02B6 . . . . . . . . . . . .	L Near	 21D4	  Code	
+  ??02B7 . . . . . . . . . . . .	L Near	 21E0	  Code	
+  ??02B8 . . . . . . . . . . . .	L Near	 21EC	  Code	
+  ??02B9 . . . . . . . . . . . .	L Near	 21F8	  Code	
+  ??02BA . . . . . . . . . . . .	L Near	 2204	  Code	
+  ??02BB . . . . . . . . . . . .	L Near	 220D	  Code	
+  ??02BC . . . . . . . . . . . .	L Near	 2219	  Code	
+  ??02BD . . . . . . . . . . . .	L Near	 2225	  Code	
+  ??02BE . . . . . . . . . . . .	L Near	 222E	  Code	
+Mode5_Datasheet3_Gate_Low  . . .	P Near	 1EA6	  Code	Length= 01C0 Public
+  ??0272 . . . . . . . . . . . .	L Near	 1EBA	  Code	
+  ??0273 . . . . . . . . . . . .	L Near	 1EC6	  Code	
+  ??0274 . . . . . . . . . . . .	L Near	 1ED2	  Code	
+  ??0275 . . . . . . . . . . . .	L Near	 1EDE	  Code	
+  ??0276 . . . . . . . . . . . .	L Near	 1EEC	  Code	
+  ??0277 . . . . . . . . . . . .	L Near	 1EF8	  Code	
+  ??0278 . . . . . . . . . . . .	L Near	 1F04	  Code	
+  ??0279 . . . . . . . . . . . .	L Near	 1F10	  Code	
+  ??027A . . . . . . . . . . . .	L Near	 1F1C	  Code	
+  ??027B . . . . . . . . . . . .	L Near	 1F28	  Code	
+  ??027C . . . . . . . . . . . .	L Near	 1F34	  Code	
+  ??027D . . . . . . . . . . . .	L Near	 1F40	  Code	
+  ??027E . . . . . . . . . . . .	L Near	 1F4C	  Code	
+  ??027F . . . . . . . . . . . .	L Near	 1F55	  Code	
+  ??0280 . . . . . . . . . . . .	L Near	 1F61	  Code	
+  ??0281 . . . . . . . . . . . .	L Near	 1F6D	  Code	
+  ??0282 . . . . . . . . . . . .	L Near	 1F76	  Code	
+  ??0283 . . . . . . . . . . . .	L Near	 1F84	  Code	
+  ??0284 . . . . . . . . . . . .	L Near	 1F90	  Code	
+  ??0285 . . . . . . . . . . . .	L Near	 1F9C	  Code	
+  ??0286 . . . . . . . . . . . .	L Near	 1FA5	  Code	
+  ??0287 . . . . . . . . . . . .	L Near	 1FB1	  Code	
+  ??0288 . . . . . . . . . . . .	L Near	 1FBD	  Code	
+  ??0289 . . . . . . . . . . . .	L Near	 1FC6	  Code	
+  ??028A . . . . . . . . . . . .	L Near	 1FD2	  Code	
+  ??028B . . . . . . . . . . . .	L Near	 1FDE	  Code	
+  ??028C . . . . . . . . . . . .	L Near	 1FE7	  Code	
+  ??028D . . . . . . . . . . . .	L Near	 1FF3	  Code	
+  ??028E . . . . . . . . . . . .	L Near	 1FFF	  Code	
+  ??028F . . . . . . . . . . . .	L Near	 2008	  Code	
+  ??0290 . . . . . . . . . . . .	L Near	 2014	  Code	
+  ??0291 . . . . . . . . . . . .	L Near	 2020	  Code	
+  ??0292 . . . . . . . . . . . .	L Near	 202C	  Code	
+  ??0293 . . . . . . . . . . . .	L Near	 2038	  Code	
+  ??0294 . . . . . . . . . . . .	L Near	 2041	  Code	
+  ??0295 . . . . . . . . . . . .	L Near	 204D	  Code	
+  ??0296 . . . . . . . . . . . .	L Near	 2059	  Code	
+  ??0297 . . . . . . . . . . . .	L Near	 2062	  Code	
 SetClkHi . . . . . . . . . . . .	P Near	 000A	  Code	Length= 0005 Public
 SetClkLow  . . . . . . . . . . .	P Near	 000F	  Code	Length= 0005 Public
 SetGateHi  . . . . . . . . . . .	P Near	 0000	  Code	Length= 0005 Public
 SetGateLow . . . . . . . . . . .	P Near	 0005	  Code	Length= 0005 Public
-ShowCounter  . . . . . . . . . .	P Near	 10E1	  Code	Length= 0006 Public
+ShowCounter  . . . . . . . . . .	P Near	 2272	  Code	Length= 0006 Public
 TestMode0  . . . . . . . . . . .	P Near	 002B	  Code	Length= 002B Public
 TestMode1  . . . . . . . . . . .	P Near	 040C	  Code	Length= 004F Public
 TestMode2  . . . . . . . . . . .	P Near	 0CA8	  Code	Length= 002B Public
+TestMode3  . . . . . . . . . . .	P Near	 10A1	  Code	Length= 002B Public
+TestMode4  . . . . . . . . . . .	P Near	 14B9	  Code	Length= 002B Public
+TestMode5  . . . . . . . . . . .	P Near	 1885	  Code	Length= 004F Public
 WriteCountByte . . . . . . . . .	P Near	 0021	  Code	Length= 0003 Public
 WriteCountWord . . . . . . . . .	P Near	 0024	  Code	Length= 0007 Public
 WriteCw  . . . . . . . . . . . .	P Near	 001E	  Code	Length= 0003 Public
@@ -3516,9 +7005,9 @@ InitDataStart  . . . . . . . . .	L Near	 0000	  InitData
 Int32HandlerPtrOffs  . . . . . .	Word	 0080	  IntTable	
 Int32HandlerPtrSeg . . . . . . .	Word	 0082	  IntTable	
 IntCounter . . . . . . . . . . .	Word	 0000	  Data	
-MLoop  . . . . . . . . . . . . .	L Near	 1100	  Code	
-RomSize  . . . . . . . . . . . .	Number	 2000h	 
-Start  . . . . . . . . . . . . .	L Near	 10E7	  Code	
+MLoop  . . . . . . . . . . . . .	L Near	 22A3	  Code	
+RomSize  . . . . . . . . . . . .	Number	 4000h	 
+Start  . . . . . . . . . . . . .	L Near	 2278	  Code	
 StkTop . . . . . . . . . . . . .	Word	 0200	  Stk	
 
 	   0 Warnings

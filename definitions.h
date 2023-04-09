@@ -56,7 +56,7 @@ struct _EmulatorData {      //Глобальные общие данные эмулятора
 	INT64 Ticks;  //Счётчик тактов
 	void *Memory;
 	BOOL RunProg, Stopped;
-	uint64_t IntRequest;
+	std::array<uint64_t, 4> IntRequest;
 	std::unordered_map<DWORD, _BP> BPX, BPR, BPW, BPI, BPO;
 };
 

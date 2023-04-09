@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Design Microsystems"
-#define MyAppVersion "3.5.2"
+#define MyAppVersion "3.5.4"
 #define MyAppPublisher "–√¿“”"
 #define MyAppURL "http://www.rsatu.ru/"
 #define MyAppExeName "Demis.exe"
@@ -25,6 +25,7 @@ DisableProgramGroupPage=yes
 OutputBaseFilename=Demis
 Compression=lzma
 SolidCompression=yes
+DisableDirPage=no
 
 [Languages]
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
@@ -101,8 +102,8 @@ Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; Tasks: 
 Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#StringChange(MyAppName, '&', '&&')}}"; Flags: nowait postinstall skipifsilent
 
 [Registry]
-Root: HKLM; Subkey: "Software\RGATA\Design Microsystems\Settings\Elements Libraries"; Flags: uninsdeletekey
-Root: HKLM; Subkey: "Software\RGATA\Design Microsystems\Settings\Elements Libraries"; ValueType: string; ValueName: "{{6B4C02AF-DC58-4935-B438-552DEBB72761}"; ValueData: "{app}\StdElem.dll"; Flags: uninsdeletevalue
+Root: HKLM; Subkey: "Software\RGATA\Design Microsystems {#MyAppVersion}\Settings\Elements Libraries"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "Software\RGATA\Design Microsystems {#MyAppVersion}\Settings\Elements Libraries"; ValueType: string; ValueName: "{{6B4C02AF-DC58-4935-B438-552DEBB72761}"; ValueData: "{app}\StdElem.dll"; Flags: uninsdeletevalue
 
 [Code]
 procedure InstallRedist;

@@ -5,7 +5,6 @@
 #include "..\definitions.h"
 #include "resource.h"
 #include "../StdElem.h"
-#include "Vi54IoPort.h"
 
 extern "C" class CStdElemApp : public CWinApp
 {
@@ -19,8 +18,6 @@ public:
 	CDC DrawOnWhiteChar, SelOnWhiteChar;
 	int m_ElementsCount;
 	struct _ElementId ElementId[13];
-	Vi54IoPort Vi54Port;
-	std::shared_ptr<CElement> pVi54Router=nullptr;
 
 	CStdElemApp();
 

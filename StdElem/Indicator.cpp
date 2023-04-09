@@ -8,6 +8,8 @@
 #include "StdElemApp.h"
 #include "utils.h"
 
+#include <VersionHelpers.h>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -163,10 +165,13 @@ BOOL CIndicator::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
 	pConstrElemWnd->Create(ClassName, "Индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+
+	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	return TRUE;
 }
@@ -289,10 +294,10 @@ void CIndicator::DrawSegments(CDC* pDC, bool isSelected, bool isArchMode, CPoint
 	}
 	COLORREF colorBackground;
 	if (isArchMode) {
-		colorBackground = RGB(0, 0, 0);
+		colorBackground = theApp.GrayColor;
 	}
 	else {
-		colorBackground = RGB(0, 0, 0);
+		colorBackground = RGB(255, 255, 255);
 	}
 	for (int n = 0; n < 8; n++) {
 		BOOL isOn = (HighLight & (1<<n)) != 0;
@@ -372,7 +377,7 @@ void CIndConstrWnd::Draw(CDC* pDC)
 
 void CIndConstrWnd::DrawStatic(CDC* pDC)
 {
-	pDC->PatBlt(0, 0, Size.cx, Size.cy, BLACKNESS);
+	pDC->PatBlt(0, 0, Size.cx, Size.cy, WHITENESS);
 }
 
 void CIndConstrWnd::Redraw(int64_t ticks) {
@@ -420,11 +425,8 @@ void CIndArchWnd::DrawStatic(CDC* pDC)
 	if (pElement->ArchSelected)
 		pDC->FrameRect(CRect(6, 0, Size.cx, Size.cy), &SelectBrush);
 	else pDC->FrameRect(CRect(6, 0, Size.cx, Size.cy), &NormalBrush);
-
-	CBrush BackBrush(RGB(0, 0, 0));
-	CGdiObject* pOldBrush = pDC->SelectObject(&BackBrush);
-	pDC->PatBlt(17, 1, Size.cx - 18, Size.cy - 2, PATCOPY);
-	pDC->SelectObject(pOldBrush);
+	pDC->FillSolidRect(CRect(6 + 1, 1, 16, Size.cy - 1), RGB(254, 254, 254));
+	pDC->FillSolidRect(CRect(17, 1, Size.cx - 1, Size.cy - 1), theApp.GrayColor);
 
 	CPen* pTempPen;
 	if (pElement->ArchSelected) pTempPen = &theApp.SelectPen;

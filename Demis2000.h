@@ -79,7 +79,7 @@ public:
 public:
 	virtual BOOL InitInstance();
 	virtual int ExitInstance();
-	virtual void WinHelp(DWORD dwData, UINT nCmd = HELP_CONTEXT);
+	virtual void WinHelp(DWORD dwData, UINT nCmd = HELP_CONTEXT) override;
 	virtual BOOL SaveAllModified();
 	//}}AFX_VIRTUAL
 

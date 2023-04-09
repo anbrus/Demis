@@ -65,7 +65,6 @@ public:
 	CIndicator(BOOL ArchMode, int id);
 	virtual ~CIndicator();
 
-	std::mutex mutexDraw;
 	BOOL ActiveHigh;
 	DWORD HighLight;
 
@@ -79,6 +78,10 @@ public:
 	void OnActiveHigh();
 	void OnActiveLow();
 
-protected:
+private:
+	std::mutex mutexDraw;
 	POINT IndImage[8][6];
+
+	friend class CIndArchWnd;
+	friend class CIndConstrWnd;
 };

@@ -37,6 +37,10 @@
 		<param name="Local" value="HTML\Debugger.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Ntilde;&egrave;&igrave;&oacute;&euml;&yuml;&ouml;&egrave;&yuml; &acirc; &eth;&aring;&agrave;&euml;&uuml;&iacute;&icirc;&igrave; &acirc;&eth;&aring;&igrave;&aring;&iacute;&egrave;">
+		<param name="Local" value="HTML\Realtime.htm">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
 		<param name="Name" value="&Yacute;&euml;&aring;&igrave;&aring;&iacute;&ograve;&ucirc; &agrave;&eth;&otilde;&egrave;&ograve;&aring;&ecirc;&ograve;&oacute;&eth;&ucirc;">
 		<param name="Local" value="HTML\Arch_Elements.htm">
 		</OBJECT>

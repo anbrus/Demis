@@ -25,7 +25,10 @@ private:
 	};
 	struct CompareTimePoint {
 		inline bool operator()(const TickHandler& left, const TickHandler& right) const {
-			return left.ticks < right.ticks || left.data < right.data;
+			if (left.ticks != right.ticks)
+				return left.ticks < right.ticks;
+			else
+				return left.data < right.data;
 		}
 	};
 

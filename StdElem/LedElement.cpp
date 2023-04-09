@@ -6,6 +6,9 @@
 #include "LedElement.h"
 
 #include "StdElemApp.h"
+#include "utils.h"
+
+#include <VersionHelpers.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -90,10 +93,13 @@ BOOL CLedElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Светодиод", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Светодиод", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
 	pConstrElemWnd->Create(ClassName, "Светодиод", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+
+	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	UpdateTipText();
 
@@ -116,6 +122,7 @@ BEGIN_MESSAGE_MAP(CLedArchWnd, CElementWnd)
 	ON_COMMAND(ID_ACTIVE_HIGH, OnActiveHigh)
 	ON_COMMAND(ID_ACTIVE_LOW, OnActiveLow)
 	ON_COMMAND(ID_SELECT_COLOR, OnSelectColor)
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -143,12 +150,27 @@ BEGIN_MESSAGE_MAP(CLedConstrWnd, CElementWnd)
 	ON_COMMAND(ID_ACTIVE_HIGH, OnActiveHigh)
 	ON_COMMAND(ID_ACTIVE_LOW, OnActiveLow)
 	ON_COMMAND(ID_SELECT_COLOR, OnSelectColor)
+	ON_WM_CREATE()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
 //////////////////////////////////////////////////////////////////////
+
+int CLedArchWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+	CClientDC dc(this);
+	createCompatibleDc(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
+
+	return 0;
+}
+
+int CLedConstrWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
+	CClientDC dc(this);
+	createCompatibleDc(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
+
+	return 0;
+}
 
 CLedConstrWnd::CLedConstrWnd(CElementBase* pElement) : CElementWnd(pElement)
 {
@@ -197,56 +219,62 @@ void CLedConstrWnd::OnActiveLow()
 	((CLedElement*)pElement)->OnActiveLow();
 }
 
-void CLedArchWnd::DrawValue(CDC* pDC)
+void CLedArchWnd::DrawDynamic(CDC* pDC)
 {
-	CGdiObject* pOldBrush, * pOldPen;
-	if (!pElement->EditMode) pOldPen = pDC->SelectObject(&theApp.DrawPen);
-
-	CBrush HighLightBrush(((CLedElement*)pElement)->Color);
-	CBrush NoLightBrush(theApp.BkColor);
 	//Выбираем нужную заливку
-	if (((CLedElement*)pElement)->HighLighted) pOldBrush = pDC->SelectObject(&HighLightBrush);
-	else pOldBrush = pDC->SelectObject(&NoLightBrush);
-	pDC->Rectangle(6, 0, Size.cx, Size.cy);
-	pDC->SelectObject(pOldBrush);
-	if (!pElement->EditMode) pDC->SelectObject(pOldPen);
-}
-
-void CLedConstrWnd::DrawValue(CDC* pDC)
-{
-	CGdiObject* pOldPen, * pOldBrush;
-	if (!pElement->EditMode) pOldPen = pDC->SelectObject(&theApp.DrawPen);
-	CBrush HighLightBrush(((CLedElement*)pElement)->Color);
-	CBrush NoLightBrush(theApp.BkColor);
-	//Выбираем нужную заливку
-	if (((CLedElement*)pElement)->HighLighted) pOldBrush = pDC->SelectObject(&HighLightBrush);
-	else pOldBrush = pDC->SelectObject(&NoLightBrush);
+	COLORREF c;
+	if (((CLedElement*)pElement)->HighLighted) c = reinterpret_cast<CLedElement*>(pElement)->Color;
+	else c = RGB(254, 254, 254);
 	//Рисуем светодиод
-	pDC->Rectangle(0, 0, Size.cx, Size.cy);
-	pDC->SelectObject(pOldBrush);
-	if (!pElement->EditMode) pDC->SelectObject(pOldPen);
+	pDC->FillSolidRect(CRect(6+1, 1, Size.cx - 1, Size.cy - 1), c);
 }
 
-void CLedArchWnd::Draw(CDC* pDC)
+void CLedConstrWnd::DrawDynamic(CDC* pDC)
 {
+	//Выбираем нужную заливку
+	COLORREF c;
+	if (((CLedElement*)pElement)->HighLighted) c = reinterpret_cast<CLedElement*>(pElement)->Color;
+	else c = RGB(255, 255, 255);
+	//Рисуем светодиод
+	pDC->FillSolidRect(CRect(1, 1, Size.cx-1, Size.cy-1), c);
+}
+
+void CLedArchWnd::Draw(CDC* pDC) {
+	CLedElement* pLedElement = reinterpret_cast<CLedElement*>(pElement);
+	std::lock_guard<std::mutex> lock(pLedElement->mutexDraw);
+
+	DrawStatic(&MemoryDC);
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void CLedArchWnd::DrawStatic(CDC* pDC)
+{
+	//сам светодиод
+	CBrush brush(pElement->ArchSelected ? theApp.SelectColor : theApp.DrawColor);
+	CRect rect(6, 0, Size.cx, Size.cy);
+	pDC->FrameRect(&rect, &brush);
+
 	CGdiObject* pOldPen;
-	if (pElement->ArchSelected)
-		pOldPen = pDC->SelectObject(&theApp.SelectPen);
-	else pOldPen = pDC->SelectObject(&theApp.DrawPen);
-	int CenterY = Size.cy / 2;
-	//Рисуем проводок
-	pDC->MoveTo(2, CenterY); pDC->LineTo(6, CenterY);
-	//и сам светодиод
-	DrawValue(pDC);
+	pDC->PatBlt(pElement->ConPoint[0].x - 2, pElement->ConPoint[0].y - 2, 5, 5, WHITENESS);
 	//Рисуем крестик, если надо
 	if (!pElement->ConPin[0]) {
 		CPen BluePen(PS_SOLID, 0, RGB(0, 0, 255));
-		pDC->SelectObject(&BluePen);
-		pDC->MoveTo(0, CenterY - 2); pDC->LineTo(5, CenterY + 3);
-		pDC->MoveTo(0, CenterY + 2); pDC->LineTo(5, CenterY - 3);
+		pOldPen = pDC->SelectObject(&BluePen);
+		pDC->MoveTo(pElement->ConPoint[0].x - 2, pElement->ConPoint[0].y - 2);
+		pDC->LineTo(pElement->ConPoint[0].x + 3, pElement->ConPoint[0].y + 3);
+		pDC->MoveTo(pElement->ConPoint[0].x - 2, pElement->ConPoint[0].y + 2);
+		pDC->LineTo(pElement->ConPoint[0].x + 3, pElement->ConPoint[0].y - 3);
 	}
 	else { //или палочку
-		pDC->MoveTo(0, CenterY); pDC->LineTo(5, CenterY);
+		if (pElement->ArchSelected)
+			pOldPen = pDC->SelectObject(&theApp.SelectPen);
+		else pOldPen = pDC->SelectObject(&theApp.DrawPen);
+		pDC->MoveTo(0, pElement->ConPoint[0].y);
+		pDC->LineTo(6, pElement->ConPoint[0].y);
 	}
 	//Восстанавливаем контекст
 	pDC->SelectObject(pOldPen);
@@ -254,12 +282,20 @@ void CLedArchWnd::Draw(CDC* pDC)
 
 void CLedConstrWnd::Draw(CDC* pDC)
 {
-	CGdiObject* pOldPen;
-	if (pElement->ConstrSelected)
-		pOldPen = pDC->SelectObject(&theApp.SelectPen);
-	else pOldPen = pDC->SelectObject(&theApp.DrawPen);
-	DrawValue(pDC);
-	pDC->SelectObject(pOldPen);
+	CLedElement* pLedElement = reinterpret_cast<CLedElement*>(pElement);
+	std::lock_guard<std::mutex> lock(pLedElement->mutexDraw);
+
+	DrawStatic(&MemoryDC);
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	pDC->BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+}
+
+void CLedConstrWnd::DrawStatic(CDC *pDC) {
+	CBrush brush(pElement->ConstrSelected ? theApp.SelectColor : theApp.DrawColor);
+	pDC->FrameRect(CRect(0, 0, Size.cx, Size.cy), &brush);
 }
 
 void CLedElement::UpdateTipText()
@@ -304,9 +340,33 @@ void CLedElement::OnSelectColor()
 }
 
 void CLedArchWnd::Redraw(int64_t ticks) {
+	CLedElement* pLedElement = reinterpret_cast<CLedElement*>(pElement);
 
+	std::lock_guard<std::mutex> lock(pLedElement->mutexDraw);
+
+	CClientDC DC(this);
+
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	DC.BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+
+	m_isRedrawRequired = false;
 }
 
 void CLedConstrWnd::Redraw(int64_t ticks) {
+	CLedElement* pLedElement = reinterpret_cast<CLedElement*>(pElement);
 
+	std::lock_guard<std::mutex> lock(pLedElement->mutexDraw);
+
+	CClientDC DC(this);
+
+	DrawDynamic(&MemoryDC);
+
+	CRect rect;
+	GetWindowRect(&rect);
+	DC.BitBlt(0, 0, rect.Width(), rect.Height(), &MemoryDC, 0, 0, SRCCOPY);
+
+	m_isRedrawRequired = false;
 }

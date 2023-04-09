@@ -9,6 +9,8 @@
 #include "..\definitions.h"
 #include "utils.h"
 
+#include <VersionHelpers.h>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -111,9 +113,9 @@ BOOL CADCElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 {
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
-	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->CreateEx(WS_EX_LAYERED, ClassName, "ÀÖÏ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "ÀÖÏ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
 	pConstrElemWnd->Create(ClassName, "ÀÖÏ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);

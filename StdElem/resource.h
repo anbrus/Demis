@@ -9,6 +9,9 @@
 #define IDR_INDICATOR_MENU              162
 #define IDC_TIMER_INDEX                 201
 #define IDC_LEVEL                       204
+#define IDC_FIXED_CLK                   205
+#define IDC_VIRTUAL_TIME                206
+#define IDC_EXTERNAL_CLK                206
 #define IDB_ADC_ELEMENT                 223
 #define IDB_BEEP_ELEMENT                224
 #define IDB_VI54_ICON                   233
@@ -94,9 +97,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        244
+#define _APS_NEXT_RESOURCE_VALUE        245
 #define _APS_NEXT_COMMAND_VALUE         32786
-#define _APS_NEXT_CONTROL_VALUE         205
+#define _APS_NEXT_CONTROL_VALUE         208
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

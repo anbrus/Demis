@@ -632,6 +632,38 @@ void CDemis2000App::OnUpdateDebug(CCmdUI* pCmdUI)
 
 typedef CElemLib* (*CreateInstancePtr)(HostInterface* pHostInterface);
 
+
+static std::string getStrCurrentVersion() {
+	HRSRC hResInfo;
+	DWORD dwSize;
+	HGLOBAL hResData;
+	LPVOID pRes, pResCopy;
+	UINT uLen;
+	VS_FIXEDFILEINFO* lpFfi;
+
+	hResInfo = FindResource(nullptr, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
+	dwSize = SizeofResource(nullptr, hResInfo);
+	hResData = LoadResource(nullptr, hResInfo);
+	pRes = LockResource(hResData);
+	pResCopy = LocalAlloc(LMEM_FIXED, dwSize);
+	CopyMemory(pResCopy, pRes, dwSize);
+	FreeResource(hResData);
+
+	VerQueryValue(pResCopy, TEXT("\\"), (LPVOID*)&lpFfi, &uLen);
+
+	DWORD dwFileVersionMS = lpFfi->dwFileVersionMS;
+	DWORD dwFileVersionLS = lpFfi->dwFileVersionLS;
+
+	DWORD dwLeftMost = HIWORD(dwFileVersionMS);
+	DWORD dwSecondLeft = LOWORD(dwFileVersionMS);
+	DWORD dwSecondRight = HIWORD(dwFileVersionLS);
+	DWORD dwRightMost = LOWORD(dwFileVersionLS);
+
+	LocalFree(pResCopy);
+
+	return std::format("{}.{}.{}", dwLeftMost, dwSecondLeft, dwSecondRight);
+}
+
 void CDemis2000App::LoadLibraryInformation()
 {
 	char ValueName[256] = "", Value[MAX_PATH];
@@ -640,10 +672,13 @@ void CDemis2000App::LoadLibraryInformation()
 	LONG Result;
 	DWORD Index = 0, Type, ValueSize;
 
+	std::string version = getStrCurrentVersion();
 	CString KeyName = "Software\\";
 	KeyName += m_pszRegistryKey;
 	KeyName += "\\";
 	KeyName += m_pszAppName;
+	KeyName += " ";
+	KeyName += version.c_str();
 	KeyName += "\\Settings\\Elements Libraries";
 	if (::RegOpenKeyEx(HKEY_LOCAL_MACHINE, KeyName, 0, KEY_READ, &hKey) != ERROR_SUCCESS) {
 		TRACE("Error: CDemis2000App::LoadLibraryInformation: RegOpenKeyEx failed\n");
@@ -904,5 +939,5 @@ void HostData::DeleteInstructionListener(int id) {
 }
 
 void HostData::Interrupt(int intNumber) {
-	theApp.pEmData->IntRequest |= static_cast<uint64_t>(1) << intNumber;
+	theApp.pEmData->IntRequest[intNumber/64] |= static_cast<uint64_t>(1) << (intNumber % 64);
 }

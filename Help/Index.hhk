@@ -110,5 +110,10 @@
 		<param name="Name" value="ѕараметры проекта">
 		<param name="Local" value="HTML\Project_Settings.htm">
 		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Ograve;&aring;&ecirc;&ntilde;&ograve;&icirc;&acirc;&ucirc;&eacute; &eth;&aring;&auml;&agrave;&ecirc;&ograve;&icirc;&eth;">
+		<param name="Name" value="—имул€ци€ в реальном времени">
+		<param name="Local" value="HTML\Realtime.htm">
+		</OBJECT>
 </UL>
 </BODY></HTML>

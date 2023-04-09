@@ -3,6 +3,7 @@
 #include "ElementBase.h"
 #include "ElementWnd.h"
 
+class Vi54IoPort;
 class Vi54Counter;
 
 class CVi54ArchWnd : public CElementWnd {
@@ -29,6 +30,7 @@ private:
 
 class CVi54Element:	public CElementBase
 {
+	friend class CVi54ArchWnd;
 public:
 	int indexTimer;
 	uint32_t freq=1000000;
@@ -56,7 +58,14 @@ private:
 	int64_t perfFreq = 0;
 	int idInstructionListener = -1;
 	int64_t nanosFreq;
-	Vi54Counter* counter;
+	Vi54Counter* counter=nullptr;
+	int64_t* pTickCounter=nullptr;
+	bool isRealtime = false;
+	bool isFixedFreq = false;
+
+	static Vi54IoPort Vi54Port;
+	static std::shared_ptr<CElement> pVi54Router;
+	static CElement* pCounter[3];
 
 	void UpdateTipText();
 	void updatePoints();

@@ -8,11 +8,26 @@
 #include "AddressDlg.h"
 #include "..\definitions.h"
 
+#include <VersionHelpers.h>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
 #define new DEBUG_NEW
 #endif
+
+constexpr int idxRectMain1 = 0;
+constexpr int idxRectMain2 = 1;
+constexpr int idxRectFilled1 = 2;
+constexpr int idxRectFilled2 = 3;
+constexpr int idxRectValues1 = 4;
+constexpr int idxRectValues2 = 5;
+constexpr int idxVerticalLine1 = 6;
+constexpr int idxVerticalLine2 = 7;
+constexpr int idxWidth = 8;
+constexpr int idxHeight = 9;
+constexpr int idxFirstPoint = 10;
+constexpr int idxFirstValue = 34;
 
 //////////////////////////////////////////////////////////////////////
 // Construction/Destruction
@@ -81,11 +96,13 @@ BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	((COutPortArchWnd*)pArchElemWnd)->InitializePoints();
 
-	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Порт вывода", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Порт вывода", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
+
+	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	reinterpret_cast<COutPortArchWnd*>(pArchElemWnd)->updateMenu(PopupMenu);
 	UpdateTipText();
@@ -161,8 +178,8 @@ void COutPortArchWnd::DrawDynamic(CDC* pDC)
 	for (int n = 0; n < 8; n++) {
 		BOOL BitSetted = (NewVal&(1 << n)) > 0;
 		if (BitSetted)
-			pDC->BitBlt(WorkPntArray[n + 30].x - 3, WorkPntArray[n + 30].y - 4, 6, 8, &theApp.SelOnWhiteNumb, n * 8, 0, SRCCOPY);
-		else pDC->BitBlt(WorkPntArray[n + 30].x - 3, WorkPntArray[n + 30].y - 4, 6, 8,
+			pDC->BitBlt(WorkPntArray[idxFirstValue+n].x - 3, WorkPntArray[idxFirstValue + n].y - 4, 6, 8, &theApp.SelOnWhiteNumb, n * 8, 0, SRCCOPY);
+		else pDC->BitBlt(WorkPntArray[idxFirstValue + n].x - 3, WorkPntArray[idxFirstValue + n].y - 4, 6, 8,
 			&theApp.DrawOnWhiteNumb, n * 8, 0, SRCCOPY);
 	}
 }
@@ -217,12 +234,10 @@ void COutPortArchWnd::DrawStatic(CDC *pDC)
 		pTempPen = &theApp.SelectPen;
 	else pTempPen = &theApp.DrawPen;
 	pOldPen = pDC->SelectObject(pTempPen);
-	pDC->SetBkColor(theApp.GrayColor);
-	pDC->SetTextColor(theApp.DrawColor);
 
 	CString Temp;
 
-	CRect MainRect(WorkPntArray[0].x, WorkPntArray[0].y, WorkPntArray[1].x, WorkPntArray[1].y);
+	CRect MainRect(WorkPntArray[idxRectMain1].x, WorkPntArray[idxRectMain1].y, WorkPntArray[idxRectMain2].x, WorkPntArray[idxRectMain2].y);
 	MainRect.NormalizeRect();
 	if (pElement->ArchSelected)
 		pDC->FrameRect(MainRect, &SelectBrush);
@@ -230,39 +245,45 @@ void COutPortArchWnd::DrawStatic(CDC *pDC)
 
 	CBrush GrayBrush(theApp.GrayColor);
 	CGdiObject* pOldBrush = pDC->SelectObject(&GrayBrush);
-	CRect FillRect(WorkPntArray[2].x, WorkPntArray[2].y, WorkPntArray[3].x, WorkPntArray[3].y);
+	CRect FillRect(WorkPntArray[idxRectFilled1].x, WorkPntArray[idxRectFilled1].y, WorkPntArray[idxRectFilled2].x, WorkPntArray[idxRectFilled2].y);
 	FillRect.NormalizeRect();
 	pDC->PatBlt(FillRect.left, FillRect.top, FillRect.Width(), FillRect.Height(), PATCOPY);
 	pDC->SelectObject(pOldBrush);
 
-	pDC->MoveTo(WorkPntArray[4].x, WorkPntArray[4].y);
-	pDC->LineTo(WorkPntArray[5].x, WorkPntArray[5].y);
+	pDC->MoveTo(WorkPntArray[idxVerticalLine1].x, WorkPntArray[idxVerticalLine1].y);
+	pDC->LineTo(WorkPntArray[idxVerticalLine2].x, WorkPntArray[idxVerticalLine2].y);
+
+	CRect ValuesRect(WorkPntArray[idxRectValues1].x, WorkPntArray[idxRectValues1].y, WorkPntArray[idxRectValues2].x, WorkPntArray[idxRectValues2].y);
+	pDC->FillSolidRect(ValuesRect.left, ValuesRect.top, ValuesRect.Width(), ValuesRect.Height(), RGB(254, 254, 254));
+
 
 	//Рисуем проводки
 	CFont DrawFont;
 	DrawFont.CreatePointFont(80, "Arial Cyr");
 	pOldFont = pDC->SelectObject(&DrawFont);
+	pDC->SetBkColor(theApp.GrayColor);
+	pDC->SetTextColor(theApp.DrawColor);
 	//Координаты точки: n*3+6
 	//Координаты начала вывода: n*3+7
 	//Координаты конца вывода: n*3+8
 	for (int n = 0; n < 8; n++) {
-		pDC->PatBlt(WorkPntArray[n * 3 + 6].x - 2, WorkPntArray[n * 3 + 6].y - 2, 5, 5, WHITENESS);
+		pDC->PatBlt(WorkPntArray[idxFirstPoint + n * 3 + 0].x - 2, WorkPntArray[idxFirstPoint + n * 3 + 0].y - 2, 5, 5, WHITENESS);
 		pDC->SelectObject(pTempPen);
-		pDC->MoveTo(WorkPntArray[n * 3 + 7].x, WorkPntArray[n * 3 + 7].y);
-		pDC->LineTo(WorkPntArray[n * 3 + 6].x, WorkPntArray[n * 3 + 6].y);
+		pDC->MoveTo(WorkPntArray[idxFirstPoint + n * 3 + 1].x, WorkPntArray[idxFirstPoint + n * 3 + 1].y);
+		pDC->LineTo(WorkPntArray[idxFirstPoint + n * 3 + 0].x, WorkPntArray[idxFirstPoint + n * 3 + 0].y);
 
 		//Рисуем крестик, если надо
 		if (!pElement->ConPin[n]) {
 			pDC->SelectObject(&BluePen);
-			pDC->MoveTo(WorkPntArray[n * 3 + 6].x - 2, WorkPntArray[n * 3 + 6].y - 2);
-			pDC->LineTo(WorkPntArray[n * 3 + 6].x + 3, WorkPntArray[n * 3 + 6].y + 3);
-			pDC->MoveTo(WorkPntArray[n * 3 + 6].x - 2, WorkPntArray[n * 3 + 6].y + 2);
-			pDC->LineTo(WorkPntArray[n * 3 + 6].x + 3, WorkPntArray[n * 3 + 6].y - 3);
+			pDC->MoveTo(WorkPntArray[idxFirstPoint + n * 3 + 0].x - 2, WorkPntArray[idxFirstPoint + n * 3 + 0].y - 2);
+			pDC->LineTo(WorkPntArray[idxFirstPoint + n * 3 + 0].x + 3, WorkPntArray[idxFirstPoint + n * 3 + 0].y + 3);
+			pDC->MoveTo(WorkPntArray[idxFirstPoint + n * 3 + 0].x - 2, WorkPntArray[idxFirstPoint + n * 3 + 0].y + 2);
+			pDC->LineTo(WorkPntArray[idxFirstPoint + n * 3 + 0].x + 3, WorkPntArray[idxFirstPoint + n * 3 + 0].y - 3);
 		}
 		else { //или палочку
 			pDC->SelectObject(pTempPen);
-			pDC->MoveTo(WorkPntArray[n * 3 + 6].x, WorkPntArray[n * 3 + 6].y);
-			pDC->LineTo(WorkPntArray[n * 3 + 8].x, WorkPntArray[n * 3 + 8].y);
+			pDC->MoveTo(WorkPntArray[idxFirstPoint + n * 3 + 0].x, WorkPntArray[idxFirstPoint + n * 3 + 0].y);
+			pDC->LineTo(WorkPntArray[idxFirstPoint + n * 3 + 2].x, WorkPntArray[idxFirstPoint + n * 3 + 2].y);
 		}
 	}
 	//Текст внутри порта
@@ -278,7 +299,7 @@ void COutPortArchWnd::DrawStatic(CDC *pDC)
 	Temp.Format("[%04Xh]", pElement->Addresses[0] & 0xFFFF);
 	pDC->DrawText(Temp, CRect(X, Y + 13, X + 36, Y + 2 * 13),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
-	Temp.Format("(     h)", pElement->Addresses[0] & 0xFFFF);
+	Temp.Format("(     h)");
 	pDC->DrawText(Temp, CRect(X, Y + 2 * 13, X + 35, Y + 3 * 13), DT_CENTER | DT_SINGLELINE | DT_TOP);
 
 	//Восстанавливаем контекст
@@ -313,52 +334,56 @@ DWORD COutputPort::GetPinState()
 	return Value;
 }
 
-
 void COutPortArchWnd::InitializePoints()
 {
 	int PntNumber = 0;
-	OrgPntArray.SetSize(40);
+	OrgPntArray.SetSize(42);
 	//Координаты основного прямоугольника: 0,1
-	OrgPntArray[PntNumber].x = 0; OrgPntArray[PntNumber].y = 0;
+	OrgPntArray[idxRectMain1].x = 0; OrgPntArray[idxRectMain1].y = 0;
 	PntNumber++;
-	OrgPntArray[PntNumber].x = 60 - 6; OrgPntArray[PntNumber].y = 125;
+	OrgPntArray[idxRectMain2].x = 60 - 6; OrgPntArray[idxRectMain2].y = 125;
 	PntNumber++;
 	//Координаты закрашенного прямоугольника: 2,3
-	OrgPntArray[PntNumber].x = 1; OrgPntArray[PntNumber].y = 1;
+	OrgPntArray[idxRectFilled1].x = 1; OrgPntArray[idxRectFilled1].y = 1;
 	PntNumber++;
-	OrgPntArray[PntNumber].x = 60 - 17; OrgPntArray[PntNumber].y = 125 - 1;
+	OrgPntArray[idxRectFilled2].x = 60 - 17; OrgPntArray[idxRectFilled2].y = 125 - 1;
 	PntNumber++;
-	//Координаты вертикальной линии: 4,5
-	OrgPntArray[PntNumber].x = 60 - 17; OrgPntArray[PntNumber].y = 0;
+	//Координаты белого прямоугольника: 4,5
+	OrgPntArray[idxRectValues1].x = 60-17+1; OrgPntArray[idxRectValues1].y = 1;
 	PntNumber++;
-	OrgPntArray[PntNumber].x = 60 - 17; OrgPntArray[PntNumber].y = 125;
+	OrgPntArray[idxRectValues2].x = 60 - 6-1; OrgPntArray[idxRectValues2].y = 125 - 1;
+	PntNumber++;
+	//Координаты вертикальной линии: 6,7
+	OrgPntArray[idxVerticalLine1].x = 60 - 17; OrgPntArray[idxVerticalLine1].y = 0;
+	PntNumber++;
+	OrgPntArray[idxVerticalLine2].x = 60 - 17; OrgPntArray[idxVerticalLine2].y = 125;
+	PntNumber++;
+	//Ширина и высота
+	OrgPntArray[idxWidth].x = 60;
+	OrgPntArray[idxHeight].y = 125;
 	PntNumber++;
 	//Координаты контактов
 	int n;
 	for (n = 0; n < 8; n++) {
-		//Координаты точки: n*3+6
-		OrgPntArray[PntNumber].x = 60 - 3;
-		OrgPntArray[PntNumber].y = 10 + n * 15;
+		//Координаты точки: n*3+8
+		OrgPntArray[idxFirstPoint + n * 3].x = 60 - 3;
+		OrgPntArray[idxFirstPoint + n * 3].y = 10 + n * 15;
 		PntNumber++;
-		//Координаты начала вывода: n*3+7
-		OrgPntArray[PntNumber].x = 60 - 3 - 3;
-		OrgPntArray[PntNumber].y = 10 + n * 15;
+		//Координаты начала вывода: n*3+9
+		OrgPntArray[idxFirstPoint + n * 3 + 1].x = 60 - 3 - 3;
+		OrgPntArray[idxFirstPoint + n * 3 + 1].y = 10 + n * 15;
 		PntNumber++;
-		//Координаты конца вывода: n*3+8
-		OrgPntArray[PntNumber].x = 60 - 3 + 3;
-		OrgPntArray[PntNumber].y = 10 + n * 15;
+		//Координаты конца вывода: n*3+10
+		OrgPntArray[idxFirstPoint + n * 3 + 2].x = 60 - 3 + 3;
+		OrgPntArray[idxFirstPoint + n * 3 + 2].y = 10 + n * 15;
 		PntNumber++;
 	}
-	//Координаты надписей - номеров битов: n+30
+	//Координаты надписей - номеров битов: n+32
 	for (n = 0; n < 8; n++) {
-		OrgPntArray[PntNumber].x = 60 - 12;
-		OrgPntArray[PntNumber].y = 11 + n * 15;
+		OrgPntArray[idxFirstValue + n].x = 60 - 12;
+		OrgPntArray[idxFirstValue + n].y = 11 + n * 15;
 		PntNumber++;
 	}
-	//Ширина и высота
-	OrgPntArray[PntNumber].x = 60;
-	OrgPntArray[PntNumber].y = 125;
-	PntNumber++;
 
 	//Angle=90;
 	SetAngle(Angle);
@@ -377,8 +402,8 @@ void COutPortArchWnd::InitializePoints()
 	Size.cy = MaxY - MinY;
 
 	for (n = 0; n < 8; n++) {
-		pElement->ConPoint[n].x = WorkPntArray[n * 3 + 6].x;
-		pElement->ConPoint[n].y = WorkPntArray[n * 3 + 6].y;
+		pElement->ConPoint[n].x = WorkPntArray[idxFirstPoint + n * 3].x;
+		pElement->ConPoint[n].y = WorkPntArray[idxFirstPoint + n * 3].y;
 	}
 }
 

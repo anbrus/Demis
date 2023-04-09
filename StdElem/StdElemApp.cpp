@@ -28,7 +28,7 @@ BOOL CStdElemApp::InitInstance()
 	GrayColor = RGB(0xe0, 0xe0, 0xe0);
 	BlackColor = RGB(0, 0, 0);
 	DrawColor = RGB(0, 0, 0);
-	SelectColor = GetSysColor(COLOR_HIGHLIGHT);
+	SelectColor = RGB(0xFF, 0x6D, 0x00);//GetSysColor(COLOR_HIGHLIGHT);
 	OnColor = RGB(255, 0, 0);
 	BkBrush.CreateSolidBrush(BkColor);
 	DrawPen.CreatePen(PS_SOLID, 0, DrawColor);
@@ -134,6 +134,12 @@ BOOL CStdElemApp::InitInstance()
 
 	OrigDC.SelectObject(pOldBitmap);
 
+	CString pathHelp = m_pszHelpFilePath;
+	pathHelp.Replace("StdElem.CHM", "Demis.chm");
+	free((void*)m_pszHelpFilePath);
+	m_pszHelpFilePath = _tcsdup(pathHelp);
+
+
 	return CWinApp::InitInstance();
 }
 
@@ -142,9 +148,10 @@ int CStdElemApp::ExitInstance()
 	return CWinApp::ExitInstance();
 }
 
-CStdElemApp::CStdElemApp():
-	Vi54Port(TRUE, -1)
+CStdElemApp::CStdElemApp()
 {
+	EnableHtmlHelp();
+
 	m_ElementsCount = 13;
 
 	CString CurClsId("{6B4C02AF-DC58-4935-B438-552DEBB72761}");

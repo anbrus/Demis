@@ -24,6 +24,7 @@ HTML\Project.htm
 HTML\Text_Editor.htm
 HTML\Developing_Program.htm
 HTML\Working_With_Demis.htm
+HTML\Realtime.htm
 
 [ALIAS]
 HIDR_ARCHTYPE=HTML\Graph_Editor.htm
@@ -34,6 +35,7 @@ HIDR_DUMPVIEW=HTML\Debugger.htm
 HIDR_PRJTYPE_ADD=HTML\Project_Settings.htm
 HIDR_PRJTYPE=HTML\Project.htm
 HIDR_REGSVIEW=HTML\Debugger.htm
+HIDR_REALTIME=HTML\Realtime.htm
 
 [MAP]
 #include Demis.hm

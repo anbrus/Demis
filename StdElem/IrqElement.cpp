@@ -5,6 +5,8 @@
 #include "StdElemApp.h"
 #include "utils.h"
 
+#include <VersionHelpers.h>
+
 BEGIN_MESSAGE_MAP(CIrqArchWnd, CElementWnd)
 	ON_WM_CREATE()
 	ON_COMMAND(ID_SETTINGS, OnSettings)
@@ -22,9 +24,6 @@ CIrqArchWnd::~CIrqArchWnd() {
 void CIrqArchWnd::DrawStatic(CDC* pDC) {
 	IrqElement* pIrqElement = reinterpret_cast<IrqElement*>(pElement);
 
-	CBrush grayBrush;
-	grayBrush.CreateSolidBrush(theApp.GrayColor);
-
 	CGdiObject* pOldPen, * pOldFont;
 	CPen* pTempPen;
 	if (pElement->ArchSelected)
@@ -36,17 +35,11 @@ void CIrqArchWnd::DrawStatic(CDC* pDC) {
 	DrawFont.CreatePointFont(80, "Arial Cyr");
 	pOldFont = pDC->SelectObject(&DrawFont);
 	pDC->SetTextColor(theApp.DrawColor);
-	pDC->SetBkColor(theApp.GrayColor);
+	pDC->SetBkColor(theApp.BkColor);
 
-	CGdiObject* pOldBrush = pDC->SelectObject(&grayBrush);
-	pDC->Rectangle(6 + 10, 0, Size.cx, Size.cy);
-	pOldBrush = pDC->SelectObject(&theApp.BkBrush);
-	pDC->Rectangle(6, 0, 6 + 11, Size.cy);
+	CGdiObject* pOldBrush = pDC->SelectObject(&theApp.BkBrush);
+	pDC->Rectangle(6 , 0, Size.cx, Size.cy);
 	pDC->SelectObject(pOldBrush);
-
-	std::string text = std::format("INT {:02X}h", pIrqElement->irqNumber);
-	pDC->DrawText(text.c_str(), CRect(6 + 15 + 1, 2, Size.cx - 1, Size.cy - 1),
-		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
 	CPen BluePen(PS_SOLID, 0, RGB(0, 0, 255));
 	for (int n = 0; n < pElement->PointCount; n++) {
@@ -94,7 +87,12 @@ void CIrqArchWnd::DrawDynamic(CDC* pDC) {
 		pDC->SetTextColor(theApp.OnColor);
 	else
 		pDC->SetTextColor(theApp.DrawColor);
-	pDC->DrawText("a", CRect(9, 1, 9 + 10, Size.cy-1),
+	std::string text;
+	if (pIrqElement->irqNumber == 2)
+		text = "NMI";
+	else
+		text = std::format("INT {:02X}h", pIrqElement->irqNumber);
+	pDC->DrawText(text.c_str(), CRect(9+2, 1 + 1, Size.cx-1, Size.cy - 1),
 		DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 
 	pDC->SelectObject(pOldFont);
@@ -206,7 +204,8 @@ BOOL IrqElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->CreateEx(WS_EX_LAYERED, ClassName, "IRQ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "IRQ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
 
 	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);

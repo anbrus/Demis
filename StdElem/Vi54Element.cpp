@@ -6,6 +6,14 @@
 #include "StdElemApp.h"
 #include "utils.h"
 
+#include "Vi54IoPort.h"
+
+#include <VersionHelpers.h>
+
+Vi54IoPort CVi54Element::Vi54Port(TRUE, -1);
+std::shared_ptr<CElement> CVi54Element::pVi54Router = nullptr;
+CElement* CVi54Element::pCounter[3] = { nullptr, nullptr, nullptr };
+
 BEGIN_MESSAGE_MAP(CVi54ArchWnd, CElementWnd)
 	ON_WM_CREATE()
 	ON_COMMAND(ID_SETTINGS, OnSettings)
@@ -22,7 +30,7 @@ void CVi54ArchWnd::updateSize() {
 	CVi54Element* pVi54Element = reinterpret_cast<CVi54Element*>(pElement);
 
 	Size.cx = 72;
-	Size.cy = 52 + (pVi54Element->freq==0 ? 15 : 0);
+	Size.cy = 52 + (pVi54Element->isFixedFreq ? 0 : 15);
 
 	if (m_hWnd) {
 		WINDOWPLACEMENT Pls;
@@ -53,7 +61,7 @@ void CVi54ArchWnd::DrawStatic(CDC* pDC) {
 	CGdiObject* pOldBrush = pDC->SelectObject(&grayBrush);
 	pDC->Rectangle(6, 0, Size.cx-6, 37+1);
 	pOldBrush = pDC->SelectObject(&theApp.BkBrush);
-	if (pVi54Element->freq == 0) {
+	if (!pVi54Element->isFixedFreq) {
 		pDC->Rectangle(6, 37, Size.cx - 6, 37 + 15 + 1);
 	}
 	else {
@@ -62,7 +70,7 @@ void CVi54ArchWnd::DrawStatic(CDC* pDC) {
 	pDC->MoveTo(Size.cx/2, 37);
 	pDC->LineTo(Size.cx / 2, 37+15);
 
-	if (pVi54Element->freq == 0) {
+	if (!pVi54Element->isFixedFreq) {
 		pDC->Rectangle(6, 52, Size.cx - 6, 52 + 15);
 	}
 	pDC->SelectObject(pOldBrush);
@@ -70,7 +78,11 @@ void CVi54ArchWnd::DrawStatic(CDC* pDC) {
 	pDC->DrawText("ВИ54", CRect(7, 7, Size.cx - 7, 7+15),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 	CString addr;
-	addr.Format("[%04Xh]", theApp.Vi54Port.Addresses[0] + pVi54Element->indexTimer);
+	if (pVi54Element->indexTimer >= 0)
+		addr.Format("[%04Xh]", CVi54Element::Vi54Port.Addresses[0] + pVi54Element->indexTimer);
+	else
+		addr = "[----]";
+
 	pDC->DrawText(addr, CRect(7, 19, Size.cx - 7, 19+15),
 		DT_CENTER | DT_SINGLELINE | DT_VCENTER);
 
@@ -115,7 +127,6 @@ void CVi54ArchWnd::DrawStatic(CDC* pDC) {
 
 void CVi54ArchWnd::DrawDynamic(CDC* pDC) {
 	CVi54Element* pVi54Element = reinterpret_cast<CVi54Element*>(pElement);
-	Vi54Counter& counter = theApp.Vi54Port.Vi54.GetCounter(pVi54Element->indexTimer);
 
 	CFont DrawFont;
 	DrawFont.CreatePointFont(80, "Arial Cyr");
@@ -137,7 +148,7 @@ void CVi54ArchWnd::DrawDynamic(CDC* pDC) {
 	pDC->DrawText("Out", CRect(Size.cx / 2, 37 + 1, Size.cx - 9, 52 - 2),
 		DT_RIGHT | DT_SINGLELINE | DT_VCENTER);
 
-	if (pVi54Element->freq == 0) {
+	if (!pVi54Element->isFixedFreq) {
 		if (pinState & 4)
 			pDC->SetTextColor(theApp.OnColor);
 		else
@@ -188,7 +199,15 @@ void CVi54ArchWnd::OnSettings() {
 
 CVi54Element::CVi54Element(BOOL ArchMode, int id) : CElementBase(ArchMode, id) {
 	IdIndex = 11;
-	indexTimer = 0;
+	indexTimer = -1;
+
+	for (int n = 0; n < 3; n++) {
+		if (pCounter[n] == nullptr) {
+			indexTimer = n;
+			pCounter[indexTimer] = this;
+			break;
+		}
+	}
 
 	pArchElemWnd = new CVi54ArchWnd(this);
 
@@ -199,10 +218,15 @@ CVi54Element::CVi54Element(BOOL ArchMode, int id) : CElementBase(ArchMode, id) {
 }
 
 CVi54Element::~CVi54Element() {
+	for (int n = 0; n < 3; n++) {
+		if (pCounter[n] == this) {
+			pCounter[n] = nullptr;
+		}
+	}
 }
 
 void CVi54Element::updatePoints() {
-	PointCount = 2 + (freq>0 ? 0 : 1);
+	PointCount = 2 + (isFixedFreq ? 0 : 1);
 
 	ConPoint[0].x = 2; ConPoint[0].y = 44;
 	ConPin[0] = FALSE; PinType[0] = PT_INPUT;
@@ -210,7 +234,7 @@ void CVi54Element::updatePoints() {
 	ConPoint[1].x = 69; ConPoint[1].y = 44;
 	ConPin[1] = FALSE; PinType[1] = PT_OUTPUT;
 
-	if (freq == 0) {
+	if (!isFixedFreq) {
 		ConPoint[2].x = 2; ConPoint[2].y = 59;
 		ConPin[2] = FALSE; PinType[2] = PT_INPUT;
 	}
@@ -222,7 +246,8 @@ BOOL CVi54Element::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->CreateEx(WS_EX_LAYERED, ClassName, "Таймер", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Таймер", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
 
 	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
@@ -238,9 +263,11 @@ void CVi54Element::UpdateTipText()
 }
 
 BOOL CVi54Element::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel) {
+	counter = nullptr;
+	this->pTickCounter = pTickCounter;
 	if (bEditMode) {
-		if (theApp.pVi54Router.get() == this) {
-			theApp.pVi54Router.reset();
+		if (pVi54Router.get() == this) {
+			pVi54Router.reset();
 		}
 		if (idInstructionListener >= 0) {
 			theApp.pHostInterface->DeleteInstructionListener(idInstructionListener);
@@ -248,12 +275,14 @@ BOOL CVi54Element::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, 
 		}
 	}
 	else {
-		if (!theApp.pVi54Router) {
-			theApp.pVi54Router = shared_from_this();
+		if (indexTimer >= 0 && indexTimer<=2) {
+			if (!pVi54Router) {
+				pVi54Router = shared_from_this();
+			}
+			counter = &Vi54Port.Vi54.GetCounter(indexTimer);
 		}
 
-		counter = &theApp.Vi54Port.Vi54.GetCounter(indexTimer);
-		if (freq > 0) {
+		if (isFixedFreq) {
 			int ticksPerClk = theApp.pHostInterface->TaktFreq / freq;
 			if (ticksPerClk < 12) {
 				idInstructionListener = theApp.pHostInterface->AddInstructionListener([this](int64_t ticks) { OnInstructionListener(ticks);  });
@@ -271,20 +300,28 @@ BOOL CVi54Element::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, 
 		}
 	}
 
-	theApp.Vi54Port.Vi54.Reset();
+	Vi54Port.Vi54.Reset();
 	PinState = 0;
 
 	return CElementBase::Reset(bEditMode, pTickCounter, TaktFreq, FreePinLevel);
 }
 
 void CVi54Element::updateClk() {
-	LARGE_INTEGER li;
-	::QueryPerformanceCounter(&li);
-	int64_t nanosWallClock = 1000000000L * (li.QuadPart - timeStart) / perfFreq;
+	if (!counter) return;
+
+	int64_t nanosClock;
+	if (isRealtime) {
+		LARGE_INTEGER li;
+		::QueryPerformanceCounter(&li);
+		nanosClock = 1000000000L * (li.QuadPart - timeStart) / perfFreq;
+	}
+	else {
+		nanosClock = 1000000000L * (*pTickCounter) / theApp.pHostInterface->TaktFreq;
+	}
 	bool outPrev = counter->GetOut();
 	bool outOld = outPrev;
 	bool outNew = outPrev;
-	for (int64_t nanos = nanosPrevClk + nanosFreq; nanos < nanosWallClock; nanos += nanosFreq) {
+	for (int64_t nanos = nanosPrevClk + nanosFreq; nanos < nanosClock; nanos += nanosFreq) {
 		counter->SetClk(true);
 		outNew = counter->GetOut();
 		if (outNew != outOld) {
@@ -313,13 +350,26 @@ void CVi54Element::OnSettings() {
 	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 
 	Vi54SettingsDlg Dlg;
+	for (int n = 0; n < 3; n++) {
+		if (pCounter[n] == nullptr || pCounter[n] == this)
+			Dlg.validCounterNumbers.insert(n);
+	}
+	Dlg.address = static_cast<uint16_t>(Vi54Port.Addresses[0]);
 	Dlg.indexTimer = indexTimer;
-	Dlg.SetBaseAddress(static_cast<uint16_t>(theApp.Vi54Port.Addresses[0]));
-	Dlg.SetFreq(freq);
+	Dlg.freq = freq;
+	Dlg.isFixedFreq = isFixedFreq;
 	if (Dlg.DoModal() == IDOK) {
 		indexTimer = Dlg.indexTimer;
-		freq = Dlg.GetFreq();
-		theApp.Vi54Port.Addresses[0] = Dlg.GetBaseAddress();
+		freq = Dlg.freq;
+		isFixedFreq = Dlg.isFixedFreq;
+		Vi54Port.Addresses[0] = Dlg.address;
+
+		for (int n = 0; n < 3; n++) {
+			if (pCounter[n] == this)
+				pCounter[n] = nullptr;
+		}
+		pCounter[indexTimer] = this;
+
 		ModifiedFlag = TRUE;
 
 		pArchElemWnd->GetParent()->SendMessage(WMU_ARCHELEM_DISCONNECT, 0, id);
@@ -335,9 +385,11 @@ void CVi54Element::OnSettings() {
 }
 
 void CVi54Element::SetPortData(DWORD Address, DWORD Data) {
-	theApp.Vi54Port.Vi54.Write(Address - theApp.Vi54Port.Addresses[0], static_cast<uint8_t>(Data));
+	if (indexTimer < 0) return;
 
-	Vi54Counter& counter = theApp.Vi54Port.Vi54.GetCounter(indexTimer);
+	Vi54Port.Vi54.Write(Address - Vi54Port.Addresses[0], static_cast<uint8_t>(Data));
+
+	Vi54Counter& counter = Vi54Port.Vi54.GetCounter(indexTimer);
 	bool outNew = counter.GetOut();
 	bool outOld = (PinState & 2) != 0;
 	if (outNew != outOld) {
@@ -348,7 +400,9 @@ void CVi54Element::SetPortData(DWORD Address, DWORD Data) {
 }
 
 DWORD CVi54Element::GetPortData(DWORD Address) {
-	return theApp.Vi54Port.Vi54.Read(Address - theApp.Vi54Port.Addresses[0]);
+	if (indexTimer < 0) return 0;
+
+	return Vi54Port.Vi54.Read(Address - Vi54Port.Addresses[0]);
 }
 
 BOOL CVi54Element::Save(HANDLE hFile) {
@@ -357,9 +411,10 @@ BOOL CVi54Element::Save(HANDLE hFile) {
 	DWORD Version = 0x00010000;
 	File.Write(&Version, 4);
 
-	File.Write(&theApp.Vi54Port.Addresses[0], 4);
+	File.Write(&Vi54Port.Addresses[0], 4);
 	File.Write(&indexTimer, 4);
 	File.Write(&freq, 4);
+	File.Write(&isFixedFreq, 4);
 
 	return CElementBase::Save(hFile);
 }
@@ -374,40 +429,51 @@ BOOL CVi54Element::Load(HANDLE hFile) {
 		return FALSE;
 	}
 
-	File.Read(&theApp.Vi54Port.Addresses[0], 4);
+	File.Read(&Vi54Port.Addresses[0], 4);
 	File.Read(&indexTimer, 4);
+	if (indexTimer < 0 || indexTimer>2) indexTimer = -1;
 	File.Read(&freq, 4);
+	File.Read(&isFixedFreq, 4);
 
 	updatePoints();
 	reinterpret_cast<CVi54ArchWnd*>(pArchElemWnd)->updateSize();
+
+	for (int n = 0; n < 3; n++) {
+		if (pCounter[n] == this)
+			pCounter[n]=nullptr;
+	}
+	if(indexTimer>=0)
+		pCounter[indexTimer] = this;
 
 	return CElementBase::Load(hFile);
 }
 
 std::vector<DWORD> CVi54Element::GetAddresses() {
-	if (!theApp.pVi54Router) {
-		theApp.pVi54Router = shared_from_this();
+	if (indexTimer < 0) return std::vector<DWORD>();
+
+	if (!pVi54Router) {
+		pVi54Router = shared_from_this();
 	}
 
 	std::vector<DWORD> res;
-	res.push_back(theApp.Vi54Port.Addresses[0] + indexTimer);
-	if (theApp.pVi54Router.get() == this)
-		res.push_back(theApp.Vi54Port.Addresses[0]+3);
+	res.push_back(Vi54Port.Addresses[0] + indexTimer);
+	if (pVi54Router.get() == this)
+		res.push_back(Vi54Port.Addresses[0]+3);
 
 	return res;
 }
 
 void CVi54Element::SetPinState(DWORD NewState) {
-	Vi54Counter& counter = theApp.Vi54Port.Vi54.GetCounter(indexTimer);
+	if (!counter) return;
 
 	bool gate = (NewState & 1) > 0;
-	counter.SetGate(gate);
-	if (freq == 0) {
+	counter->SetGate(gate);
+	if (!isFixedFreq) {
 		bool clk = (NewState & 4) > 0;
-		counter.SetClk(clk);
+		counter->SetClk(clk);
 	}
 
-	bool outNew = counter.GetOut();
+	bool outNew = counter->GetOut();
 	bool outOld = (PinState & 2) != 0;
 	PinState = NewState & (0xffffffff ^ 2) | (outNew ? 2 : 0);
 	if (outNew != outOld) {

@@ -137,9 +137,11 @@ DWORD PASCAL StepInstruction(BOOL StepIn)
 DWORD HandleIrq()
 {
 	int VectorNumber;
-	for (VectorNumber = 0; VectorNumber < 40; VectorNumber++) {
-		if ((EmulatorData.IntRequest >> VectorNumber) & 1) break;
+	for (VectorNumber = 0; VectorNumber < 256; VectorNumber++) {
+		if ((EmulatorData.IntRequest[VectorNumber/64] >> (VectorNumber%64)) & 1) break;
 	}
+	if (VectorNumber == 256) return AddIP(0);
+
 	bool isHlt = *reinterpret_cast<uint8_t*>(VirtToReal(EmulatorData.Reg.CS, EmulatorData.Reg.IP)) == 0xf4;
 	if (isHlt) {
 		EmulatorData.Reg.IP += 1;
@@ -151,7 +153,7 @@ DWORD HandleIrq()
 	EmulatorData.Reg.Flag.IF = 0; EmulatorData.Reg.Flag.TF = 0; EmulatorData.Reg.SP -= 6;
 	ReadVirtMem(0, VectorNumber * 4, &EmulatorData.Reg.IP, 1);
 	ReadVirtMem(0, VectorNumber * 4 + 2, &EmulatorData.Reg.CS, 1);
-	EmulatorData.IntRequest ^= static_cast<uint64_t>(1) << VectorNumber;
+	EmulatorData.IntRequest[VectorNumber / 64] ^= static_cast<uint64_t>(1) << (VectorNumber % 64);
 
 	return AddIP(0);
 }
@@ -169,7 +171,13 @@ DWORD WINAPI RunToBreakPoint(LPVOID)  //Исполнять до точки останова
 	while ((Status == 0) && EmulatorData.RunProg) { //Пока нет ошибок и не прервали
 		Status = EmulateCurrentInstr();
 		if (Status) break;
-		if (EmulatorData.IntRequest&&EmulatorData.Reg.Flag.IF) Status = HandleIrq();
+		if (EmulatorData.IntRequest[0] & 0x02 || (
+			EmulatorData.IntRequest[0]
+			|| EmulatorData.IntRequest[1]
+			|| EmulatorData.IntRequest[2]
+			|| EmulatorData.IntRequest[3])
+			&& EmulatorData.Reg.Flag.IF
+		) Status = HandleIrq();
 
 		DelayToTaktFreq();
 	}
@@ -230,7 +238,9 @@ struct _EmulatorData* PASCAL InitEmulator(HostInterface *pHostData)
 	//Обновляем указатель на данные интерфейса
 	pHData = pHostData;
 	//Инициализация прерываний
-	EmulatorData.IntRequest = 0;
+	for(int n=0; n<EmulatorData.IntRequest.size(); n++)
+		EmulatorData.IntRequest[n] = 0;
+
 	//Инициализируем регистры
 	memset(&EmulatorData.Reg, 0, sizeof(EmulatorData.Reg));
 	EmulatorData.Reg.CS = 0xFFFF;

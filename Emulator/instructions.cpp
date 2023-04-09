@@ -873,7 +873,12 @@ uint32_t Void(uint8_t* pCOP)  //Неисполняемые инструкции
 
 uint32_t Halt(uint8_t* pCOP)
 {
-	if (EmulatorData.IntRequest && EmulatorData.Reg.Flag.IF)
+	if (EmulatorData.IntRequest[0] & 0x02 || (
+		EmulatorData.IntRequest[0]
+		|| EmulatorData.IntRequest[1]
+		|| EmulatorData.IntRequest[2]
+		|| EmulatorData.IntRequest[3]) && EmulatorData.Reg.Flag.IF
+	)
 		return AddIP(1);
 
 	return AddIP(0);

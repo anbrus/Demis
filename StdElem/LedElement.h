@@ -16,7 +16,6 @@ class CLedArchWnd : public CElementWnd
 {
 public:
 	virtual void Draw(CDC* pDC);
-	void DrawValue(CDC* pDC);
 	CLedArchWnd(CElementBase* pElement);
 	virtual ~CLedArchWnd();
 	virtual void Redraw(int64_t ticks) override;
@@ -26,8 +25,14 @@ protected:
 	afx_msg void OnActiveHigh();
 	afx_msg void OnActiveLow();
 	afx_msg void OnSelectColor();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
   DECLARE_MESSAGE_MAP()
+private:
+	CDC MemoryDC;
+
+	void DrawStatic(CDC* pDC);
+	void DrawDynamic(CDC* pDC);
 };
 
 
@@ -35,7 +40,6 @@ class CLedConstrWnd : public CElementWnd
 {
 public:
 	virtual void Draw(CDC* pDC);
-	void DrawValue(CDC* pDC);
 	CLedConstrWnd(CElementBase* pElement);
 	virtual ~CLedConstrWnd();
 	virtual void Redraw(int64_t ticks) override;
@@ -45,8 +49,14 @@ protected:
 	afx_msg void OnActiveHigh();
 	afx_msg void OnActiveLow();
 	afx_msg void OnSelectColor();
+	afx_msg int OnCreate(LPCREATESTRUCT lpCreateStruct);
 	//}}AFX_MSG
   DECLARE_MESSAGE_MAP()
+private:
+	CDC MemoryDC;
+
+	void DrawStatic(CDC* pDC);
+	void DrawDynamic(CDC* pDC);
 };
 
 class CLedElement : public CElementBase  
@@ -67,6 +77,12 @@ public:
 	BOOL HighLighted;
 	void OnActiveHigh();
 	void OnActiveLow();
+
+private:
+	std::mutex mutexDraw;
+
+	friend class CLedArchWnd;
+	friend class CLedConstrWnd;
 };
 
 

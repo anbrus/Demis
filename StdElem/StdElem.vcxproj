@@ -437,9 +437,11 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <ClCompile Include="utils.cpp" />
     <ClCompile Include="vi54.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="vi54counter.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">NotUsing</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release MinSize|Win32'">NotUsing</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Vi54Element.cpp" />
     <ClCompile Include="Vi54IoPort.cpp" />

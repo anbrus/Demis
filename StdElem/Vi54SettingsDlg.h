@@ -2,6 +2,8 @@
 
 #include "resource.h"
 
+#include <unordered_set>
+
 class Vi54SettingsDlg : public CDialog
 {
 public:
@@ -9,21 +11,14 @@ public:
 
 	enum { IDD = IDD_VI54_SETTINGS_DLG };
 
+	int address=0x40;
 	int indexTimer=0;
-
-	void SetBaseAddress(uint16_t value);
-	uint16_t GetBaseAddress();
-
-	void SetFreq(int value);
-	int GetFreq();
+	bool isFixedFreq = true;
+	int freq = 0;
+	std::unordered_set<int> validCounterNumbers;
 
 protected:
-	int freq = 0;
-	uint16_t intBaseAddress = 0;
-	CString	strAddressBaseTimer = "";
-
-	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
+	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
 	DECLARE_MESSAGE_MAP()
-
 };
 

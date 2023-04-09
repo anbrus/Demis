@@ -57,6 +57,7 @@ void CPrjCfgDlg::DoDataExchange(CDataExchange* pDX)
 BEGIN_MESSAGE_MAP(CPrjCfgDlg, CDialog)
 	//{{AFX_MSG_MAP(CPrjCfgDlg)
 	ON_EN_CHANGE(IDC_ROMSIZE, OnChangeRomSize)
+	ON_COMMAND(ID_HELP, OnHelp)
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -76,4 +77,8 @@ void CPrjCfgDlg::OnOK()
 {
 	if (m_sRomSize.GetLength() != 0) CDialog::OnOK();
 	else MessageBeep(-1);
+}
+
+void CPrjCfgDlg::OnHelp() {
+	AfxGetApp()->HtmlHelp((DWORD_PTR)"HTML/Project.htm", HH_DISPLAY_TOPIC);
 }

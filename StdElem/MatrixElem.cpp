@@ -305,11 +305,12 @@ void CMatrixArchWnd::DrawDynamic(CDC *pDC, BOOL Redraw)
 		for (y = 0; y < cy; y++) {
 			if (pCol[y]) {
 				float lum = luminance2(pCol[y], *pMatrixElement->pTickCounter, pMatrixElement->ticksAfterLight);
-				COLORREF c = RGB(round(255.0 * lum), 0, 0);
+				int v = round(255.0 * lum);
+				COLORREF c = RGB(255, 255-v, 255-v);
 				pDC->FillSolidRect(CRect(24 + x * 15, 22 + y * 15, 38 + x * 15, 36 + y * 15), c);
 			}
 			else {
-				pDC->FillSolidRect(CRect(24 + x * 15, 22 + y * 15, 38 + x * 15, 36 + y * 15), theApp.BlackColor);
+				pDC->FillSolidRect(CRect(24 + x * 15, 22 + y * 15, 38 + x * 15, 36 + y * 15), theApp.BkColor);
 			}
 		}
 	}
@@ -325,11 +326,12 @@ void CMatrixConstrWnd::DrawDynamic(CDC *pDC, BOOL Redraw)
 		for (y = 0, GrY = 0; y < pMatrixElement->MatrixSize.cy; y++, GrY += SqrSize) {
 			if (!pMatrixElement->EditMode) {
 				float lum = luminance2(pCol[y], *pMatrixElement->pTickCounter, pMatrixElement->ticksAfterLight);
-				COLORREF c = RGB(round(255.0 * lum), 0, 0);
+				int v = round(255.0 * lum);
+				COLORREF c = RGB(255, 255-v, 255-v);
 				pDC->FillSolidRect(CRect(GrX + 1, GrY + 1, GrX + SqrSize, GrY + SqrSize), c);
 			}
 			else {
-				pDC->FillSolidRect(CRect(GrX + 1, GrY + 1, GrX + SqrSize, GrY + SqrSize), RGB(0, 0, 0));
+				pDC->FillSolidRect(CRect(GrX + 1, GrY + 1, GrX + SqrSize, GrY + SqrSize), RGB(255, 255, 255));
 			}
 		}
 	}

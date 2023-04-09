@@ -1,10 +1,10 @@
 .386
 ;Задайте объём ПЗУ в байтах
-RomSize    EQU   8192
+RomSize    EQU   16384
 
 IntTable   SEGMENT use16 AT 0
 ;Здесь размещаются адреса обработчиков прерываний
-           org   32*4
+           org   20h*4        ; По этому смещению находится адрес обработчика прерывания 20h
 Int32HandlerPtrOffs dw ?
 Int32HandlerPtrSeg  dw ?
 IntTable   ENDS
@@ -36,8 +36,11 @@ include    utils.asm
 include    mode0.asm
 include    mode1.asm
 include    mode2.asm
+include    mode3.asm
+include    mode4.asm
+include    mode5.asm
 
-Int32Handler     PROC FAR
+Int32Handler     PROC FAR    ; Обработчик прерывания 20h
            push  ax
            push  ds
            
@@ -51,6 +54,8 @@ Int32Handler     PROC FAR
 Int32Handler     ENDP
 
 InitFlash  PROC  NEAR
+           ; Программируем таймер 1: режим 2, коэффициент деления 10
+           ; Режим 2 выглядит так: ----_----_----_- ...
            mov   al,  74h
            out   43h, al
            mov   al,  10
@@ -62,9 +67,12 @@ InitFlash  PROC  NEAR
 InitFlash  ENDP
 
 InitCounter      PROC  NEAR
+           ; Обнуляем счётчик прерываний
            xor   ax, ax
            mov   IntCounter, ax
            
+           ; Программируем таймер 2: режим 2, коэффициент деления 10
+           ; Режим 2 выглядит так: ----_----_----_- ...
            mov   al,  0B4h
            out   43h, al
            mov   al,  10
@@ -72,6 +80,7 @@ InitCounter      PROC  NEAR
            mov   al,  0
            out   42h, al
            
+           ; Установка обработчика прерывания
            push  ds
            mov   ax, IntTable
            mov   ds, ax
@@ -84,6 +93,7 @@ InitCounter      PROC  NEAR
            ret
 InitCounter      ENDP
 
+           ; Выводит содержимое счётчика прерываний в порт 20h
 ShowCounter      PROC NEAR
            mov   ax,  IntCounter
            out   20h, al
@@ -99,23 +109,28 @@ Start:
            lea   sp, StkTop
 ;Здесь размещается код программы
            
-           call  InitFlash
-           call  InitCounter
+           call  InitFlash   ; Инициализация таймера мигающего светодиода
+           call  InitCounter ; Инициализация таймера со счётчиком прерываний
            sti
            
-           ;call  TestMode0
-           ;call  TestMode1
-           ;call  TestMode2
+           ; Тесты режимов таймера согласно осциллограмм из документации
+           ; Смотри 8254.pdf из папки проекта
+           call  TestMode0
+           call  TestMode1
+           call  TestMode2
+           call  TestMode3
+           call  TestMode4
+           call  TestMode5
       
-           int   20h     
+           int   20h         ; Проверка программного вызова прерываний
 MLoop:
-           call  ShowCounter
-           hlt
-           jmp   MLoop
+           call  ShowCounter ; Обновление порта вывода счётчика прерываний
+           hlt               ; Ждём прерывания
+           jmp   MLoop       ; Бесконечный цикл
 
 ;В следующей строке необходимо указать смещение стартовой точки
            org   RomSize-16-((InitDataEnd-InitDataStart+15) AND 0FFF0h)
            ASSUME cs:NOTHING
            jmp   Far Ptr Start
 Code       ENDS
-END		Start
+END	   Start

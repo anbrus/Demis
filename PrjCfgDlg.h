@@ -12,13 +12,13 @@
 
 class CPrjCfgDlg : public CDialog
 {
-// Construction
+	// Construction
 public:
 	int m_RomSize;
 	CPrjCfgDlg(CWnd* pParent = NULL);   // standard constructor
 
-// Dialog Data
-	//{{AFX_DATA(CPrjCfgDlg)
+	// Dialog Data
+		//{{AFX_DATA(CPrjCfgDlg)
 	enum { IDD = IDD_EMULATORCFG };
 	CString	m_RamSize;
 	CString	m_RamStart;
@@ -32,12 +32,13 @@ public:
 // Overrides
 	// ClassWizard generated virtual function overrides
 	//{{AFX_VIRTUAL(CPrjCfgDlg)
-	protected:
+protected:
 	virtual void DoDataExchange(CDataExchange* pDX);    // DDX/DDV support
-  virtual void OnOK( );
+	virtual void OnOK();
 	//}}AFX_VIRTUAL
+	void OnHelp();
 
-// Implementation
+	// Implementation
 protected:
 
 	// Generated message map functions
