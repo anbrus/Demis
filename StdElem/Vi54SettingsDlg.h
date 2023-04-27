@@ -19,6 +19,10 @@ public:
 
 protected:
 	virtual void DoDataExchange(CDataExchange* pDX) override;    // DDX/DDV support
-	DECLARE_MESSAGE_MAP()
+	DECLARE_MESSAGE_MAP();
+
+	afx_msg void OnClkChanged();
+private:
+	void updateControls();
 };
 

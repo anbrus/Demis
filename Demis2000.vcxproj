@@ -80,6 +80,7 @@
       <SubSystem>Windows</SubSystem>
       <AdditionalDependencies>Version.lib</AdditionalDependencies>
       <Profile>true</Profile>
+      <AdditionalManifestDependencies>%(AdditionalManifestDependencies)</AdditionalManifestDependencies>
     </Link>
     <Midl>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -92,6 +93,11 @@
       <PreprocessorDefinitions>_AFXDLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0419</Culture>
     </ResourceCompile>
+    <Manifest>
+      <EnableDpiAwareness>false</EnableDpiAwareness>
+      <AdditionalManifestFiles>
+      </AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -229,13 +235,7 @@
     <Library Include="htmlhelp.lib" />
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="res\Demis2000.manifest" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
-    <Xml Include="res\manifest.xml" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="Assm\Assm.vcxproj">
@@ -254,6 +254,9 @@
       <Project>{eb78a123-52c2-40c7-bbba-fe8cbbce1a59}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="res\Demis2000.manifest" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

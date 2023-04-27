@@ -314,7 +314,7 @@ void CIndicatorDyn::DrawSegments(CDC* pDC, bool isSelected, bool isArchMode, CPo
 		else {
 			if (isOn) {
 				float lum = luminance2(HighLighted[n], *pTickCounter, ticksAfterLight);
-				int v = round(255.0 * lum);
+				int v = static_cast<int>(round(255.0 * lum));
 				c = RGB(255, 255-v, 255-v);
 			}
 			else {

@@ -248,15 +248,14 @@
     </Library>
   </ItemGroup>
   <ItemGroup>
-    <Manifest Include="res\Demis2000.manifest" />
-  </ItemGroup>
-  <ItemGroup>
     <Text Include="ReadMe.txt" />
   </ItemGroup>
   <ItemGroup>
-    <Xml Include="res\manifest.xml" />
+    <CustomBuild Include="Help\Demis.hhp" />
   </ItemGroup>
   <ItemGroup>
-    <CustomBuild Include="Help\Demis.hhp" />
+    <Manifest Include="res\Demis2000.manifest">
+      <Filter>Resource Files</Filter>
+    </Manifest>
   </ItemGroup>
 </Project>

@@ -15,6 +15,7 @@
 #include "htmlhelp.h"
 
 #include <sstream>
+#include <format>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -54,6 +55,37 @@ void LoadShell32Dll() {
 	ShellExecute(nullptr, "", "", "", "", 0);
 }
 
+static std::string getStrCurrentVersion() {
+	HRSRC hResInfo;
+	DWORD dwSize;
+	HGLOBAL hResData;
+	LPVOID pRes, pResCopy;
+	UINT uLen;
+	VS_FIXEDFILEINFO* lpFfi;
+
+	hResInfo = FindResource(nullptr, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
+	dwSize = SizeofResource(nullptr, hResInfo);
+	hResData = LoadResource(nullptr, hResInfo);
+	pRes = LockResource(hResData);
+	pResCopy = LocalAlloc(LMEM_FIXED, dwSize);
+	CopyMemory(pResCopy, pRes, dwSize);
+	FreeResource(hResData);
+
+	VerQueryValue(pResCopy, TEXT("\\"), (LPVOID*)&lpFfi, &uLen);
+
+	DWORD dwFileVersionMS = lpFfi->dwFileVersionMS;
+	DWORD dwFileVersionLS = lpFfi->dwFileVersionLS;
+
+	DWORD dwLeftMost = HIWORD(dwFileVersionMS);
+	DWORD dwSecondLeft = LOWORD(dwFileVersionMS);
+	DWORD dwSecondRight = HIWORD(dwFileVersionLS);
+	DWORD dwRightMost = LOWORD(dwFileVersionLS);
+
+	LocalFree(pResCopy);
+
+	return std::format("{}.{}.{}", dwLeftMost, dwSecondLeft, dwSecondRight);
+}
+
 CDemis2000App::CDemis2000App()
 {
 	hRunThread = NULL;
@@ -87,15 +119,20 @@ BOOL CDemis2000App::InitInstance()
 	RunDir = __argv[0];
 	RunDir = RunDir.Left(RunDir.ReverseFind('\\'));
 
+
 	SetRegistryKey(_T("RGATA"));
 
 	LoadStdProfileSettings();  // Load standard INI file options (including MRU)
+	CString strHelpFile1(m_pszHelpFilePath);
 	LoadLibraryInformation();
+	CString strHelpFile2(m_pszHelpFilePath);
 
-	CString strHelpFile = m_pszHelpFilePath;
-	strHelpFile.Replace(".HLP", ".chm");
-	free((void*)m_pszHelpFilePath);
-	m_pszHelpFilePath = _tcsdup(strHelpFile);
+	if (m_pszHelpFilePath) {
+		CString strHelpFile(m_pszHelpFilePath);
+		strHelpFile.Replace(".HLP", ".chm");
+		free((void*)m_pszHelpFilePath);
+		m_pszHelpFilePath = _tcsdup(strHelpFile);
+	}
 
 	pPrjMRUList = new CRecentFileList(ID_FILE_MRU_PRJ1, "RecentPrjList", "Prj%d", 4);
 	pPrjMRUList->ReadList();
@@ -127,6 +164,8 @@ BOOL CDemis2000App::InitInstance()
 	CMainFrame* pMainFrame = new CMainFrame;
 	if (!pMainFrame->LoadFrame(IDR_MAINFRAME))
 		return FALSE;
+	std::string textCaption = std::format("Design Microsystems v{}", getStrCurrentVersion());
+	pMainFrame->SetWindowText(textCaption.c_str());
 	m_pMainWnd = pMainFrame;
 
 	m_pMainWnd->DragAcceptFiles();
@@ -630,39 +669,7 @@ void CDemis2000App::OnUpdateDebug(CCmdUI* pCmdUI)
 	pCmdUI->Enable(!(pDebugFrame || hRunThread));
 }
 
-typedef CElemLib* (*CreateInstancePtr)(HostInterface* pHostInterface);
-
-
-static std::string getStrCurrentVersion() {
-	HRSRC hResInfo;
-	DWORD dwSize;
-	HGLOBAL hResData;
-	LPVOID pRes, pResCopy;
-	UINT uLen;
-	VS_FIXEDFILEINFO* lpFfi;
-
-	hResInfo = FindResource(nullptr, MAKEINTRESOURCE(VS_VERSION_INFO), RT_VERSION);
-	dwSize = SizeofResource(nullptr, hResInfo);
-	hResData = LoadResource(nullptr, hResInfo);
-	pRes = LockResource(hResData);
-	pResCopy = LocalAlloc(LMEM_FIXED, dwSize);
-	CopyMemory(pResCopy, pRes, dwSize);
-	FreeResource(hResData);
-
-	VerQueryValue(pResCopy, TEXT("\\"), (LPVOID*)&lpFfi, &uLen);
-
-	DWORD dwFileVersionMS = lpFfi->dwFileVersionMS;
-	DWORD dwFileVersionLS = lpFfi->dwFileVersionLS;
-
-	DWORD dwLeftMost = HIWORD(dwFileVersionMS);
-	DWORD dwSecondLeft = LOWORD(dwFileVersionMS);
-	DWORD dwSecondRight = HIWORD(dwFileVersionLS);
-	DWORD dwRightMost = LOWORD(dwFileVersionLS);
-
-	LocalFree(pResCopy);
-
-	return std::format("{}.{}.{}", dwLeftMost, dwSecondLeft, dwSecondRight);
-}
+typedef CElemLib* (PASCAL *CreateInstancePtr)(HostInterface* pHostInterface);
 
 void CDemis2000App::LoadLibraryInformation()
 {
@@ -940,4 +947,12 @@ void HostData::DeleteInstructionListener(int id) {
 
 void HostData::Interrupt(int intNumber) {
 	theApp.pEmData->IntRequest[intNumber/64] |= static_cast<uint64_t>(1) << (intNumber % 64);
+}
+
+std::pair<int, int> HostData::GetNearestConPoint(int x, int y, int typePoint) {
+	POSITION pos = theApp.pArchTemplate->GetFirstDocPosition();
+	if (pos == NULL) return { -1, - 1 };
+	CArchDoc* pDoc = reinterpret_cast<CArchDoc*>(theApp.pArchTemplate->GetNextDoc(pos));
+	CPoint res = pDoc->GetNearestConPoint(CPoint(x, y), typePoint);
+	return std::pair<int, int>(res.x, res.y);
 }

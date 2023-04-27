@@ -76,6 +76,7 @@ public:
 	virtual uint8_t ReadPort(WORD port) = 0;
 	virtual void OnPinStateChanged(DWORD PinState, int hElement) = 0;
 	virtual void Interrupt(int irqNumber) = 0;
+	virtual std::pair<int, int> GetNearestConPoint(int x, int y, int typePin) = 0;
 };
 
 struct _ErrorData {

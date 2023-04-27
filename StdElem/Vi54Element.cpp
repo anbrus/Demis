@@ -259,7 +259,12 @@ BOOL CVi54Element::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 void CVi54Element::UpdateTipText()
 {
-	TipText = "Таймер";
+	if (indexTimer >= 0) {
+		TipText = std::format("Канал {} таймера", indexTimer + 1).c_str();
+	}
+	else {
+		TipText = std::format("Канал ? таймера").c_str();
+	}
 }
 
 BOOL CVi54Element::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel) {
@@ -381,6 +386,7 @@ void CVi54Element::OnSettings() {
 		{
 			pChild->Invalidate(FALSE);
 		}
+		UpdateTipText();
 	}
 }
 

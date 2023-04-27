@@ -238,7 +238,7 @@ struct _EmulatorData* PASCAL InitEmulator(HostInterface *pHostData)
 	//Обновляем указатель на данные интерфейса
 	pHData = pHostData;
 	//Инициализация прерываний
-	for(int n=0; n<EmulatorData.IntRequest.size(); n++)
+	for(size_t n=0; n<EmulatorData.IntRequest.size(); n++)
 		EmulatorData.IntRequest[n] = 0;
 
 	//Инициализируем регистры

@@ -6,8 +6,6 @@
 Vi54SettingsDlg::Vi54SettingsDlg(CWnd* pParent /*=NULL*/)
 	: CDialog(Vi54SettingsDlg::IDD, pParent)
 {
-	//{{AFX_DATA_INIT(CADCDelayDlg)
-	//}}AFX_DATA_INIT
 }
 
 void Vi54SettingsDlg::DoDataExchange(CDataExchange* pDX)
@@ -42,11 +40,22 @@ void Vi54SettingsDlg::DoDataExchange(CDataExchange* pDX)
 		}
 		address = static_cast<uint16_t>(baseAddress);
 	}
+	else {
+		updateControls();
+	}
 }
 
+void Vi54SettingsDlg::OnClkChanged() {
+	updateControls();
+}
+
+void Vi54SettingsDlg::updateControls() {
+	CEdit* editFreq = reinterpret_cast<CEdit*>(GetDlgItem(IDC_FREQ));
+	editFreq->EnableWindow(IsDlgButtonChecked(IDC_FIXED_CLK));
+
+}
 
 BEGIN_MESSAGE_MAP(Vi54SettingsDlg, CDialog)
-	//{{AFX_MSG_MAP(CADCDelayDlg)
-	// NOTE: the ClassWizard will add message map macros here
-	//}}AFX_MSG_MAP
+	ON_BN_CLICKED(IDC_FIXED_CLK, OnClkChanged)
+	ON_BN_CLICKED(IDC_EXTERNAL_CLK, OnClkChanged)
 END_MESSAGE_MAP()

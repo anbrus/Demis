@@ -28,8 +28,6 @@ protected:
 
 	// Attributes
 public:
-	//int ElemCount;
-	//std::array<CElement*, 1024> Elements;
 	std::unordered_map<int, std::shared_ptr<CElement>> Elements;
 
 	virtual void Serialize(CArchive& ar);   // overridden for document i/o
@@ -49,6 +47,8 @@ public:
 	CArchView *pView;
 	void ArchOpen(CArchive& ar);
 	void ArchSave(CArchive& ar);
+	CPoint GetNearestConPoint(const CPoint& point, int typePin);
+
 	virtual ~CArchDoc();
 #ifdef _DEBUG
 	virtual void AssertValid() const;

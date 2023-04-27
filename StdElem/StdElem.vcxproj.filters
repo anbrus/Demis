@@ -96,6 +96,9 @@
     <ClCompile Include="IrqSettingsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Connector.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="ElemLib.rgs">
@@ -204,6 +207,9 @@
     <ClInclude Include="IrqSettingsDlg.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Connector.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Image Include="res\Beep.ico">
@@ -285,6 +291,24 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="res\irq.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\bitmap1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\connector.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\connector_type_1.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\connector_type_2.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\connector_type_3.bmp">
+      <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="res\connector_type_4.bmp">
       <Filter>Resource Files</Filter>
     </Image>
   </ItemGroup>

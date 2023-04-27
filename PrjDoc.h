@@ -8,9 +8,9 @@
 #include "PrjCfgDlg.h"
 
 typedef struct {
-  CString Path;
-  DWORD Folder;  //0-Global, 1-SourceAsm, 2-SourceInc, 3-Arch
-  DWORD Flag;
+	CString Path;
+	DWORD Folder;  //0-Global, 1-SourceAsm, 2-SourceInc, 3-Arch
+	DWORD Flag;
 } PrjFile;
 
 class CPrjListView;
@@ -21,20 +21,20 @@ protected:
 	CPrjDoc();           // protected constructor used by dynamic creation
 	DECLARE_DYNCREATE(CPrjDoc)
 
-// Attributes
+		// Attributes
 public:
 
-// Operations
+	// Operations
 public:
 
-// Overrides
-	// ClassWizard generated virtual function overrides
-	//{{AFX_VIRTUAL(CPrjDoc)
-	public:
+	// Overrides
+		// ClassWizard generated virtual function overrides
+		//{{AFX_VIRTUAL(CPrjDoc)
+public:
 	virtual void Serialize(CArchive& ar);   // overridden for document i/o
 	virtual void SetTitle(LPCTSTR lpszTitle);
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);
-	protected:
+protected:
 	virtual BOOL OnNewDocument();
 	//}}AFX_VIRTUAL
 
@@ -49,9 +49,9 @@ public:
 	DWORD RomSize;
 	CDocument* OpenDocument(POSITION Pos);
 	CPrjListView* pView;
-	CList<PrjFile,PrjFile> FileList;
+	CList<PrjFile, PrjFile> FileList;
 
-  virtual ~CPrjDoc();
+	virtual ~CPrjDoc();
 
 #ifdef _DEBUG
 	virtual void AssertValid() const;

@@ -17,7 +17,7 @@ public:
 	CDC DrawOnWhiteNumb, DrawOnGrayNumb, SelOnWhiteNumb, SelOnGrayNumb;
 	CDC DrawOnWhiteChar, SelOnWhiteChar;
 	int m_ElementsCount;
-	struct _ElementId ElementId[13];
+	struct _ElementId ElementId[14];
 
 	CStdElemApp();
 

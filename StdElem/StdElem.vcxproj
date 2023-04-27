@@ -221,6 +221,10 @@ echo Warning : Cannot register Unicode DLL on Windows 95
       <PreprocessorDefinitions>_AFXDLL;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <Culture>0x0419</Culture>
     </ResourceCompile>
+    <Manifest>
+      <AdditionalManifestFiles>
+      </AdditionalManifestFiles>
+    </Manifest>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Unicode Release MinDependency|Win32'">
     <ClCompile>
@@ -411,6 +415,7 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <ClCompile Include="BeepElement.cpp" />
     <ClCompile Include="Button.cpp" />
     <ClCompile Include="CAdcSliderCtrl.cpp" />
+    <ClCompile Include="Connector.cpp" />
     <ClCompile Include="ElementBase.cpp" />
     <ClCompile Include="ElementWnd.cpp" />
     <ClCompile Include="ElemInterf.cpp" />
@@ -469,6 +474,7 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <ClInclude Include="BeepElement.h" />
     <ClInclude Include="Button.h" />
     <ClInclude Include="CAdcSliderCtrl.h" />
+    <ClInclude Include="Connector.h" />
     <ClInclude Include="control_word.h" />
     <ClInclude Include="ElementBase.h" />
     <ClInclude Include="ElementWnd.h" />
@@ -499,9 +505,15 @@ echo Warning : Cannot register Unicode DLL on Windows 95
     <Image Include="res\adc.ico" />
     <Image Include="res\beep.bmp" />
     <Image Include="res\Beep.ico" />
+    <Image Include="res\bitmap1.bmp" />
     <Image Include="res\button.bmp" />
     <Image Include="res\button.ico" />
     <Image Include="res\chars.bmp" />
+    <Image Include="res\connector.bmp" />
+    <Image Include="res\connector_type_1.bmp" />
+    <Image Include="res\connector_type_2.bmp" />
+    <Image Include="res\connector_type_3.bmp" />
+    <Image Include="res\connector_type_4.bmp" />
     <Image Include="res\indicato.bmp" />
     <Image Include="res\indicator.bmp" />
     <Image Include="res\indicator.ico" />

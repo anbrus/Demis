@@ -24,7 +24,6 @@
 #define IDR_PRJTYPE                     129
 #define IDR_ASSMTYPE                    130
 #define IDR_ARCHTYPE                    131
-#define IDR_DEBUGFRAME                  132
 #define IDR_DEBUGTYPE                   132
 #define IDR_MAINFRAMEC                  132
 #define IDR_ARCHTYPEC                   133

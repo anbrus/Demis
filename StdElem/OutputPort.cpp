@@ -98,7 +98,7 @@ BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Порт вывода", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Порт вывода", WS_VISIBLE | WS_CHILD,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
 

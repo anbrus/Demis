@@ -81,7 +81,7 @@ BOOL CInputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Порт ввода", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+	pArchElemWnd->CreateEx(0, ClassName, "Порт ввода", WS_VISIBLE | WS_CHILD,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
 

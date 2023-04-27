@@ -36,6 +36,7 @@ public:
 	virtual int AddInstructionListener(std::function<void(int64_t)> handler) override;
 	virtual void DeleteInstructionListener(int id) override;
 	virtual void Interrupt(int irqNumber) override;
+	virtual std::pair<int, int> GetNearestConPoint(int x, int y, int typePoint) override;
 };
 
 
@@ -47,12 +48,12 @@ public:
 
 	std::unordered_map<std::string, CElemLib*> ElementLibraries;
 
-	CDebugFrame* pDebugFrame;
-	CArchDoc* pDebugArchDoc;
+	CDebugFrame* pDebugFrame = nullptr;
+	CArchDoc* pDebugArchDoc=nullptr;
 	CMultiDocTemplate* pAsmTemplate=nullptr;
 	CMultiDocTemplate *pArchTemplate = nullptr;
 	CMultiDocTemplate *pPrjTemplate = nullptr;
-	HANDLE hRunThread;
+	HANDLE hRunThread=0;
 	CRecentFileList* pPrjMRUList = nullptr;
 	CString RunDir;
 	struct _EmulatorData* pEmData = nullptr;

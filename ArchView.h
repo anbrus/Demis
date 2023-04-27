@@ -14,14 +14,15 @@ class CArchView : public CScrollView
 protected:
 	struct ConPoint {
 		std::shared_ptr<CElement> pElement;
-		int PinNumber;
+		int PinNumber=0;
 	};
 	typedef CList<ConPoint, ConPoint&> PointList;
 
 	PointList ConData[1024][MAX_CONNECT_POINT];
 	CArchView();
-	BOOL MoveMode, CopyMode;
-	int SelectedCount;
+	BOOL MoveMode = FALSE;
+	BOOL CopyMode = FALSE;
+	int SelectedCount=0;
 	CPoint LastMousePoint;
 	CPoint StartMousePoint;
 	DECLARE_DYNCREATE(CArchView)
@@ -34,14 +35,14 @@ public:
 	void DeconnectSelected();
 	DWORD GetPinState(int ElementIndex);
 	CStatusBar m_StatusBar;
-	int XRes, YRes;
+	int XRes=0, YRes=0;
 	void ChangeMode(BOOL bConfigMode);
-	BOOL ConfigMode;
-	BOOL ArchMode;
+	BOOL ConfigMode=FALSE;
+	BOOL ArchMode=FALSE;
 	CToolBar ToolBar;
 	CReBar ReBar;
-	CBitmap *BtnBmp[256];
-	CArchDoc* pDoc;
+	CBitmap* BtnBmp[256];
+	CArchDoc* pDoc=nullptr;
 	void FindIntersections(const std::shared_ptr<CElement>& pElement);
 	void DeconnectElement(int ElemIndex);
 
@@ -63,7 +64,7 @@ protected:
 protected:
 	virtual ~CArchView();
 
-	UINT Ind[3];
+	UINT Ind[3] = { 0, 0, 0 };
 	std::thread threadRedraw;
 	//std::thread threadVSync;
 	int fps = 0;

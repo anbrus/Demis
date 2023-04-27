@@ -305,7 +305,7 @@ void CMatrixArchWnd::DrawDynamic(CDC *pDC, BOOL Redraw)
 		for (y = 0; y < cy; y++) {
 			if (pCol[y]) {
 				float lum = luminance2(pCol[y], *pMatrixElement->pTickCounter, pMatrixElement->ticksAfterLight);
-				int v = round(255.0 * lum);
+				int v = static_cast<int>(round(255.0 * lum));
 				COLORREF c = RGB(255, 255-v, 255-v);
 				pDC->FillSolidRect(CRect(24 + x * 15, 22 + y * 15, 38 + x * 15, 36 + y * 15), c);
 			}
@@ -326,7 +326,7 @@ void CMatrixConstrWnd::DrawDynamic(CDC *pDC, BOOL Redraw)
 		for (y = 0, GrY = 0; y < pMatrixElement->MatrixSize.cy; y++, GrY += SqrSize) {
 			if (!pMatrixElement->EditMode) {
 				float lum = luminance2(pCol[y], *pMatrixElement->pTickCounter, pMatrixElement->ticksAfterLight);
-				int v = round(255.0 * lum);
+				int v = static_cast<int>(round(255.0 * lum));
 				COLORREF c = RGB(255, 255-v, 255-v);
 				pDC->FillSolidRect(CRect(GrX + 1, GrY + 1, GrX + SqrSize, GrY + SqrSize), c);
 			}

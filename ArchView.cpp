@@ -322,14 +322,14 @@ void CArchView::OnLButtonDown(UINT nFlags, CPoint point)
 			if (pElement->get_bArchSelected()) {
 				pElement->put_bArchSelected(FALSE);
 				HWND hWnd = (HWND)pElement->get_hArchWnd();
-				if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
+				if (hWnd) ::InvalidateRect(hWnd, NULL, TRUE);
 			}
 		}
 		else {
 			if (pElement->get_bConstrSelected()) {
 				pElement->put_bConstrSelected(FALSE);
 				HWND hWnd = (HWND)pElement->get_hConstrWnd();
-				if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
+				if (hWnd) ::InvalidateRect(hWnd, NULL, TRUE);
 			}
 		}
 	}
@@ -817,7 +817,7 @@ void CArchView::OnPinStateChanged(DWORD PinState, int hElement)
 
 	struct _ElData {
 		std::shared_ptr<CElement> pElement;
-		DWORD PinState;
+		DWORD PinState=0;
 	}ElData[MAX_CONNECT_POINT * 4];
 	int CachedCount = 0;
 

@@ -612,3 +612,21 @@ void CArchDoc::ConvertVersion0200To0202(CArchive& ar, DWORD OldVersion)
 	pFile->Open(NewFileName, CFile::typeBinary | CFile::modeRead);
 	pFile->Seek(16, CFile::begin);
 }
+
+CPoint CArchDoc::GetNearestConPoint(const CPoint& point, int typePin) {
+	for (const auto& entry : Elements) {
+		CElementPtr pElement = entry.second;
+		WINDOWPLACEMENT pls;
+		CWnd::FromHandle(pElement->get_hArchWnd())->GetWindowPlacement(&pls);
+
+		for (size_t n = 0; n < pElement->get_nPointCount(); n++) {
+			if ((pElement->GetPinType(n) & typePin) == 0) continue;
+			DWORD pos = pElement->GetPointPos(n);
+			int x = LOWORD(pos) + pls.rcNormalPosition.left;
+			int y = HIWORD(pos) + pls.rcNormalPosition.top;
+			if (std::abs(x - point.x) > 3 || std::abs(y - point.y) > 3) continue;
+			return CPoint(x, y);
+		}
+	}
+	return CPoint(-1, -1);
+}

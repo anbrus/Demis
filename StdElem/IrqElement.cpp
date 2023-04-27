@@ -91,7 +91,7 @@ void CIrqArchWnd::DrawDynamic(CDC* pDC) {
 	if (pIrqElement->irqNumber == 2)
 		text = "NMI";
 	else
-		text = std::format("INT {:02X}h", pIrqElement->irqNumber);
+		text = std::format("INTR {:02X}h", pIrqElement->irqNumber);
 	pDC->DrawText(text.c_str(), CRect(9+2, 1 + 1, Size.cx-1, Size.cy - 1),
 		DT_LEFT | DT_SINGLELINE | DT_VCENTER);
 

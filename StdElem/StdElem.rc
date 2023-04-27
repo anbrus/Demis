@@ -153,6 +153,14 @@ BEGIN
     END
 END
 
+IDR_CONNECTOR_MENU MENU
+BEGIN
+    POPUP "Соединение"
+    BEGIN
+        MENUITEM "Параметры",                   ID_SETTINGS
+    END
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -273,7 +281,7 @@ BEGIN
     EDITTEXT        IDC_ADDRESS,121,7,82,12,ES_AUTOHSCROLL
     EDITTEXT        IDC_FREQ,121,47,82,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "Фиксированная частота, Гц",IDC_FIXED_CLK,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,47,114,12
-    CONTROL         "Внешняя частота",IDC_EXTERNAL_CLK,"Button",BS_AUTORADIOBUTTON,7,67,196,12
+    CONTROL         "Произвольная частота",IDC_EXTERNAL_CLK,"Button",BS_AUTORADIOBUTTON,7,67,196,12
 END
 
 IDD_IRQ_SETTINGS_DLG DIALOGEX 0, 0, 202, 68
@@ -287,6 +295,23 @@ BEGIN
     LTEXT           "Активация",-1,7,27,101,12,SS_CENTERIMAGE
     COMBOBOX        IDC_LEVEL,115,27,80,12,CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP
     COMBOBOX        IDC_ADDRESS,115,7,80,12,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+END
+
+IDD_CONNECTOR_DLG DIALOGEX 0, 0, 122, 108
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Соединение"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "ОК",IDOK,7,87,50,14
+    PUSHBUTTON      "Отмена",IDCANCEL,65,87,49,14
+    CONTROL         "1 или 2 сегмента",IDC_TYPE_1,"Button",BS_AUTORADIOBUTTON | WS_GROUP,7,7,75,12
+    CONTROL         "3 сегмента",IDC_TYPE_2,"Button",BS_AUTORADIOBUTTON,7,27,52,12
+    CONTROL         "4 сегмента",IDC_TYPE_3,"Button",BS_AUTORADIOBUTTON,7,47,54,12
+    CONTROL         "5 сегментов",IDC_TYPE_4,"Button",BS_AUTORADIOBUTTON,7,67,58,12
+    CONTROL         IDB_CONNECTOR_TYPE_2,IDC_STATIC,"Static",SS_BITMAP,89,27,13,6
+    CONTROL         IDB_CONNECTOR_TYPE_1,IDC_STATIC,"Static",SS_BITMAP,89,7,13,6
+    CONTROL         IDB_CONNECTOR_TYPE_3,IDC_STATIC,"Static",SS_BITMAP,89,47,13,6
+    CONTROL         IDB_CONNECTOR_TYPE_4,IDC_STATIC,"Static",SS_BITMAP,89,67,13,6
 END
 
 
@@ -386,6 +411,19 @@ BEGIN
         BOTTOMMARGIN, 61
         HORZGUIDE, 27
         HORZGUIDE, 47
+    END
+
+    IDD_CONNECTOR_DLG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 115
+        VERTGUIDE, 89
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 101
+        HORZGUIDE, 27
+        HORZGUIDE, 47
+        HORZGUIDE, 67
+        HORZGUIDE, 87
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -526,6 +564,8 @@ IDB_VI54_ELEMENT        BITMAP                  "res\\vi54_icon.bmp"
 
 IDB_IRQ_ELEMENT         BITMAP                  "res\\irq.bmp"
 
+IDB_CONNECTOR_ELEMENT   BITMAP                  "res\\connector.bmp"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -580,6 +620,11 @@ BEGIN
     0
 END
 
+IDD_CONNECTOR_DLG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -630,6 +675,20 @@ END
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 #pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Bitmap
+//
+
+IDB_CONNECTOR_TYPE_1    BITMAP                  "res\\connector_type_1.bmp"
+
+IDB_CONNECTOR_TYPE_2    BITMAP                  "res\\connector_type_2.bmp"
+
+IDB_CONNECTOR_TYPE_3    BITMAP                  "res\\connector_type_3.bmp"
+
+IDB_CONNECTOR_TYPE_4    BITMAP                  "res\\connector_type_4.bmp"
+
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////

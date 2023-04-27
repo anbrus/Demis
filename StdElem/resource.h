@@ -10,8 +10,11 @@
 #define IDC_TIMER_INDEX                 201
 #define IDC_LEVEL                       204
 #define IDC_FIXED_CLK                   205
-#define IDC_VIRTUAL_TIME                206
 #define IDC_EXTERNAL_CLK                206
+#define IDC_TYPE_1                      208
+#define IDC_TYPE_2                      209
+#define IDC_TYPE_3                      210
+#define IDC_TYPE_4                      211
 #define IDB_ADC_ELEMENT                 223
 #define IDB_BEEP_ELEMENT                224
 #define IDB_VI54_ICON                   233
@@ -20,6 +23,8 @@
 #define IDR_TIMER_MENU                  237
 #define IDB_VI54_ELEMENT                242
 #define IDR_IRQ_MENU                    243
+#define IDB_CONNECTOR_ELEMENT           245
+#define IDB_CONNECTOR_TYPE_1            247
 #define IDC_ADDRESS                     1000
 #define IDC_TEXT                        1001
 #define IDR_LED_MENU                    1002
@@ -47,8 +52,10 @@
 #define IDD_BEEP_FREQ_DLG               1012
 #define IDR_MATRIX_MENU                 1012
 #define IDD_MATRIX_SIZE_DLG             1013
+#define IDR_CONNECTOR_MENU              1013
 #define IDD_IRQ_SETTINGS_DLG            1014
 #define IDB_NUMBERS                     1015
+#define IDD_CONNECTOR_DLG               1015
 #define IDB_CHARS                       1016
 #define IDB_BUTTON_ELEMENT              1018
 #define IDB_INDICATOR_ELEMENT           1019
@@ -61,6 +68,9 @@
 #define IDB_IND_DYN_ELEMENT             1026
 #define IDB_INDIC_DYN_ELEMENT           1026
 #define IDB_IRQ_ELEMENT                 1027
+#define IDB_CONNECTOR_TYPE_2            1028
+#define IDB_CONNECTOR_TYPE_3            1029
+#define IDB_CONNECTOR_TYPE_4            1030
 #define ID_HI_PRECISION                 32768
 #define ID_MENUITEM32771                32771
 #define ID_ADDRESS                      32772
@@ -97,9 +107,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        245
+#define _APS_NEXT_RESOURCE_VALUE        248
 #define _APS_NEXT_COMMAND_VALUE         32786
-#define _APS_NEXT_CONTROL_VALUE         208
+#define _APS_NEXT_CONTROL_VALUE         210
 #define _APS_NEXT_SYMED_VALUE           104
 #endif
 #endif

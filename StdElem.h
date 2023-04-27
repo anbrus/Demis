@@ -54,6 +54,9 @@ protected:
 	//IElement *pInterface;
 };
 
+
+typedef std::shared_ptr<CElement> CElementPtr;
+
 class CElemLib
 {
 public:
