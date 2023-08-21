@@ -111,9 +111,14 @@
 		<param name="Local" value="HTML\Project_Settings.htm">
 		</OBJECT>
 	<LI> <OBJECT type="text/sitemap">
-		<param name="Name" value="&Ograve;&aring;&ecirc;&ntilde;&ograve;&icirc;&acirc;&ucirc;&eacute; &eth;&aring;&auml;&agrave;&ecirc;&ograve;&icirc;&eth;">
-		<param name="Name" value="Симуляция в реальном времени">
-		<param name="Local" value="HTML\Realtime.htm">
+		<param name="Name" value="&Ograve;&agrave;&eacute;&igrave;&aring;&eth;">
+		<param name="Name" value="Элементы архитектуры и лицевой панели">
+		<param name="Local" value="HTML\Arch_Elements.htm#Таймер">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="&Ccedil;&agrave;&iuml;&eth;&icirc;&ntilde; &iuml;&eth;&aring;&eth;&ucirc;&acirc;&agrave;&iacute;&egrave;&yuml;">
+		<param name="Name" value="Запрос прерывания">
+		<param name="Local" value="HTML\Arch_Elements.htm#Запрос прерывания">
 		</OBJECT>
 </UL>
 </BODY></HTML>

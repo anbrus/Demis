@@ -9,6 +9,8 @@
 #include "..\definitions.h"
 #include "StdElemApp.h"
 
+#include <VersionHelpers.h>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -145,6 +147,7 @@ BEGIN_MESSAGE_MAP(CBtnArchWnd, CElementWnd)
 	ON_WM_LBUTTONUP()
 	ON_COMMAND(ID_FIXABLE, OnFixable)
 	ON_COMMAND(ID_DREBEZG, OnDrebezg)
+	ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -402,6 +405,12 @@ void CBtnConstrWnd::Draw(CDC* pDC)
 	pDC->SelectObject(pOldFont);
 }
 
+BOOL CBtnArchWnd::OnEraseBkgnd(CDC* pDC) {
+	pDC->PatBlt(0, 0, Size.cx, Size.cy, WHITENESS);
+	return TRUE;
+}
+
+
 void CBtnArchWnd::Draw(CDC* pDC)
 {
 	CGdiObject* pOldPen;
@@ -417,7 +426,7 @@ void CBtnArchWnd::Draw(CDC* pDC)
 	CGdiObject* pOldFont = pDC->SelectObject(&UFont);
 	if (pElement->ArchSelected) pDC->SetTextColor(theApp.SelectColor);
 	else pDC->SetTextColor(theApp.DrawColor);
-	pDC->SetBkColor(theApp.BkColor);
+	pDC->SetBkColor(RGB(255, 255, 255));
 	if (pElement->FreePinLevel == 0) pDC->DrawText("+5В", CRect(0, -1, 16, 8), DT_LEFT | DT_TOP | DT_SINGLELINE);
 	else pDC->DrawText("GND", CRect(-1, -1, 17, 8), DT_LEFT | DT_TOP | DT_SINGLELINE);
 	pDC->SelectObject(pOldFont);
@@ -446,7 +455,7 @@ void CBtnArchWnd::Draw(CDC* pDC)
 
 void CButtonElement::UpdateTipText()
 {
-	TipText.Format("Кнопка \"%s\"", Text);
+	TipText.Format("Кнопка \"%s\"", (LPCTSTR)Text);
 }
 
 void CButtonElement::OnLButtonDown()

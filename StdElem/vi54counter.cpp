@@ -312,6 +312,23 @@ void Vi54Counter::SetClk(const bool v) {
     }
 }
 
+uint16_t corr_bcd_dec(uint16_t v) {
+    uint16_t tmp = v;
+    if ((tmp & 0x000f) > 0x0009) {
+        tmp -= 0x0006;
+    }
+    if ((tmp & 0x00f0) > 0x0090) {
+        tmp -= 0x0060;
+    }
+    if ((tmp & 0x0f00) > 0x0900) {
+        tmp -= 0x0600;
+    }
+    if ((tmp & 0xf000) > 0x9000) {
+        tmp -= 0x6000;
+    }
+    return tmp;
+}
+
 void Vi54Counter::onLoadCrLeastByte() {
     switch (cwb.cw.mode) {
     case 0: {
@@ -333,6 +350,8 @@ void Vi54Counter::pulseMode0() {
     if (!gate) return;
 
     ce -= 1;
+    if (cwb.cw.bcd) ce = corr_bcd_dec(ce);
+
     if (ce == 0) out = true;
 }
 
@@ -347,6 +366,7 @@ void Vi54Counter::pulseMode1() {
     }
     else {
         ce -= 1;
+        if (cwb.cw.bcd) ce = corr_bcd_dec(ce);
         if (ce == 0) outNew = true;
     }
 
@@ -367,6 +387,7 @@ void Vi54Counter::pulseMode2() {
     }
 
     ce -= 1;
+    if (cwb.cw.bcd) ce = corr_bcd_dec(ce);
     if (ce == 0) ce = cr;
 
     bool outNew = ce != 1;
@@ -395,10 +416,12 @@ void Vi54Counter::pulseMode3() {
         }
         else {
             ce -= 2;
+            if (cwb.cw.bcd) ce = corr_bcd_dec(ce);
         }
     }
     else {
         ce -= 2;
+        if (cwb.cw.bcd) ce = corr_bcd_dec(ce);
         if (ce == 0) {
             ce = cr & 0xfffe;
             odd_one = (cr & 1) != 0;
@@ -421,6 +444,7 @@ void Vi54Counter::pulseMode4() {
     if (!gate) return;
 
     ce -= 1;
+    if (cwb.cw.bcd) ce = corr_bcd_dec(ce);
     if (ce == 0 && !count_cycle_completed) {
         out = false;
         count_cycle_completed = true;
@@ -441,6 +465,7 @@ void Vi54Counter::pulseMode5() {
     }
 
     ce -= 1;
+    if (cwb.cw.bcd) ce = corr_bcd_dec(ce);
     if (ce == 0 && !count_cycle_completed) {
         out = false;
         count_cycle_completed = true;

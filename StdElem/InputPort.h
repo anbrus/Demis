@@ -21,7 +21,7 @@ public:
 	virtual void Redraw(int64_t ticks) override;
 	void DrawDynamic(CDC* pDC);
 	void DrawStatic(CDC* pDC);
-	int Width, Height;
+	//int Width, Height;
 
 protected:
 	CDC MemoryDC;

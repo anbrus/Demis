@@ -42,6 +42,7 @@ public:
 	CToolBar ToolBar;
 	CReBar ReBar;
 	CBitmap* BtnBmp[256];
+	std::vector<std::string> BtnNames;
 	CArchDoc* pDoc=nullptr;
 	void FindIntersections(const std::shared_ptr<CElement>& pElement);
 	void DeconnectElement(int ElemIndex);

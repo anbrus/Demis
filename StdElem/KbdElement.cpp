@@ -9,6 +9,8 @@
 #include "ElemInterf.h"
 #include "..\definitions.h"
 
+#include <VersionHelpers.h>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -24,6 +26,7 @@ BEGIN_MESSAGE_MAP(CKbdArchWnd, CElementWnd)
 	ON_COMMAND(ID_KBD_SIZE, OnKbdSize)
 	ON_COMMAND(ID_FIXABLE, OnFixable)
 	ON_WM_CREATE()
+	ON_WM_ERASEBKGND()
 	//}}AFX_MSG_MAP
 END_MESSAGE_MAP()
 
@@ -226,17 +229,25 @@ void CKbdConstrWnd::Draw(CDC *pDC)
 	pDC->SelectObject(pOldFont);
 }
 
+BOOL CKbdArchWnd::OnEraseBkgnd(CDC* pDC) {
+	pDC->PatBlt(0, 0, Size.cx, Size.cy, WHITENESS);
+	return TRUE;
+}
+
 void CKbdArchWnd::Draw(CDC *pDC)
 {
 	CGdiObject* pOldPen;
 
+	CBrush brush;
 	if (pElement->ArchSelected) {
 		pOldPen = pDC->SelectObject(&theApp.SelectPen);
 		pDC->SetTextColor(theApp.SelectColor);
+		brush.CreateSolidBrush(theApp.SelectColor);
 	}
 	else {
 		pOldPen = pDC->SelectObject(&theApp.DrawPen);
 		pDC->SetTextColor(theApp.DrawColor);
+		brush.CreateSolidBrush(theApp.DrawColor);
 	}
 
 	CSize KbdSize(((CKbdElement*)pElement)->KbdSize);
@@ -258,7 +269,7 @@ void CKbdArchWnd::Draw(CDC *pDC)
 	for (x = 0; x < KbdSize.cx; x++) {
 		int XCenter = KeyOffset.x + BtnSize.cx*(x + 1);
 		pDC->MoveTo(XCenter, 9); pDC->LineTo(XCenter, 13);
-		pDC->Rectangle(XCenter - 2, 13, XCenter + 3, KeyOffset.y - 2);
+		pDC->FrameRect(CRect(XCenter - 2, 13, XCenter + 3, KeyOffset.y - 2), &brush);
 		pDC->MoveTo(XCenter, KeyOffset.y - 2); pDC->LineTo(XCenter, KeyOffset.y);
 	}
 

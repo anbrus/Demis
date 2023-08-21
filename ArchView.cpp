@@ -1151,8 +1151,8 @@ BOOL CArchView::CreateElementButtons()
 			DWORD type = pElemLib->GetElementType(n);
 			if ((type & (ET_ARCH | ET_CONSTR)) == 0) continue;
 
-			CString ElemName = pElemLib->GetElementName(n);
 			BtnBmp[ElIndex] = CBitmap::FromHandle(pElemLib->GetElementIcon(n));
+			BtnNames.push_back((LPCTSTR)pElemLib->GetElementName(n));
 
 			TBBUTTON Btn;
 			memset(&Btn, 0, sizeof(Btn));
@@ -1160,7 +1160,7 @@ BOOL CArchView::CreateElementButtons()
 			Btn.idCommand = ID_ADD_ELEMENT0 + ElIndex;
 			Btn.fsState = TBSTATE_ENABLED;
 			Btn.fsStyle = TBSTYLE_BUTTON;
-			Btn.iString = (INT_PTR)(LPCTSTR)ElemName;
+			Btn.iString = (INT_PTR)BtnNames.back().c_str();
 			TBCtrl.InsertButton(ElIndex, &Btn);
 
 			ElIndex++;

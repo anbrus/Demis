@@ -2,18 +2,18 @@ REGEDIT4
 
 [HKEY_CURRENT_USER\Software\RGATA]
 
-[HKEY_CURRENT_USER\Software\RGATA\Design Microsystems]
+[HKEY_CURRENT_USER\Software\RGATA\Design Microsystems v3.5.5]
 
-[HKEY_CURRENT_USER\Software\RGATA\Design Microsystems\Recent File List]
+[HKEY_CURRENT_USER\Software\RGATA\Design Microsystems v3.5.5\Recent File List]
 
-[HKEY_CURRENT_USER\Software\RGATA\Design Microsystems\Settings]
+[HKEY_CURRENT_USER\Software\RGATA\Design Microsystems v3.5.5\Settings]
 
 [HKEY_LOCAL_MACHINE\Software\RGATA]
 
-[HKEY_LOCAL_MACHINE\Software\RGATA\Design Microsystems]
+[HKEY_LOCAL_MACHINE\Software\RGATA\Design Microsystems v3.5.5]
 
-[HKEY_LOCAL_MACHINE\Software\RGATA\Design Microsystems\Settings]
+[HKEY_LOCAL_MACHINE\Software\RGATA\Design Microsystems v3.5.5\Settings]
 
-[HKEY_LOCAL_MACHINE\Software\RGATA\Design Microsystems\Settings\Elements Libraries]
-"{6B4C02AF-DC58-4935-B438-552DEBB72761}"="{508879A8-2F6F-421E-A852-385411F84874}"
+[HKEY_LOCAL_MACHINE\Software\RGATA\Design Microsystems v3.5.5\Settings\Elements Libraries]
+"{6B4C02AF-DC58-4935-B438-552DEBB72761}"="c:\Projects\Demis2k\Debug\StdElem.dll"
 

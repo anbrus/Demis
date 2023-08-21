@@ -8,6 +8,8 @@
 #include "StdElemApp.h"
 #include "utils.h"
 
+#include <VersionHelpers.h>
+
 #ifdef _DEBUG
 #undef THIS_FILE
 static char THIS_FILE[] = __FILE__;
@@ -173,8 +175,12 @@ BOOL CIndicatorDyn::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
+
+	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+
 	pConstrElemWnd->Create(ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
 
@@ -461,16 +467,17 @@ void CIndDArchWnd::DrawStatic(CDC* pDC)
 	pDC->MoveTo(16, 0);
 	pDC->LineTo(16, Size.cy - 6);
 
-	//Рисуем проводки
-	for (int n = 0; n < 8; n++) {
-		pDC->MoveTo(pElement->ConPoint[n].x, pElement->ConPoint[n].y);
-		pDC->LineTo(pElement->ConPoint[n].x + 4, pElement->ConPoint[n].y);
-	}
-	pDC->MoveTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y);
-	pDC->LineTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y - 4);
+	//Прямоугольник под цифрами выводов
+	CRect ValuesRect(7, 1, 7 + 9, 124);
+	pDC->FillSolidRect(ValuesRect.left, ValuesRect.top, ValuesRect.Width(), ValuesRect.Height(), RGB(254, 254, 254));
 
 	for (int n = 0; n < 8; n++) {
 		pDC->PatBlt(pElement->ConPoint[n].x - 2, pElement->ConPoint[n].y - 2, 5, 5, WHITENESS);
+
+		//Рисуем проводки
+		pDC->MoveTo(pElement->ConPoint[n].x, pElement->ConPoint[n].y);
+		pDC->LineTo(pElement->ConPoint[n].x + 4, pElement->ConPoint[n].y);
+
 		//Рисуем палочку или крестик
 		if (pElement->ConPin[n]) {
 			pDC->SelectObject(pTempPen);
@@ -485,7 +492,12 @@ void CIndDArchWnd::DrawStatic(CDC* pDC)
 			pDC->LineTo(pElement->ConPoint[n].x + 3, pElement->ConPoint[n].y - 3);
 		}
 	}
+
 	pDC->PatBlt(pElement->ConPoint[8].x - 2, pElement->ConPoint[8].y - 2, 5, 5, WHITENESS);
+
+	pDC->MoveTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y);
+	pDC->LineTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y - 4);
+
 	if (pElement->ConPin[8]) {
 		pDC->SelectObject(pTempPen);
 		pDC->MoveTo(pElement->ConPoint[8].x, pElement->ConPoint[8].y + 2);

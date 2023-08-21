@@ -7,6 +7,9 @@
 #include "AddressDlg.h"
 #include "..\definitions.h"
 #include "ElemInterf.h"
+#include "utils.h"
+
+#include <VersionHelpers.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -79,11 +82,13 @@ BOOL CInputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 {
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
-	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
-		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->CreateEx(0, ClassName, "Порт ввода", WS_VISIBLE | WS_CHILD,
+	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Порт ввода", WS_VISIBLE | WS_CHILD,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
+
+	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	UpdateTipText();
 
@@ -122,6 +127,7 @@ CInPortArchWnd::CInPortArchWnd(CElementBase* pElement) : CElementWnd(pElement)
 CInPortArchWnd::~CInPortArchWnd()
 {
 }
+
 
 void CInPortArchWnd::DrawDynamic(CDC* pDC)
 {
@@ -172,19 +178,10 @@ void CInPortArchWnd::OnAddress()
 	AfxSetResourceHandle(hInstOld);
 }
 
-static void createMemoryDC(CDC* pDC, CDC* pMemoryDC, int width, int height) {
-	pMemoryDC->CreateCompatibleDC(pDC);
-	CBitmap bmp;
-	bmp.CreateCompatibleBitmap(pDC, width, height);
-	HGDIOBJ hBmpOld = pMemoryDC->SelectObject(bmp);
-	DeleteObject(hBmpOld);
-	pMemoryDC->PatBlt(0, 0, width, height, WHITENESS);
-}
-
 int CInPortArchWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	CClientDC dc(this);
 
-	createMemoryDC(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
+	createCompatibleDc(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
 
 	return 0;
 }
@@ -234,6 +231,11 @@ void CInPortArchWnd::DrawStatic(CDC *pDC)
 		pOldPen = pDC->SelectObject(&theApp.SelectPen);
 	else pOldPen = pDC->SelectObject(&theApp.DrawPen);
 	pDC->MoveTo(16, 0); pDC->LineTo(16, Size.cy);
+
+	//Прямоугольник под цифрами выводов
+	CRect ValuesRect(7, 1, 7+9, 124);
+	pDC->FillSolidRect(ValuesRect.left, ValuesRect.top, ValuesRect.Width(), ValuesRect.Height(), RGB(254, 254, 254));
+
 
 	//Рисуем проводки
 	for (int n = 0; n < 8; n++) {

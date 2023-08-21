@@ -1,0 +1,167 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    08/21/23 14:32:42
+Timer.asm						     Page 1 - 1
+
+
+				;Демонстрация работы с таймером ВИ54
+				;Используется режим 3 таймера, в котором на выходе Out формируется сигнал в форме меандра
+				;Частота таймера 1Гц, Коэффициент деления = 2
+				;На выходе Out таймер формирует меандр с периодом 2 секунды
+				;Длительности лог. 0 и лог. 1 будут одинаковые по 1 секунде
+				;Программа будет увеличивать значение счётчика по фронту и спаду
+				;То есть счётчик будет увеличиваться на 1 каждую секунду
+				;Для разрешения работы таймера нужно нажать кнопку "Пуск"
+
+				.386
+				;Задайте объём ПЗУ в байтах
+ = 1000				RomSize           EQU 4096
+
+ = 0043				PORT_TIMER_CW     EQU 43h    ;Порт управляющего регистра таймера
+ = 0040				PORT_TIMER        EQU 40h    ;Порт счётчика таймера
+ = 0000				PORT_TIMER_OUT    EQU 0      ;Порт ввода, к которому подключен выход таймера
+ = 0000				PORT_COUNTER_LOW  EQU 0      ;Порт вывода младшей цифры счётчика
+ = 0001				PORT_COUNTER_HIGH EQU 1      ;Порт вывода старшей цифры счётчика
+
+ 0000				Data       SEGMENT use16 AT 40h
+ 0000 00			timerval   db ?  ;Последнее значение с выхода таймера
+ 0001 00			counter    db ?  ;Двоично-десятичное значение счётчика
+ 0002				Data       ENDS
+
+ 0000				Stk        SEGMENT use16 AT 100h
+ 0000  0064 [			           dw    100 dup (?)
+        0000
+       ]
+ 00C8				StkTop     Label Word
+ 00C8				Stk        ENDS
+
+ 0000				Code       SEGMENT use16
+				;Образы цифр от 0 до 9 для 7-ми сегментного индикатора
+ 0000 3F 0C 76 5E 4D 5B		digits     db 3Fh, 0Ch, 76h, 05Eh, 4Dh, 5Bh, 7Bh, 0Eh, 7Fh, 5Fh
+       7B 0E 7F 5F
+
+				           ASSUME cs:Code, ds:Data, es:Data, ss: Stk
+
+				;Процедура инициализации режима таймера
+ 000A				InitTimer        PROC  NEAR
+ 000A  B0 16			           mov   al, 16h             ;Режим 3, работа с младшим байтом
+ 000C  E6 43			           out   PORT_TIMER_CW, al
+				           
+ 000E  B0 02			           mov   al, 2               ;Коэффициент деления 2
+ 0010  E6 40			           out   PORT_TIMER, al
+
+ 0012  C3			           ret
+ 0013				InitTimer        ENDP
+
+				;Процедура отображения значения счётчика
+ 0013				ShowCounter      PROC NEAR
+				           ;Отображаем младшую цифру из младших 4 бит счётчика
+ 0013  A0 0001 R		           mov   al, counter
+ 0016  24 0F			           and   al, 0fh
+ 0018  2E: D7			           xlat  digits
+ 001A  E6 00			           out   PORT_COUNTER_LOW, al
+
+				           ;Отображаем старшую цифру из старших 4 бит счётчика
+ 001C  A0 0001 R		           mov   al, counter
+ 001F  C0 E8 04			           shr   al, 4
+ 0022  2E: D7			           xlat  digits
+ 0024  E6 01			           out   PORT_COUNTER_HIGH, al
+
+ 0026  C3			           ret
+ 0027				ShowCounter      ENDP
+
+				;Процедура ожидания изменения выхода таймера
+ 0027				WaitTimer        PROC NEAR
+ 0027				WaitTimerLoop:
+ 0027  E4 00			           in    al, PORT_TIMER_OUT       ;Чтение выхода таймера
+ 0029  3A 06 0000 R		           cmp   al, timerval             ;Проверка на изменение выхода
+ 002D  74 F8			           jz    WaitTimerLoop            ;Крутимся в цикле, пока выход не меняется
+ 002F  A2 0000 R		           mov   timerval, al             ;Запоминаем новое значение выхода
+				           
+ 0032  C3			           ret
+ 0033				WaitTimer        ENDP
+
+				;Процедура инкрементирования счётчика
+ 0033				IncCounter       PROC NEAR
+ 0033  A0 0001 R		           mov   al, counter
+ 0036  04 01			           add   al, 1
+ 0038  27			           daa                   ;У нас счётчик двоично-десятичный, делаем коррекцию
+ 0039  A2 0001 R		           mov   counter, al
+				           
+ 003C  C3			           ret
+ 003D				IncCounter       ENDP
+
+ 003D				Start:
+ 003D  B8 ---- R		           mov   ax, Data
+ 0040  8E D8			           mov   ds, ax
+ 0042  8E C0			           mov   es, ax
+ 0044  B8 ---- R		           mov   ax, Stk
+ 0047  8E D0			           mov   ss, ax
+ 0049  8D 26 00C8 R		           lea   sp, StkTop
+				           
+				           ;Записываем в счётчик значение 0
+ 004D  33 C0			           xor   ax, ax
+ 004F  A2 0001 R		           mov   counter, al
+				           
+				           ;После инициализации таймера на его выходе будет 1
+				           ;Первый отсчёт таймера будем фиксировать по переходу выхода в 0
+				           ;Поэтому в качестве предыдущего значения запомним 1
+ 0052  FE C0			           inc   al
+ 0054  A2 0000 R		           mov   timerval, al    
+				           
+ 0057  E8 FFB0			           call  InitTimer       ;Инициализация режима работы таймера
+				           
+ 005A				MainLoop:
+ 005A  E8 FFB6			           call  ShowCounter     ;Обновляем индикаторы счётчика
+ 005D  E8 FFC7			           call  WaitTimer       ;Ждём изменения сигнала на выходе таймера
+ 0060  E8 FFD0			           call  IncCounter      ;Инкрементируем счётчик
+ 0063  EB F5			           jmp   MainLoop        ;Бесконечный цикл
+
+				           org   RomSize-16
+				           ASSUME cs:NOTHING
+ 0FF0  EA ---- 003D R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+				END        Start
+Microsoft (R) Macro Assembler Version 6.14.8444		    08/21/23 14:32:42
+Timer.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 0002	  Abs	  Private 
+Stk  . . . . . . . . . . . . . .	16 Bit	 00C8	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+IncCounter . . . . . . . . . . .	P Near	 0033	  Code	Length= 000A Public
+InitTimer  . . . . . . . . . . .	P Near	 000A	  Code	Length= 0009 Public
+ShowCounter  . . . . . . . . . .	P Near	 0013	  Code	Length= 0014 Public
+WaitTimer  . . . . . . . . . . .	P Near	 0027	  Code	Length= 000C Public
+  WaitTimerLoop  . . . . . . . .	L Near	 0027	  Code	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+MainLoop . . . . . . . . . . . .	L Near	 005A	  Code	
+PORT_COUNTER_HIGH  . . . . . . .	Number	 0001h	 
+PORT_COUNTER_LOW . . . . . . . .	Number	 0000h	 
+PORT_TIMER_CW  . . . . . . . . .	Number	 0043h	 
+PORT_TIMER_OUT . . . . . . . . .	Number	 0000h	 
+PORT_TIMER . . . . . . . . . . .	Number	 0040h	 
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+Start  . . . . . . . . . . . . .	L Near	 003D	  Code	
+StkTop . . . . . . . . . . . . .	Word	 00C8	  Stk	
+counter  . . . . . . . . . . . .	Byte	 0001	  Data	
+digits . . . . . . . . . . . . .	Byte	 0000	  Code	
+timerval . . . . . . . . . . . .	Byte	 0000	  Data	
+
+	   0 Warnings
+	   0 Errors

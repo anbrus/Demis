@@ -7,6 +7,7 @@
 #include "OutputPort.h"
 #include "AddressDlg.h"
 #include "..\definitions.h"
+#include "utils.h"
 
 #include <VersionHelpers.h>
 
@@ -140,19 +141,10 @@ COutPortArchWnd::~COutPortArchWnd()
 {
 }
 
-static void createMemoryDC(CDC* pDC, CDC* pMemoryDC, int width, int height) {
-	pMemoryDC->CreateCompatibleDC(pDC);
-	CBitmap bmp;
-	bmp.CreateCompatibleBitmap(pDC, width, height);
-	HGDIOBJ hBmpOld = pMemoryDC->SelectObject(bmp);
-	DeleteObject(hBmpOld);
-	pMemoryDC->PatBlt(0, 0, width, height, WHITENESS);
-}
-
 int COutPortArchWnd::OnCreate(LPCREATESTRUCT lpCreateStruct) {
 	CClientDC dc(this);
 
-	createMemoryDC(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
+	createCompatibleDc(&dc, &MemoryDC, lpCreateStruct->cx, lpCreateStruct->cy);
 	
 	return 0;
 }
@@ -434,8 +426,7 @@ void COutPortArchWnd::OnRotate(UINT nId)
 	MoveWindow(pls.rcNormalPosition.left, pls.rcNormalPosition.top, Size.cx, Size.cy);
 
 	CClientDC dc(this);
-	MemoryDC.DeleteDC();
-	createMemoryDC(&dc, &MemoryDC, Size.cx, Size.cy);
+	createCompatibleDc(&dc, &MemoryDC, Size.cx, Size.cy);
 	Invalidate();
 	GetParent()->SendMessage(WMU_ARCHELEM_CONNECT, 0, pElement->id);
 }

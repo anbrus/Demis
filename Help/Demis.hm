@@ -69,7 +69,6 @@ HIDR_MAINFRAME                          0x20080
 HIDR_PRJTYPE                            0x20081
 HIDR_ASSMTYPE                           0x20082
 HIDR_ARCHTYPE                           0x20083
-HIDR_DEBUGFRAME                         0x20084
 HIDR_DEBUGTYPE                          0x20084
 HIDR_MAINFRAMEC                         0x20084
 HIDR_ARCHTYPEC                          0x20085

@@ -8,6 +8,7 @@
 #include "StdElemApp.h"
 #include "utils.h"
 
+#include <VersionHelpers.h>
 
 #ifdef _DEBUG
 #undef THIS_FILE
@@ -94,8 +95,10 @@ BOOL CMatrixElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Матричный индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
+	pArchElemWnd->CreateEx(styleEx, ClassName, "Матричный индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
+	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 	pConstrElemWnd->Create(ClassName, "Матричный индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
 		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
 
@@ -361,6 +364,8 @@ void CMatrixArchWnd::DrawStatic(CDC *pDC) {
 
 	//Общий вывод
 	pDC->Rectangle(23, 7, 25 + cx * 15, 22);
+	CBrush WhiteBrush(RGB(254, 254, 254));
+	CGdiObject* pOldBrush = pDC->SelectObject(&WhiteBrush);
 	//Вертикальные ячейки
 	for (int n = 0; n < cy; n++) {
 		pDC->Rectangle(8, n * 15 + 21, 24, n * 15 + 38);
@@ -369,6 +374,7 @@ void CMatrixArchWnd::DrawStatic(CDC *pDC) {
 	for (int n = 0; n < cx; n++) {
 		pDC->Rectangle(23 + n * 15, cy * 15 + 22, n * 15 + 40, cy * 15 + 38);
 	}
+	pDC->SelectObject(pOldBrush);
 	//Делаем жирную обводную линию справа
 	pDC->MoveTo(cx * 15 + 24, 22);
 	pDC->LineTo(cx * 15 + 24, cy * 15 + 23);
@@ -388,6 +394,7 @@ void CMatrixArchWnd::DrawStatic(CDC *pDC) {
 	}
 
 	//Рисуем букву E
+	pDC->FillSolidRect(24, 8, cx * 15 - 1, 12, RGB(254, 254, 254));
 	int X = 23 + cx * 15 / 2;
 	int Y = 9;
 	pDC->MoveTo(X - 3, Y); pDC->LineTo(X - 3, Y + 8);

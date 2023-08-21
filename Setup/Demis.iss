@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Design Microsystems"
-#define MyAppVersion "3.5.5"
+#define MyAppVersion "3.6.0"
 #define MyAppPublisher "–√¿“”"
 #define MyAppURL "http://www.rsatu.ru/"
 #define MyAppExeName "Demis.exe"
@@ -22,7 +22,7 @@ AppSupportURL={#MyAppURL}
 AppUpdatesURL={#MyAppURL}
 DefaultDirName={pf}\{#MyAppName}
 DisableProgramGroupPage=yes
-OutputBaseFilename=Demis
+OutputBaseFilename=Demis {#MyAppVersion}
 Compression=lzma
 SolidCompression=yes
 DisableDirPage=no
@@ -81,6 +81,16 @@ Source: "{#Demis2kDir}\Examples\Simple\Simple.arh"; DestDir: "{app}\Examples\Sim
 Source: "{#Demis2kDir}\Examples\Simple\Simple.asm"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
 Source: "{#Demis2kDir}\Examples\Simple\SIMPLE.DMS"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
 Source: "{#Demis2kDir}\Examples\Simple\Simple.prj"; DestDir: "{app}\Examples\Simple"; Flags: ignoreversion
+
+Source: "{#Demis2kDir}\Examples\Timer\Timer.arh"; DestDir: "{app}\Examples\Timer"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Timer\Timer.asm"; DestDir: "{app}\Examples\Timer"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Timer\Timer.DMS"; DestDir: "{app}\Examples\Timer"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Timer\Timer.prj"; DestDir: "{app}\Examples\Timer"; Flags: ignoreversion
+
+Source: "{#Demis2kDir}\Examples\Interrupt\Interrupt.arh"; DestDir: "{app}\Examples\Interrupt"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Interrupt\Interrupt.asm"; DestDir: "{app}\Examples\Interrupt"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Interrupt\Interrupt.DMS"; DestDir: "{app}\Examples\Interrupt"; Flags: ignoreversion
+Source: "{#Demis2kDir}\Examples\Interrupt\Interrupt.prj"; DestDir: "{app}\Examples\Interrupt"; Flags: ignoreversion
 
 Source: "{#Demis2kDir}\Release\Assm.dll"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#Demis2kDir}\Release\Dasm.dll"; DestDir: "{app}"; Flags: ignoreversion

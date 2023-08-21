@@ -1,0 +1,156 @@
+Microsoft (R) Macro Assembler Version 6.14.8444		    08/19/23 16:26:36
+Interrupt.asm						     Page 1 - 1
+
+
+				;Демонстрация работы с прерываниями
+				;Программа будет увеличивать значение счётчика по сигналу прерывания от кнопки
+
+				.386
+				;Задайте объём ПЗУ в байтах
+ = 1000				RomSize           EQU 4096
+
+ = 0000				PORT_COUNTER_LOW  EQU 0      ;Порт вывода младшей цифры счётчика
+ = 0001				PORT_COUNTER_HIGH EQU 1      ;Порт вывода старшей цифры счётчика
+
+ 0000				IntTable   SEGMENT use16 AT 0
+				           org   0ffh*4        ; По этому смещению находится адрес обработчика прерывания 0ffh
+ 03FC 0000			IntFFHandlerPtrOffs dw ?       ;Смещение обработчика прерывания  
+ 03FE 0000			IntFFHandlerPtrSeg  dw ?       ;Сегмент обработчика прерывания
+ 0400				IntTable   ENDS
+
+ 0000				Data       SEGMENT use16 AT 40h
+ 0000 00			counter    db ?  ;Двоично-десятичное значение счётчика
+ 0001				Data       ENDS
+
+ 0000				Stk        SEGMENT use16 AT 100h
+ 0000  0064 [			           dw    100 dup (?)
+        0000
+       ]
+ 00C8				StkTop     Label Word
+ 00C8				Stk        ENDS
+
+ 0000				Code       SEGMENT use16
+				;Образы цифр от 0 до 9 для 7-ми сегментного индикатора
+ 0000 3F 0C 76 5E 4D 5B		digits     db 3Fh, 0Ch, 76h, 05Eh, 4Dh, 5Bh, 7Bh, 0Eh, 7Fh, 5Fh
+       7B 0E 7F 5F
+
+				           ASSUME cs:Code, ds:Data, es:Data, ss: Stk
+
+ 000A				IntHandler       PROC FAR
+ 000A  50			           push  ax
+ 000B  1E			           push  ds
+				           
+ 000C  B8 ---- R		           mov   ax, Data
+ 000F  8E D8			           mov   ds, ax
+				           
+ 0011  E8 0017			           call  IncCounter
+				           
+ 0014  1F			           pop   ds
+ 0015  58			           pop   ax
+ 0016  CF			           iret
+ 0017				IntHandler       ENDP
+
+				;Процедура отображения значения счётчика
+ 0017				ShowCounter      PROC NEAR
+				           ;Отображаем младшую цифру из младших 4 бит счётчика
+ 0017  A0 0000 R		           mov   al, counter
+ 001A  24 0F			           and   al, 0fh
+ 001C  2E: D7			           xlat  digits
+ 001E  E6 00			           out   PORT_COUNTER_LOW, al
+
+				           ;Отображаем старшую цифру из старших 4 бит счётчика
+ 0020  A0 0000 R		           mov   al, counter
+ 0023  C0 E8 04			           shr   al, 4
+ 0026  2E: D7			           xlat  digits
+ 0028  E6 01			           out   PORT_COUNTER_HIGH, al
+
+ 002A  C3			           ret
+ 002B				ShowCounter      ENDP
+
+				;Процедура инкрементирования счётчика
+ 002B				IncCounter       PROC NEAR
+ 002B  A0 0000 R		           mov   al, counter
+ 002E  04 01			           add   al, 1
+ 0030  27			           daa                   ;У нас счётчик двоично-десятичный, делаем коррекцию
+ 0031  A2 0000 R		           mov   counter, al
+				           
+ 0034  C3			           ret
+ 0035				IncCounter       ENDP
+
+ 0035				Start:
+ 0035  B8 ---- R		           mov   ax, Data
+ 0038  8E D8			           mov   ds, ax
+ 003A  8E C0			           mov   es, ax
+ 003C  B8 ---- R		           mov   ax, Stk
+ 003F  8E D0			           mov   ss, ax
+ 0041  8D 26 00C8 R		           lea   sp, StkTop
+				           
+				           ;Устанавливаем адрес обработчика прерывания
+ 0045  1E			           push  ds
+ 0046  B8 ---- R		           mov   ax, IntTable
+ 0049  8E D8			           mov   ds, ax
+ 004B  B8 000A R		           mov   ax, cs:IntHandler
+ 004E  A3 03FC R		           mov   ds:IntFFHandlerPtrOffs, ax
+ 0051  B8 ---- R		           mov   ax, Code
+ 0054  A3 03FE R		           mov   ds:IntFFHandlerPtrSeg, ax
+ 0057  1F			           pop   ds
+				           
+				           
+				           ;Записываем в счётчик значение 0
+ 0058  33 C0			           xor   ax, ax
+ 005A  A2 0000 R		           mov   counter, al
+				           
+				           ;Разрешаем прерывания
+ 005D  FB			           sti
+ 005E				MainLoop:
+ 005E  E8 FFB6			           call  ShowCounter     ;Обновляем индикаторы счётчика
+ 0061  F4			           hlt                   ;Останавливаем процессор до поступления прерывания
+ 0062  EB FA			           jmp   MainLoop        ;Бесконечный цикл
+
+				           org   RomSize-16
+				           ASSUME cs:NOTHING
+ 0FF0  EA ---- 0035 R		           jmp   Far Ptr Start
+ 0FF5				Code       ENDS
+				END        Start
+Microsoft (R) Macro Assembler Version 6.14.8444		    08/19/23 16:26:36
+Interrupt.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+Code . . . . . . . . . . . . . .	16 Bit	 0FF5	  Para	  Private 
+Data . . . . . . . . . . . . . .	16 Bit	 0001	  Abs	  Private 
+IntTable . . . . . . . . . . . .	16 Bit	 0400	  Abs	  Private 
+Stk  . . . . . . . . . . . . . .	16 Bit	 00C8	  Abs	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+IncCounter . . . . . . . . . . .	P Near	 002B	  Code	Length= 000A Public
+IntHandler . . . . . . . . . . .	P Far	 000A	  Code	Length= 000D Public
+ShowCounter  . . . . . . . . . .	P Near	 0017	  Code	Length= 0014 Public
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+IntFFHandlerPtrOffs  . . . . . .	Word	 03FC	  IntTable	
+IntFFHandlerPtrSeg . . . . . . .	Word	 03FE	  IntTable	
+MainLoop . . . . . . . . . . . .	L Near	 005E	  Code	
+PORT_COUNTER_HIGH  . . . . . . .	Number	 0001h	 
+PORT_COUNTER_LOW . . . . . . . .	Number	 0000h	 
+RomSize  . . . . . . . . . . . .	Number	 1000h	 
+Start  . . . . . . . . . . . . .	L Near	 0035	  Code	
+StkTop . . . . . . . . . . . . .	Word	 00C8	  Stk	
+counter  . . . . . . . . . . . .	Byte	 0000	  Data	
+digits . . . . . . . . . . . . .	Byte	 0000	  Code	
+
+	   0 Warnings
+	   0 Errors

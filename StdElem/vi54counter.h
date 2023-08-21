@@ -51,3 +51,5 @@ private:
     void pulseMode4();
     void pulseMode5();
 };
+
+uint16_t corr_bcd_dec(uint16_t v);

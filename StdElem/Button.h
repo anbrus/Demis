@@ -22,6 +22,7 @@ protected:
 	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnFixable();
 	afx_msg void OnDrebezg();
+	afx_msg BOOL OnEraseBkgnd(CDC* pDC);
 	//}}AFX_MSG
   DECLARE_MESSAGE_MAP()
 };

@@ -180,13 +180,16 @@ CBeepConstrWnd::~CBeepConstrWnd()
 void CBeepArchWnd::Draw(CDC* pDC)
 {
 	CGdiObject* pOldPen;
+	CBrush brush;
 	if (pElement->ArchSelected) {
 		pOldPen = pDC->SelectObject(&theApp.SelectPen);
 		pDC->SetTextColor(theApp.SelectColor);
+		brush.CreateSolidBrush(theApp.SelectColor);
 	}
 	else {
 		pOldPen = pDC->SelectObject(&theApp.DrawPen);
 		pDC->SetTextColor(theApp.DrawColor);
+		brush.CreateSolidBrush(theApp.DrawColor);
 	}
 
 	pDC->MoveTo(10, 22);
@@ -202,7 +205,7 @@ void CBeepArchWnd::Draw(CDC* pDC)
 	CFont BeepFont;
 	BeepFont.CreatePointFont(100, "Arial");
 	CGdiObject* pOldFont = pDC->SelectObject(&BeepFont);
-	pDC->Rectangle(35, 0, 60, 35);
+	pDC->FrameRect(CRect(35, 0, 60, 35), &brush);
 	pDC->DrawText("&", CRect(35, 0, 60, 35 * 2 / 3),
 		DT_CENTER | DT_VCENTER | DT_SINGLELINE | DT_NOPREFIX);
 	pDC->SelectObject(pOldFont);
