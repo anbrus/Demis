@@ -64,9 +64,6 @@ protected:
 	//{{AFX_MSG(CPrjDoc)
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
-
-private:
-	void CopyProjectFiles(const CString& pathFrom, const CString& pathTo);
 };
 
 

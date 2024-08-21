@@ -2,7 +2,7 @@
 ; SEE THE DOCUMENTATION FOR DETAILS ON CREATING INNO SETUP SCRIPT FILES!
 
 #define MyAppName "Design Microsystems"
-#define MyAppVersion "3.6.0"
+#define MyAppVersion "3.6.1"
 #define MyAppPublisher "–√¿“”"
 #define MyAppURL "http://www.rsatu.ru/"
 #define MyAppExeName "Demis.exe"

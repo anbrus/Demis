@@ -5,6 +5,8 @@
 #include "demis2000.h"
 #include "PrjDoc.h"
 
+#include <filesystem>
+
 #ifdef _DEBUG
 #define new DEBUG_NEW
 #undef THIS_FILE
@@ -230,11 +232,28 @@ BOOL CPrjDoc::SaveDoc(CArchive &ar)
 	CString PrjPathNew = ar.GetFile()->GetFilePath();
 	PrjPathNew = PrjPathNew.Left(PrjPathNew.ReverseFind('\\'));
 
+	std::filesystem::path pathProjectFrom = std::string(PrjPath);
+	std::string nameProjectFrom = pathProjectFrom.stem().string();
+	std::filesystem::path pathProjectTo = std::string(PrjPathNew);
+	std::string nameProjectTo = pathProjectTo.stem().string();
+
 	POSITION Pos = FileList.GetHeadPosition();
 	CString Line;
 	//Сохраняем дерево
 	while (Pos) {
-		PrjFile File = FileList.GetAt(Pos);
+		PrjFile& File = FileList.GetAt(Pos);
+
+		std::filesystem::path pathFile = std::string(File.Path);
+		if (nameProjectFrom != nameProjectTo) {
+			if (pathFile.stem() == nameProjectFrom) {
+				std::string pathFrom(PrjPath + "\\" + pathFile.c_str());
+				pathFile.replace_filename(nameProjectTo + pathFile.extension().string());
+				std::string pathTo(PrjPathNew + "\\" + pathFile.c_str());
+				CopyFile(pathFrom.c_str(), pathTo.c_str(), FALSE);
+				File.Path = pathFile.c_str();
+			}
+		}
+
 		switch (File.Folder) {
 		case 0: Line = "[GLOBAL]="; break;
 		case 1: Line = "[SOURCE]="; break;
@@ -282,25 +301,12 @@ BOOL CPrjDoc::SaveDoc(CArchive &ar)
 	}
 
 	if (PrjPathNew != PrjPath) {
-		CopyProjectFiles(PrjPath, PrjPathNew);
+		//CopyProjectFiles(PrjPath, PrjPathNew);
 		PrjPath = PrjPathNew;
-		pMainFrame->CloseAllWindows();
+		//pMainFrame->CloseAllWindows();
 	}
 
 	return TRUE;
-}
-
-void CPrjDoc::CopyProjectFiles(const CString& pathFrom, const CString& pathTo) {
-	POSITION Pos = FileList.GetHeadPosition();
-	CString Line;
-	while (Pos) {
-		PrjFile File = FileList.GetNext(Pos);
-		CString pathFileFrom = pathFrom + "\\" + File.Path;
-		if (GetFileAttributes(pathFileFrom) == INVALID_FILE_ATTRIBUTES) continue;
-		CString pathFileTo = pathTo + "\\" + File.Path;
-
-		CopyFile(pathFileFrom, pathFileTo, FALSE);
-	}
 }
 
 BOOL CPrjDoc::LoadDoc(CArchive &ar)

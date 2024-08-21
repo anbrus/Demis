@@ -28,7 +28,8 @@ CPrjListView::~CPrjListView()
 
 BEGIN_MESSAGE_MAP(CPrjListView, CTreeView)
 	//{{AFX_MSG_MAP(CPrjListView)
-	ON_COMMAND(ID_FILE_ADD, OnFileAdd)
+    ON_COMMAND(ID_FILE_SAVE_AS, OnFileSaveAs)
+    ON_COMMAND(ID_FILE_ADD, OnFileAdd)
 	ON_COMMAND(ID_SOURCE_ADD, OnSourceAdd)
 	ON_COMMAND(ID_INC_ADD, OnIncAdd)
 	ON_COMMAND(ID_ARCH_ADD, OnArchAdd)
@@ -86,26 +87,32 @@ void CPrjListView::OnInitialUpdate()
   CString GlFold="Проект ";
   GlFold+=pDoc->GetTitle();
   hGlobalFolder=Tree.InsertItem(GlFold,0,0);
-  hSourceFolder=Tree.InsertItem("Ассемблируемые",0,0,hGlobalFolder);
-  hIncFolder=Tree.InsertItem("Включаемые",0,0,hGlobalFolder);
-  hArchFolder=Tree.InsertItem("Архитектура",0,0,hGlobalFolder);
+  hSourceFolder = Tree.InsertItem("Ассемблируемые", 0, 0, hGlobalFolder);
+  hIncFolder = Tree.InsertItem("Включаемые", 0, 0, hGlobalFolder);
+  hArchFolder = Tree.InsertItem("Архитектура", 0, 0, hGlobalFolder);
 
-  POSITION Pos=pDoc->FileList.GetHeadPosition();
-  while(Pos) {
-    PrjFile File=pDoc->FileList.GetAt(Pos);
-    HTREEITEM hFolder=NULL;
-    int Icon=0;
-    switch(File.Folder) {
-    case 1 : hFolder=hSourceFolder; Icon=2; break;
-    case 2 : hFolder=hIncFolder;    Icon=3; break;
-    case 3 : hFolder=hArchFolder;   Icon=4; break;
+  UpdateFileList();
+}
+
+void CPrjListView::UpdateFileList() {
+    CTreeCtrl& Tree = GetTreeCtrl();
+
+    POSITION Pos = pDoc->FileList.GetHeadPosition();
+    while (Pos) {
+        PrjFile File = pDoc->FileList.GetAt(Pos);
+        HTREEITEM hFolder = NULL;
+        int Icon = 0;
+        switch (File.Folder) {
+        case 1: hFolder = hSourceFolder; Icon = 2; break;
+        case 2: hFolder = hIncFolder;    Icon = 3; break;
+        case 3: hFolder = hArchFolder;   Icon = 4; break;
+        }
+        if (hFolder) {
+            HTREEITEM hItem = Tree.InsertItem(File.Path, Icon, Icon, hFolder);
+            Tree.SetItemData(hItem, (DWORD)Pos);
+        }
+        pDoc->FileList.GetNext(Pos);
     }
-    if(hFolder) {
-      HTREEITEM hItem=Tree.InsertItem(File.Path,Icon,Icon,hFolder);
-      Tree.SetItemData(hItem,(DWORD)Pos);
-    }
-    pDoc->FileList.GetNext(Pos);
-  }
 }
 
 void CPrjListView::OnUpdate(CView* pSender, LPARAM lHint, CObject* pHint) 
@@ -411,4 +418,14 @@ void CPrjListView::OnContainsEntrypoint()
     }
   }
   File.Flag^=1;
+}
+
+void CPrjListView::OnFileSaveAs() {
+    if (theApp.pPrjDoc == nullptr) return;
+    theApp.pPrjDoc->DoSave(NULL);
+    CString pathNew = theApp.pPrjDoc->GetPathName();
+    CMainFrame* pMainFrame = (CMainFrame*)theApp.m_pMainWnd;
+    pMainFrame->CloseAllWindows();
+    theApp.CloseAllDocuments(FALSE);
+    theApp.OpenDocumentFile(pathNew);
 }

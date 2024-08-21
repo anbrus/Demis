@@ -20,7 +20,7 @@ protected:
 // Attributes
 public:
   CImageList ImageList;
-  HTREEITEM hGlobalFolder,hSourceFolder,hIncFolder,hArchFolder;
+  HTREEITEM hGlobalFolder,hSourceFolder=0,hIncFolder=0,hArchFolder=0;
 
 // Operations
 public:
@@ -48,6 +48,7 @@ protected:
 	// Generated message map functions
 protected:
 	//{{AFX_MSG(CPrjListView)
+	afx_msg void OnFileSaveAs();
 	afx_msg void OnFileAdd();
 	afx_msg void OnSourceAdd();
 	afx_msg void OnIncAdd();
@@ -67,6 +68,9 @@ protected:
 	afx_msg void OnContainsEntrypoint();
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+private:
+	void UpdateFileList();
 };
 
 /////////////////////////////////////////////////////////////////////////////
