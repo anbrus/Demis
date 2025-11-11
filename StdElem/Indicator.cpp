@@ -159,19 +159,20 @@ BOOL CIndicator::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CIndicator::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CIndicator::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
-	pConstrElemWnd->Create(ClassName, "Индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "Индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
+	pConstrElemWnd.value()->Create(ClassName, "Индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd.value()->Size.cx, pConstrElemWnd.value()->Size.cy), pConstrParentWnd, 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	return TRUE;
 }
@@ -485,11 +486,11 @@ void CIndicator::SetPinState(DWORD NewState)
 	else HighLight = ~NewState;
 	if (OldHighLight == HighLight) return;
 
-	if (pArchElemWnd->IsWindowEnabled()) {
-		pArchElemWnd->scheduleRedraw();
+	if (pArchElemWnd.value()->IsWindowEnabled()) {
+		pArchElemWnd.value()->scheduleRedraw();
 	}
-	if (pConstrElemWnd->IsWindowEnabled()) {
-		pConstrElemWnd->scheduleRedraw();
+	if (pConstrElemWnd.value()->IsWindowEnabled()) {
+		pConstrElemWnd.value()->scheduleRedraw();
 	}
 }
 

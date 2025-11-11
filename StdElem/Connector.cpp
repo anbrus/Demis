@@ -51,16 +51,18 @@ BOOL Connector::Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWO
 }
 
 BOOL Connector::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = 0; // IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Соединение", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "Соединение", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
 
 	//pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
-	reinterpret_cast<ConnectorArchWnd*>(pArchElemWnd)->updateSize();
+	reinterpret_cast<ConnectorArchWnd*>(pArchElemWnd.value())->updateSize();
 	UpdateTipText();
 
 	return TRUE;
@@ -472,9 +474,9 @@ void Connector::OnSettings() {
 	if (dlg.DoModal() == IDOK) {
 		size_t countHandle = dlg.countLegs + 1;
 		WINDOWPLACEMENT pls;
-		pArchElemWnd->GetWindowPlacement(&pls);
+		pArchElemWnd.value()->GetWindowPlacement(&pls);
 		CRect rectParent;
-		pArchElemWnd->GetParent()->GetWindowRect(&rectParent);
+		pArchElemWnd.value()->GetParent()->GetWindowRect(&rectParent);
 		CSize sizeMax(
 			rectParent.Width() - pls.rcNormalPosition.left - 20,
 			rectParent.Height() - pls.rcNormalPosition.top - 20
@@ -502,11 +504,11 @@ void Connector::OnSettings() {
 				moveHandle(pls.rcNormalPosition, rectParent.Size(), handleLocations, handleLocations.size() - 2, handleLocations[handleLocations.size() - 2]);
 			}
 		}
-		ConnectorArchWnd* pWnd = reinterpret_cast<ConnectorArchWnd*>(pArchElemWnd);
+		ConnectorArchWnd* pWnd = reinterpret_cast<ConnectorArchWnd*>(pArchElemWnd.value());
 		pWnd->updateSize();
 		ConPoint[0] = handleLocations[0];
 		ConPoint[1] = handleLocations[handleLocations.size() - 1];
-		pArchElemWnd->Invalidate(FALSE);
+		pArchElemWnd.value()->Invalidate(FALSE);
 
 		ModifiedFlag = true;
 	}

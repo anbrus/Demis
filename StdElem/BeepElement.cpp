@@ -101,16 +101,17 @@ BOOL CBeepElement::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CBeepElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CBeepElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Генератор звука", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
-	pConstrElemWnd->Create(ClassName, "Генератор звука", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+	pArchElemWnd.value()->Create(ClassName, "Генератор звука", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
+	pConstrElemWnd.value()->Create(ClassName, "Генератор звука", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd.value()->Size.cx, pConstrElemWnd.value()->Size.cy), pConstrParentWnd, 0);
 
 	UpdateTipText();
 

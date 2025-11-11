@@ -163,16 +163,17 @@ BOOL CKbdElement::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CKbdElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CKbdElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Клавиатура", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
-	pConstrElemWnd->Create(ClassName, "Клавиатура", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+	pArchElemWnd.value()->Create(ClassName, "Клавиатура", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
+	pConstrElemWnd.value()->Create(ClassName, "Клавиатура", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd.value()->Size.cx, pConstrElemWnd.value()->Size.cy), pConstrParentWnd, 0);
 
 	UpdateSize();
 	UpdateTipText();
@@ -422,7 +423,7 @@ void CKbdConstrWnd::PressKey(CPoint point, BOOL Press)
 			KeyPoint.y*BtnSize.cy,
 			(KeyPoint.x + 1)*BtnSize.cx,
 			(KeyPoint.y + 1)*BtnSize.cy));
-		pElement->pArchElemWnd->RedrawWindow();
+		pElement->pArchElemWnd.value()->RedrawWindow();
 	}
 }
 
@@ -439,7 +440,7 @@ void CKbdArchWnd::PressKey(CPoint point, BOOL Press)
 				KeyPoint.y*BtnSize.cy + KeyOffset.y,
 				(KeyPoint.x + 1)*BtnSize.cx + KeyOffset.x,
 				(KeyPoint.y + 1)*BtnSize.cy + KeyOffset.y));
-		pElement->pConstrElemWnd->RedrawWindow();
+		pElement->pConstrElemWnd.value()->RedrawWindow();
 	}
 }
 
@@ -488,8 +489,8 @@ void CKbdElement::OnKbdCaptions()
 				Caption[x][y] = Dlg.Caption[x][y];
 			}
 		}
-		pArchElemWnd->RedrawWindow();
-		pConstrElemWnd->RedrawWindow();
+		pArchElemWnd.value()->RedrawWindow();
+		pConstrElemWnd.value()->RedrawWindow();
 		ModifiedFlag = TRUE;
 	}
 }
@@ -706,8 +707,8 @@ void CKbdConstrWnd::UpdateSize()
 
 void CKbdElement::UpdateSize()
 {
-	((CKbdArchWnd*)pArchElemWnd)->UpdateSize();
-	((CKbdConstrWnd*)pConstrElemWnd)->UpdateSize();
+	((CKbdArchWnd*)pArchElemWnd.value())->UpdateSize();
+	((CKbdConstrWnd*)pConstrElemWnd.value())->UpdateSize();
 
 	PointCount = KbdSize.cx + KbdSize.cy;
 	int PointIndex = 0;
@@ -720,14 +721,14 @@ void CKbdElement::UpdateSize()
 	}
 	//Выходы
 	for (int x = 0; x < KbdSize.cx; x++) {
-		ConPoint[PointIndex].x = pArchElemWnd->Size.cx - 3;
+		ConPoint[PointIndex].x = pArchElemWnd.value()->Size.cx - 3;
 		ConPoint[PointIndex].y = 24 + (KbdSize.cx + KbdSize.cy - x) * 15 - 3;
 		ConPin[PointIndex] = FALSE; PinType[PointIndex] = PT_OUTPUT;
 		PointIndex++;
 	}
 
-	pArchElemWnd->RedrawWindow();
-	pConstrElemWnd->RedrawWindow();
+	pArchElemWnd.value()->RedrawWindow();
+	pConstrElemWnd.value()->RedrawWindow();
 }
 
 void CKbdArchWnd::OnFixable()

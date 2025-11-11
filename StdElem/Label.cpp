@@ -21,8 +21,8 @@ static char THIS_FILE[] = __FILE__;
 CLabel::CLabel(BOOL ArchMode, int id)
 	: CElementBase(ArchMode, id)
 {
-	pArchElemWnd = NULL;
-	pConstrElemWnd = NULL;
+	pArchElemWnd = std::nullopt;
+	pConstrElemWnd = std::nullopt;
 
 	TipText = "Текстовая метка";
 	IdIndex = 4;
@@ -43,9 +43,10 @@ CLabel::~CLabel()
 {
 }
 
-BOOL CLabel::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
-	pLabelWnd = new CLabelWnd(this);
+BOOL CLabel::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
+	CLabelWnd* pLabelWnd = new CLabelWnd(this);
 	if (OnArch) pArchElemWnd = pLabelWnd;
 	else pConstrElemWnd = pLabelWnd;
 

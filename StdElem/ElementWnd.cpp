@@ -26,6 +26,7 @@ CElementWnd::CElementWnd(CElementBase* pElement)
 
 CElementWnd::~CElementWnd()
 {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
 	if (m_hWnd) DestroyWindow();
 }
 

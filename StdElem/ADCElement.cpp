@@ -109,22 +109,23 @@ BOOL CADCElement::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CADCElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CADCElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "ÀÖÏ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
-	pConstrElemWnd->Create(ClassName, "ÀÖÏ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "ÀÖÏ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
+	pConstrElemWnd.value()->Create(ClassName, "ÀÖÏ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd.value()->Size.cx, pConstrElemWnd.value()->Size.cy), pConstrParentWnd, 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	ChangePinConfiguration();
-	((CADCArchWnd*)pArchElemWnd)->SetRange(HiPrecision);
-	((CADCConstrWnd*)pConstrElemWnd)->SetRange(HiPrecision);
+	((CADCArchWnd*)pArchElemWnd.value())->SetRange(HiPrecision);
+	((CADCConstrWnd*)pConstrElemWnd.value())->SetRange(HiPrecision);
 
 	UpdateTipText();
 
@@ -529,8 +530,8 @@ void CADCElement::SetPinState(DWORD NewState)
 
 	theApp.pHostInterface->OnPinStateChanged(GetPinState(), id);
 
-	if (pArchElemWnd->IsWindowEnabled()) {
-		pArchElemWnd->scheduleRedraw();
+	if (pArchElemWnd.value()->IsWindowEnabled()) {
+		pArchElemWnd.value()->scheduleRedraw();
 	}
 }
 
@@ -554,8 +555,8 @@ void CADCElement::OnLimits()
 	if (Dlg.DoModal() == IDOK) {
 		LoLimit = Dlg.m_LoLimit;
 		HiLimit = Dlg.m_HiLimit;
-		pArchElemWnd->RedrawWindow();
-		pConstrElemWnd->RedrawWindow();
+		pArchElemWnd.value()->RedrawWindow();
+		pConstrElemWnd.value()->RedrawWindow();
 		ModifiedFlag = TRUE;
 	}
 }
@@ -604,8 +605,8 @@ void CADCElement::OnTickTimer()
 	State = stateNew;
 	theApp.pHostInterface->OnPinStateChanged(State, id);
 
-	if (pArchElemWnd->IsWindowEnabled()) {
-		pArchElemWnd->scheduleRedraw();
+	if (pArchElemWnd.value()->IsWindowEnabled()) {
+		pArchElemWnd.value()->scheduleRedraw();
 	}
 }
 
@@ -629,10 +630,10 @@ void CADCElement::OnHiPrecision()
 
 	ChangePinConfiguration();
 
-	((CADCArchWnd*)pArchElemWnd)->SetRange(HiPrecision);
-	((CADCConstrWnd*)pConstrElemWnd)->SetRange(HiPrecision);
-	pArchElemWnd->Invalidate();
-	pConstrElemWnd->Invalidate();
+	((CADCArchWnd*)pArchElemWnd.value())->SetRange(HiPrecision);
+	((CADCConstrWnd*)pConstrElemWnd.value())->SetRange(HiPrecision);
+	pArchElemWnd.value()->Invalidate();
+	pConstrElemWnd.value()->Invalidate();
 
 	ModifiedFlag = TRUE;
 }
@@ -646,12 +647,12 @@ void CADCElement::ChangePinConfiguration()
 	ConPoint[0].x = 2; ConPoint[0].y = (PointCount - 2) * 15 + 2 * 10 - 7;
 	ConPin[0] = FALSE; PinType[0] = PT_INPUT;
 
-	ConPoint[1].x = pArchElemWnd->Size.cx - 3;
+	ConPoint[1].x = pArchElemWnd.value()->Size.cx - 3;
 	ConPoint[1].y = PointCount * 15 - 5 - 12;
 	ConPin[1] = FALSE; PinType[1] = PT_OUTPUT;
 
 	for (int n = 2; n < PointCount; n++) {
-		ConPoint[n].x = pArchElemWnd->Size.cx - 3;
+		ConPoint[n].x = pArchElemWnd.value()->Size.cx - 3;
 		ConPoint[n].y = n * 15 - 20;
 		ConPin[n] = FALSE; PinType[n] = PT_OUTPUT;
 	}

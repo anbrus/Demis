@@ -32,7 +32,7 @@ public:
 	CWnd* pArchParentWnd, *pConstrParentWnd;
 	int64_t* pTickCounter;
 	int IdIndex;
-	CElementWnd* pArchElemWnd, *pConstrElemWnd;
+	std::optional<CElementWnd*> pArchElemWnd, pConstrElemWnd;
 	CString TipText;
 	BOOL ModifiedFlag;
 	std::vector<DWORD> Addresses;
@@ -45,8 +45,8 @@ public:
 	virtual DWORD get_nType() override;
 	virtual CString get_sName() override;
 	virtual CString get_sClsId() override;
-	virtual HWND get_hArchWnd() override;
-	virtual HWND get_hConstrWnd() override;
+	virtual std::optional<HWND> get_hArchWnd() override;
+	virtual std::optional<HWND> get_hConstrWnd() override;
 	virtual std::vector<DWORD> GetAddresses() override;
 	virtual BOOL get_bModifiedFlag() override;
 	virtual CString get_sTipText() override;

@@ -25,15 +25,22 @@ CElementBase::CElementBase(BOOL ArchMode, int id):
 	pTickCounter = NULL;
 	EditMode = TRUE;
 	ModifiedFlag = FALSE;
-	pArchElemWnd = NULL; pConstrElemWnd = NULL;
+	pArchElemWnd = std::nullopt;
+	pConstrElemWnd = std::nullopt;
 	pArchParentWnd = NULL;
 	TipText = "";
 }
 
 CElementBase::~CElementBase()
 {
-	if (pArchElemWnd) delete pArchElemWnd;
-	if (pConstrElemWnd) delete pConstrElemWnd;
+	if (pArchElemWnd) {
+		delete pArchElemWnd.value();
+		pArchElemWnd = std::nullopt;
+	}
+	if (pConstrElemWnd) {
+		delete pConstrElemWnd.value();
+		pConstrElemWnd = std::nullopt;
+	}
 }
 
 BOOL CElementBase::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
@@ -100,19 +107,19 @@ BOOL CElementBase::Save(HANDLE hFile)
 }*/
 
 BOOL CElementBase::IsArchRedrawRequired() {
-	return pArchElemWnd != nullptr && pArchElemWnd->isRedrawRequired();
+	return pArchElemWnd && pArchElemWnd.value()->isRedrawRequired();
 }
 
 BOOL CElementBase::IsConstrRedrawRequired() {
-	return pConstrElemWnd != nullptr && pConstrElemWnd->isRedrawRequired();
+	return pConstrElemWnd && pConstrElemWnd.value()->isRedrawRequired();
 }
 
 void CElementBase::RedrawArchWnd(int64_t ticks) {
-	if (pArchElemWnd != nullptr) pArchElemWnd->Redraw(ticks);
+	if (pArchElemWnd) pArchElemWnd.value()->Redraw(ticks);
 }
 
 void CElementBase::RedrawConstrWnd(int64_t ticks) {
-	if (pConstrElemWnd != nullptr) pConstrElemWnd->Redraw(ticks);
+	if (pConstrElemWnd) pConstrElemWnd.value()->Redraw(ticks);
 }
 
 
@@ -126,14 +133,14 @@ CString CElementBase::get_sName() { return theApp.ElementId[IdIndex].Name; }
 
 CString CElementBase::get_sClsId() { return theApp.ElementId[IdIndex].ClsId; }
 
-HWND CElementBase::get_hArchWnd() {
-	if (pArchElemWnd) return pArchElemWnd->m_hWnd;
-	else return NULL;
+std::optional<HWND> CElementBase::get_hArchWnd() {
+	if (pArchElemWnd) return std::optional(pArchElemWnd.value()->m_hWnd);
+	else return std::nullopt;
 }
 
-HWND CElementBase::get_hConstrWnd() {
-	if (pConstrElemWnd) return pConstrElemWnd->m_hWnd;
-	else return NULL;
+std::optional<HWND> CElementBase::get_hConstrWnd() {
+	if (pConstrElemWnd) return std::optional(pConstrElemWnd.value()->m_hWnd);
+	else return std::nullopt;
 }
 
 std::vector<DWORD> CElementBase::GetAddresses() { return Addresses; }
@@ -152,10 +159,10 @@ void CElementBase::put_bConstrSelected(BOOL newVal) { ConstrSelected = newVal; }
 
 DWORD CElementBase::get_nPointCount() { return PointCount; }
 
-long CElementBase::get_nArchAngle() { if (pArchElemWnd) return (long)pArchElemWnd->Angle; return 0;  }
+long CElementBase::get_nArchAngle() { if (pArchElemWnd) return (long)pArchElemWnd.value()->Angle; return 0; }
 
-void CElementBase::put_nArchAngle(long newVal) { if (pArchElemWnd) pArchElemWnd->Angle = newVal; }
+void CElementBase::put_nArchAngle(long newVal) { if (pArchElemWnd) pArchElemWnd.value()->Angle = newVal; }
 
-long CElementBase::get_nConstrAngle() { if (pConstrElemWnd) return (long)pConstrElemWnd->Angle; return 0; }
+long CElementBase::get_nConstrAngle() { if (pConstrElemWnd) return (long)pConstrElemWnd.value()->Angle; return 0; }
 
-void CElementBase::put_nConstrAngle(long newVal) { if (pConstrElemWnd) pConstrElemWnd->Angle = newVal; }
+void CElementBase::put_nConstrAngle(long newVal) { if (pConstrElemWnd) pConstrElemWnd.value()->Angle = newVal; }

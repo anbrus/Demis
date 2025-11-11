@@ -17,9 +17,6 @@ protected: // create from serialization only
 	CStdEditDoc();
 	DECLARE_DYNCREATE(CStdEditDoc)
 
-// Attributes
-public:
-
 // Operations
 public:
 
@@ -39,8 +36,6 @@ public:
 	virtual void AssertValid() const;
 	virtual void Dump(CDumpContext& dc) const;
 #endif
-
-protected:
 
 // Generated message map functions
 protected:

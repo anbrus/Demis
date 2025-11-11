@@ -34,7 +34,6 @@ public:
 	virtual ~CLabel();
 
 	CFont Font;
-	CLabelWnd* pLabelWnd;
 	BOOL OnArch;
 	CString Text;
 	virtual BOOL Reset(BOOL bEditMode, int64_t* pTickCounter, DWORD TaktFreq, DWORD FreePinLevel);

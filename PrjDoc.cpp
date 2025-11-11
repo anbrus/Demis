@@ -6,6 +6,7 @@
 #include "PrjDoc.h"
 
 #include <filesystem>
+#include <fstream>
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -275,6 +276,8 @@ BOOL CPrjDoc::SaveDoc(CArchive &ar)
 	ar.WriteString(Line);
 	Line.Format("[FREEPINLEVEL]=%d\r\n", FreePinLevel);
 	ar.WriteString(Line);
+	Line.Format("[ENCODING]=Utf8\r\n");
+	ar.WriteString(Line);
 	//Сохраняем положения окон
 	CMainFrame* pMainFrame = (CMainFrame*)theApp.m_pMainWnd;
 	//CWnd* pChildWnd;
@@ -323,6 +326,7 @@ BOOL CPrjDoc::LoadDoc(CArchive &ar)
 			if (Line.Find("[FREQ") == 0) { Type = 5; break; }
 			if (Line.Find("[FREEPINLEVEL") == 0) { Type = 6; break; }
 			if (Line.Find("[WND") == 0) { Type = 7; break; }
+			if (Line.Find("[ENCODING]=") == 0) { Type = 8; break; }
 		} while (FALSE);
 		if (Line == "") break;
 		switch (Type) {
@@ -373,10 +377,61 @@ BOOL CPrjDoc::LoadDoc(CArchive &ar)
 			}
 			break;
 		}
+		case 8: {
+			CString strEncoding = Line.Mid(11);
+			if (strEncoding == "Utf8") {
+				encoding = Encoding::Utf8;
+			}
+		}
 		}
 	} while (Line != "");
 
+	/*if (encoding != Encoding::Utf8) {
+		int answer = MessageBox(theApp.m_pMainWnd->m_hWnd, "Необходимо преобразовать кодировку asm-файлов из 866 в UTF-8. Продолжить?", "Вопрос", MB_YESNO);
+		if (answer != IDYES) throw "Ошибка при открытии проекта";
+
+		try {
+			ar.Close();
+			convertEncoding();
+		}
+		catch (...) {}
+	}*/
+
 	return TRUE;
+}
+
+void CPrjDoc::convertEncoding() {
+	POSITION Pos = FileList.GetHeadPosition();
+	while (Pos) {
+		PrjFile& File = FileList.GetAt(Pos);
+
+		std::filesystem::path path((LPCTSTR)File.Path);
+		CString ext(path.extension().c_str());
+		ext.MakeLower();
+		if (ext == ".asm" || ext == ".inc") {
+			std::ifstream f(path, std::ios::in | std::ios::binary);
+			const auto sz = std::filesystem::file_size(path);
+			std::vector<char> buf;
+			buf.resize(sz);
+			std::vector<wchar_t> wbuf;
+			wbuf.resize(sz);
+			f.read(buf.data(), sz);
+			f.close();
+
+			MultiByteToWideChar(866, 0, buf.data(), sz, wbuf.data(), sz+1);
+			WideCharToMultiByte(1251, 0, wbuf.data(), sz, buf.data(), sz + 1, nullptr, nullptr);
+
+			std::ofstream out(path, std::ios::out | std::ios::binary | std::ios::trunc);
+			out.write(buf.data(), sz);
+			out.close();
+		}
+
+		FileList.GetNext(Pos);
+	}
+
+	CFile fileDoc(PrjPath, CFile::modeCreate|CFile::modeWrite|CFile::typeBinary);
+	CArchive archDoc(&fileDoc, CArchive::store);
+	SaveDoc(archDoc);
 }
 
 void CPrjDoc::RedrawArch()

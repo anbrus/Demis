@@ -240,17 +240,18 @@ void CVi54Element::updatePoints() {
 	}
 }
 
-BOOL CVi54Element::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CVi54Element::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Таймер", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "Таймер", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	UpdateTipText();
 
@@ -344,7 +345,7 @@ void CVi54Element::updateClk() {
 		nanosPrevClk = nanos;
 	}
 	if (outPrev != outNew)
-		pArchElemWnd->scheduleRedraw();
+		pArchElemWnd.value()->scheduleRedraw();
 }
 
 void CVi54Element::OnInstructionListener(int64_t ticks) {
@@ -377,10 +378,10 @@ void CVi54Element::OnSettings() {
 
 		ModifiedFlag = TRUE;
 
-		pArchElemWnd->GetParent()->SendMessage(WMU_ARCHELEM_DISCONNECT, 0, id);
+		pArchElemWnd.value()->GetParent()->SendMessage(WMU_ARCHELEM_DISCONNECT, 0, id);
 		updatePoints();
-		reinterpret_cast<CVi54ArchWnd*>(pArchElemWnd)->updateSize();
-		pArchElemWnd->GetParent()->SendMessage(WMU_ARCHELEM_CONNECT, 0, id);
+		reinterpret_cast<CVi54ArchWnd*>(pArchElemWnd.value())->updateSize();
+		pArchElemWnd.value()->GetParent()->SendMessage(WMU_ARCHELEM_CONNECT, 0, id);
 
 		for (CWnd* pChild = pArchParentWnd->GetWindow(GW_CHILD); pChild != NULL; pChild = pChild->GetWindow(GW_HWNDNEXT))
 		{
@@ -401,7 +402,7 @@ void CVi54Element::SetPortData(DWORD Address, DWORD Data) {
 	if (outNew != outOld) {
 		PinState = PinState & (0xffffffff ^ 2) | (outNew ? 2 : 0);
 		theApp.pHostInterface->OnPinStateChanged(PinState, id);
-		pArchElemWnd->scheduleRedraw();
+		pArchElemWnd.value()->scheduleRedraw();
 	}
 }
 
@@ -442,7 +443,7 @@ BOOL CVi54Element::Load(HANDLE hFile) {
 	File.Read(&isFixedFreq, 4);
 
 	updatePoints();
-	reinterpret_cast<CVi54ArchWnd*>(pArchElemWnd)->updateSize();
+	reinterpret_cast<CVi54ArchWnd*>(pArchElemWnd.value())->updateSize();
 
 	for (int n = 0; n < 3; n++) {
 		if (pCounter[n] == this)
@@ -486,7 +487,7 @@ void CVi54Element::SetPinState(DWORD NewState) {
 		theApp.pHostInterface->OnPinStateChanged(PinState, id);
 	}
 
-	pArchElemWnd->scheduleRedraw();
+	pArchElemWnd.value()->scheduleRedraw();
 }
 
 DWORD CVi54Element::GetPinState() {

@@ -13,6 +13,11 @@ typedef struct {
 	DWORD Flag;
 } PrjFile;
 
+enum Encoding {
+	Dos866,
+	Utf8
+};
+
 class CPrjListView;
 
 class CPrjDoc : public CDocument
@@ -50,6 +55,7 @@ public:
 	CDocument* OpenDocument(POSITION Pos);
 	CPrjListView* pView;
 	CList<PrjFile, PrjFile> FileList;
+	Encoding encoding=Encoding::Dos866;
 
 	virtual ~CPrjDoc();
 
@@ -64,6 +70,9 @@ protected:
 	//{{AFX_MSG(CPrjDoc)
 	//}}AFX_MSG
 	DECLARE_MESSAGE_MAP()
+
+private:
+	void convertEncoding();
 };
 
 

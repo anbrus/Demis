@@ -42,7 +42,7 @@ COutputPort::COutputPort(BOOL ArchMode, int id)
 	Addresses.push_back(0);
 	
 	pArchElemWnd = new COutPortArchWnd(this);
-	pConstrElemWnd = NULL;
+	pConstrElemWnd = std::nullopt;
 
 	PointCount = 8;
 	for (int n = 0; n < 8; n++) {
@@ -91,21 +91,22 @@ BOOL COutputPort::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL COutputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
-	((COutPortArchWnd*)pArchElemWnd)->InitializePoints();
+	((COutPortArchWnd*)pArchElemWnd.value())->InitializePoints();
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Порт вывода", WS_VISIBLE | WS_CHILD,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "Порт вывода", WS_VISIBLE | WS_CHILD,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
-	reinterpret_cast<COutPortArchWnd*>(pArchElemWnd)->updateMenu(PopupMenu);
+	reinterpret_cast<COutPortArchWnd*>(pArchElemWnd.value())->updateMenu(PopupMenu);
 	UpdateTipText();
 
 	return TRUE;
@@ -310,8 +311,8 @@ void COutputPort::SetPortData(DWORD Addresses, DWORD Data)
 
 	DWORD OldValue = Value;
 	Value = Data;
-	if (pArchElemWnd->IsWindowEnabled()) {
-		((COutPortArchWnd*)pArchElemWnd)->scheduleRedraw();
+	if (pArchElemWnd.value()->IsWindowEnabled()) {
+		((COutPortArchWnd*)pArchElemWnd.value())->scheduleRedraw();
 	}
 	theApp.pHostInterface->OnPinStateChanged(Value, id);
 }

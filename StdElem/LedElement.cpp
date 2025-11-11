@@ -87,19 +87,20 @@ BOOL CLedElement::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CLedElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CLedElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Светодиод", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
-	pConstrElemWnd->Create(ClassName, "Светодиод", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "Светодиод", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
+	pConstrElemWnd.value()->Create(ClassName, "Светодиод", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd.value()->Size.cx, pConstrElemWnd.value()->Size.cy), pConstrParentWnd, 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	UpdateTipText();
 
@@ -309,11 +310,11 @@ void CLedElement::SetPinState(DWORD NewState)
 	HighLighted = (NewState & 1) ^ (!ActiveHigh);
 	if (OldVal == HighLighted) return;
 
-	if (pArchElemWnd->IsWindowEnabled()) {
-		pArchElemWnd->Invalidate();
+	if (pArchElemWnd.value()->IsWindowEnabled()) {
+		pArchElemWnd.value()->Invalidate();
 	}
-	if (pConstrElemWnd->IsWindowEnabled()) {
-		pConstrElemWnd->Invalidate();
+	if (pConstrElemWnd.value()->IsWindowEnabled()) {
+		pConstrElemWnd.value()->Invalidate();
 	}
 }
 
@@ -333,8 +334,8 @@ void CLedElement::OnSelectColor()
 	CColorDialog Dlg(Color);
 	if (Dlg.DoModal() == IDOK) {
 		Color = Dlg.GetColor();
-		if (pArchElemWnd->IsWindowEnabled()) pArchElemWnd->Invalidate();
-		if (pConstrElemWnd->IsWindowEnabled()) pConstrElemWnd->Invalidate();
+		if (pArchElemWnd.value()->IsWindowEnabled()) pArchElemWnd.value()->Invalidate();
+		if (pConstrElemWnd.value()->IsWindowEnabled()) pConstrElemWnd.value()->Invalidate();
 		ModifiedFlag = 1;
 	}
 }

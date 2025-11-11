@@ -161,8 +161,8 @@ LPARAM CArchView::OnElementLButtonDown(WPARAM nFlags, LPARAM hElement)
 	std::shared_ptr<CElement> pElement = pDoc->Elements[(DWORD)hElement];
 
 	MoveMode = TRUE; CopyMode = FALSE;
-	HWND hCaptureWnd = (HWND)(ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
-	if (hCaptureWnd) ::SetCapture(hCaptureWnd);
+	std::optional<HWND> hCaptureWnd = (ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
+	if (hCaptureWnd) ::SetCapture(hCaptureWnd.value());
 	StartMousePoint = point;
 
 	if (nFlags == MK_LBUTTON) { //На клавиатуре ничего не нажато
@@ -176,15 +176,14 @@ LPARAM CArchView::OnElementLButtonDown(WPARAM nFlags, LPARAM hElement)
 					SelectedCount--;
 					if (ArchMode) pElement2->put_bArchSelected(FALSE);
 					else pElement2->put_bConstrSelected(FALSE);
-					HWND hWnd = (HWND)(ArchMode ? pElement2->get_hArchWnd() :
-						pElement2->get_hConstrWnd());
-					if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
+					std::optional<HWND> optHWnd = (ArchMode ? pElement2->get_hArchWnd() : pElement2->get_hConstrWnd());
+					if (optHWnd) ::InvalidateRect(optHWnd.value(), NULL, FALSE);
 				}
 			}
 			if (ArchMode) pElement->put_bArchSelected(TRUE);
 			else pElement->put_bConstrSelected(TRUE);
-			HWND hWnd = (HWND)(ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
-			if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
+			std::optional<HWND> optHWnd = (ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
+			if (optHWnd) ::InvalidateRect(optHWnd.value(), NULL, FALSE);
 			SelectedCount++;
 		}
 	}
@@ -232,13 +231,13 @@ LPARAM CArchView::OnElementLButtonUp(WPARAM nFlags, LPARAM hElement)
 
 				if (ArchMode&&pElement2->get_bArchSelected()) {
 					pElement2->put_bArchSelected(FALSE);
-					HWND hWnd = (HWND)pElement2->get_hArchWnd();
-					if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
+					std::optional<HWND> hWnd = pElement2->get_hArchWnd();
+					if (hWnd) ::InvalidateRect(hWnd.value(), NULL, FALSE);
 				}
 				if (!ArchMode&&pElement2->get_bConstrSelected()) {
 					pElement2->put_bConstrSelected(FALSE);
-					HWND hWnd = (HWND)pElement2->get_hConstrWnd();
-					if (hWnd) ::InvalidateRect(hWnd, NULL, FALSE);
+					std::optional<HWND> hWnd = pElement2->get_hConstrWnd();
+					if (hWnd) ::InvalidateRect(hWnd.value(), NULL, FALSE);
 				}
 			}
 			SelectedCount = 1;
@@ -256,8 +255,8 @@ LPARAM CArchView::OnElementLButtonUp(WPARAM nFlags, LPARAM hElement)
 			pElement->put_bConstrSelected(!pElement->get_bConstrSelected());
 		}
 
-		HWND hElemWnd = (HWND)(ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
-		if (hElemWnd) ::InvalidateRect(hElemWnd, NULL, TRUE);
+		std::optional<HWND> hElemWnd = (ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
+		if (hElemWnd) ::InvalidateRect(hElemWnd.value(), NULL, TRUE);
 		break;
 	}
 
@@ -321,15 +320,15 @@ void CArchView::OnLButtonDown(UINT nFlags, CPoint point)
 		if (ArchMode) {
 			if (pElement->get_bArchSelected()) {
 				pElement->put_bArchSelected(FALSE);
-				HWND hWnd = (HWND)pElement->get_hArchWnd();
-				if (hWnd) ::InvalidateRect(hWnd, NULL, TRUE);
+				std::optional<HWND> hWnd = pElement->get_hArchWnd();
+				if (hWnd) ::InvalidateRect(hWnd.value(), NULL, TRUE);
 			}
 		}
 		else {
 			if (pElement->get_bConstrSelected()) {
 				pElement->put_bConstrSelected(FALSE);
-				HWND hWnd = (HWND)pElement->get_hConstrWnd();
-				if (hWnd) ::InvalidateRect(hWnd, NULL, TRUE);
+				std::optional<HWND> hWnd = pElement->get_hConstrWnd();
+				if (hWnd) ::InvalidateRect(hWnd.value(), NULL, TRUE);
 			}
 		}
 	}
@@ -349,12 +348,12 @@ void CArchView::OnArchMode()
 	for (const auto entry : pDoc->Elements) {
 		std::shared_ptr<CElement> pElement = entry.second;
 
-		HWND hArchWnd = (HWND)pElement->get_hArchWnd();
-		HWND hConstrWnd = (HWND)pElement->get_hConstrWnd();
-		if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_HIDE);
-		if (hArchWnd) ::ShowWindow(hArchWnd, SW_SHOW);
-		if (hConstrWnd) ::EnableWindow(hConstrWnd, FALSE);
-		if (hArchWnd) ::EnableWindow(hArchWnd, TRUE);
+		std::optional<HWND> hArchWnd = pElement->get_hArchWnd();
+		std::optional<HWND> hConstrWnd = pElement->get_hConstrWnd();
+		if (hConstrWnd) ::ShowWindow(hConstrWnd.value(), SW_HIDE);
+		if (hArchWnd) ::ShowWindow(hArchWnd.value(), SW_SHOW);
+		if (hConstrWnd) ::EnableWindow(hConstrWnd.value(), FALSE);
+		if (hArchWnd) ::EnableWindow(hArchWnd.value(), TRUE);
 	}
 }
 
@@ -367,12 +366,12 @@ void CArchView::OnConstrMode()
 	for (const auto entry : pDoc->Elements) {
 		std::shared_ptr<CElement> pElement = entry.second;
 
-		HWND hArchWnd = (HWND)pElement->get_hArchWnd();
-		HWND hConstrWnd = (HWND)pElement->get_hConstrWnd();
-		if (hArchWnd) ::ShowWindow(hArchWnd, SW_HIDE);
-		if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_SHOW);
-		if (hArchWnd) ::EnableWindow(hArchWnd, FALSE);
-		if (hConstrWnd) ::EnableWindow(hConstrWnd, TRUE);
+		std::optional<HWND> hArchWnd = pElement->get_hArchWnd();
+		std::optional<HWND> hConstrWnd = pElement->get_hConstrWnd();
+		if (hArchWnd) ::ShowWindow(hArchWnd.value(), SW_HIDE);
+		if (hConstrWnd) ::ShowWindow(hConstrWnd.value(), SW_SHOW);
+		if (hArchWnd) ::EnableWindow(hArchWnd.value(), FALSE);
+		if (hConstrWnd) ::EnableWindow(hConstrWnd.value(), TRUE);
 	}
 }
 
@@ -551,23 +550,22 @@ void CArchView::OnLButtonUp(UINT nFlags, CPoint point)
 
 		WINDOWPLACEMENT ElemPlace;
 		ElemPlace.length = sizeof(ElemPlace);
-		HWND hWnd = (HWND)(ArchMode ? pElement->get_hArchWnd() :
-			pElement->get_hConstrWnd());
+		std::optional<HWND> hWnd = (ArchMode ? pElement->get_hArchWnd() : pElement->get_hConstrWnd());
 		if (!hWnd) continue;
 
-		::GetWindowPlacement(hWnd, &ElemPlace);
+		::GetWindowPlacement(hWnd.value(), &ElemPlace);
 		if (SelRect.PtInRect(CPoint(ElemPlace.rcNormalPosition.left, ElemPlace.rcNormalPosition.top)) &&
 			SelRect.PtInRect(CPoint(ElemPlace.rcNormalPosition.right, ElemPlace.rcNormalPosition.bottom))) {
 			if (ArchMode) {
 				if (!pElement->get_bArchSelected()) {
 					pElement->put_bArchSelected(TRUE);
-					::InvalidateRect(hWnd, NULL, FALSE);
+					::InvalidateRect(hWnd.value(), NULL, FALSE);
 				}
 			}
 			else {
 				if (!pElement->get_bConstrSelected()) {
 					pElement->put_bConstrSelected(TRUE);
-					::InvalidateRect(hWnd, NULL, FALSE);
+					::InvalidateRect(hWnd.value(), NULL, FALSE);
 				}
 			}
 			SelectedCount++;
@@ -576,13 +574,13 @@ void CArchView::OnLButtonUp(UINT nFlags, CPoint point)
 			if (ArchMode) {
 				if (pElement->get_bArchSelected()) {
 					pElement->put_bArchSelected(FALSE);
-					::InvalidateRect(hWnd, NULL, FALSE);
+					::InvalidateRect(hWnd.value(), NULL, FALSE);
 				}
 			}
 			else {
 				if (pElement->get_bConstrSelected()) {
 					pElement->put_bConstrSelected(FALSE);
-					::InvalidateRect(hWnd, NULL, FALSE);
+					::InvalidateRect(hWnd.value(), NULL, FALSE);
 				}
 			}
 		}
@@ -607,14 +605,19 @@ void CArchView::FindIntersections(const std::shared_ptr<CElement>& pElement)
 	WINDOWPLACEMENT Pls1, Pls2;
 	Pls1.length = sizeof(Pls1);
 	Pls2.length = sizeof(Pls2);
-	::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls1);
+	std::optional<HWND> optHWnd1 = pElement->get_hArchWnd();
+	if (!optHWnd1) return;
+	::GetWindowPlacement(optHWnd1.value(), &Pls1);
 	for (const auto entry : pDoc->Elements) {
 		std::shared_ptr<CElement> pCurElement = entry.second;
 
 		if (!(pCurElement->get_nType()&ET_ARCH)) continue;
 		if (pCurElement == pElement) continue;
 
-		::GetWindowPlacement((HWND)pCurElement->get_hArchWnd(), &Pls2);
+		std::optional<HWND> optHWnd2 = pCurElement->get_hArchWnd();
+		if (!optHWnd2) continue;
+
+		::GetWindowPlacement(optHWnd2.value(), &Pls2);
 		if (IntRect.IntersectRect(&Pls1.rcNormalPosition, &Pls2.rcNormalPosition)) {
 			CPoint TempDist = GetMinDist(pCurElement, pElement);
 			if ((abs(MinDist.x) >= abs(TempDist.x)) && (abs(MinDist.y) >= abs(TempDist.y))) {
@@ -630,10 +633,10 @@ void CArchView::FindIntersections(const std::shared_ptr<CElement>& pElement)
 	if ((abs(MinDist.x) < 3) && (abs(MinDist.y) < 3)) {
 		WINDOWPLACEMENT Pls;
 		Pls.length = sizeof(Pls);
-		::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls);
+		::GetWindowPlacement(optHWnd1.value(), &Pls);
 		CRect MovedRect(Pls.rcNormalPosition);
 		MovedRect.OffsetRect(-MinDist.x, -MinDist.y);
-		::MoveWindow((HWND)pElement->get_hArchWnd(),
+		::MoveWindow(optHWnd1.value(),
 			MovedRect.left, MovedRect.top,
 			MovedRect.Width(), MovedRect.Height(), TRUE);
 	}
@@ -642,8 +645,10 @@ void CArchView::FindIntersections(const std::shared_ptr<CElement>& pElement)
 	for (const auto entry : pDoc->Elements) {
 		std::shared_ptr<CElement> pDocElement = entry.second;
 		if (pDocElement == pElement) continue;
+		std::optional<HWND> optHWnd2 = pDocElement->get_hArchWnd();
+		if (!optHWnd2) continue;
 
-		::GetWindowPlacement((HWND)pDocElement->get_hArchWnd(), &Pls2);
+		::GetWindowPlacement(optHWnd2.value(), &Pls2);
 		if (IntRect.IntersectRect(&Pls1.rcNormalPosition, &Pls2.rcNormalPosition)) {
 			ConnectElements(pElement, pDocElement);
 		}
@@ -657,11 +662,16 @@ CPoint CArchView::GetMinDist(const std::shared_ptr<CElement>& pFixedElement, con
 	if (pMovedElement->get_nPointCount() <= 0) return Res;
 	if (pFixedElement->get_nPointCount() <= 0) return Res;
 
+	std::optional<HWND> hMovedWnd = pMovedElement->get_hArchWnd();
+	if (!hMovedWnd) return Res;
+	std::optional<HWND> hFixedWnd = pFixedElement->get_hArchWnd();
+	if (!hFixedWnd) return Res;
+
 	WINDOWPLACEMENT Pls;
 	Pls.length = sizeof(Pls);
-	::GetWindowPlacement((HWND)pMovedElement->get_hArchWnd(), &Pls);
+	::GetWindowPlacement(hMovedWnd.value(), &Pls);
 	CRect MovedRect(Pls.rcNormalPosition);
-	::GetWindowPlacement((HWND)pFixedElement->get_hArchWnd(), &Pls);
+	::GetWindowPlacement(hFixedWnd.value(), &Pls);
 	CRect FixedRect(Pls.rcNormalPosition);
 	//Перебираем точки фиксированного
 	DWORD FixPntCnt = pFixedElement->get_nPointCount();
@@ -692,13 +702,18 @@ BOOL CArchView::ConnectElements(const std::shared_ptr<CElement>& pMovedElement, 
 	if (pMovedElement->get_nPointCount() <= 0) return FALSE;
 	if (pFixedElement->get_nPointCount() <= 0) return FALSE;
 
+	std::optional<HWND> hMovedWnd = pMovedElement->get_hArchWnd();
+	if (!hMovedWnd) return FALSE;
+	std::optional<HWND> hFixedWnd = pFixedElement->get_hArchWnd();
+	if (!hFixedWnd) return FALSE;
+
 	//Подсоединяем элемент
 	int DistX, DistY;
 	WINDOWPLACEMENT Pls;
 	Pls.length = sizeof(Pls);
-	::GetWindowPlacement((HWND)pMovedElement->get_hArchWnd(), &Pls);
+	::GetWindowPlacement(hMovedWnd.value(), &Pls);
 	CRect MovedRect(Pls.rcNormalPosition);
-	::GetWindowPlacement((HWND)pFixedElement->get_hArchWnd(), &Pls);
+	::GetWindowPlacement(hFixedWnd.value(), &Pls);
 	CRect FixedRect(Pls.rcNormalPosition);
 	int FixPntCnt = pFixedElement->get_nPointCount();
 	for (int n = 0; n < FixPntCnt; n++) { //Перебор точек фиксированного
@@ -753,8 +768,8 @@ BOOL CArchView::ConnectElements(const std::shared_ptr<CElement>& pMovedElement, 
 			}
 		}
 	}
-	::InvalidateRect((HWND)pFixedElement->get_hArchWnd(), NULL, TRUE);
-	::InvalidateRect((HWND)pMovedElement->get_hArchWnd(), NULL, TRUE);
+	::InvalidateRect(hFixedWnd.value(), NULL, TRUE);
+	::InvalidateRect(hMovedWnd.value(), NULL, TRUE);
 
 	return TRUE;
 }
@@ -942,15 +957,16 @@ void CArchView::DeconnectElement(int ElemIndex)
 					}
 				}
 			}
-			::InvalidateRect((HWND)pDoc->Elements[m]->get_hArchWnd(), NULL, TRUE);
+			std::optional<HWND> hWnd = pDoc->Elements[m]->get_hArchWnd();
+			if(hWnd) ::InvalidateRect(hWnd.value(), NULL, TRUE);
 		}
 		pSelPoint[i].RemoveAll();
 		//Все подключенные элементы отключены, отключаем заданный
 		pDoc->Elements[ElemIndex]->ConnectPin(i, FALSE);
 	}
 	//Теперь перерисуем заданный элемент
-	HWND hWnd = (HWND)pDoc->Elements[ElemIndex]->get_hArchWnd();
-	if (hWnd) ::InvalidateRect((HWND)pDoc->Elements[ElemIndex]->get_hArchWnd(), NULL, TRUE);
+	std::optional<HWND> hWnd = pDoc->Elements[ElemIndex]->get_hArchWnd();
+	if (hWnd) ::InvalidateRect(hWnd.value(), NULL, TRUE);
 }
 
 BOOL CArchView::MoveSelected(int ShiftX, int ShiftY)
@@ -963,9 +979,9 @@ BOOL CArchView::MoveSelected(int ShiftX, int ShiftY)
 		if (ArchMode ? pDocElement->get_bArchSelected() : pDocElement->get_bConstrSelected()) {
 			WINDOWPLACEMENT Pls;
 			Pls.length = sizeof(Pls);
-			HWND hWnd = (HWND)pDocElement->get_hArchWnd();
-			::GetWindowPlacement((HWND)(ArchMode ? pDocElement->get_hArchWnd() :
-				pDocElement->get_hConstrWnd()), &Pls);
+			std::optional<HWND> hWnd = ArchMode ? pDocElement->get_hArchWnd() : pDocElement->get_hConstrWnd();
+			if (!hWnd) continue;
+			::GetWindowPlacement(hWnd.value(), &Pls);
 			CRect CurRect(Pls.rcNormalPosition);
 			CurRect.OffsetRect(GetScrollPos(SB_HORZ), GetScrollPos(SB_VERT));
 			if ((ShiftX != 0) || (ShiftY != 0)) {
@@ -992,18 +1008,9 @@ BOOL CArchView::MoveSelected(int ShiftX, int ShiftY)
 
 				int dy = GetScrollPos(SB_VERT);
 				int dx = GetScrollPos(SB_HORZ);
-				if (ArchMode) {
-					HWND hWnd = (HWND)pDocElement->get_hArchWnd();
-					if (hWnd) ::MoveWindow(hWnd,
-						CurRect.left - dx, CurRect.top - dy, CurRect.Width(), CurRect.Height(),
-						TRUE);
-				}
-				else {
-					HWND hWnd = (HWND)pDocElement->get_hConstrWnd();
-					if (hWnd) ::MoveWindow(hWnd,
-						CurRect.left - dx, CurRect.top - dy, CurRect.Width(), CurRect.Height(),
-						TRUE);
-				}
+				::MoveWindow(hWnd.value(),
+					CurRect.left - dx, CurRect.top - dy, CurRect.Width(), CurRect.Height(),
+					TRUE);
 				Moved = TRUE;
 			}
 		}

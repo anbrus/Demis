@@ -194,21 +194,22 @@ void IrqElement::OnSettings() {
 		activeHigh = Dlg.activeHigh;
 		ModifiedFlag = TRUE;
 		UpdateTipText();
-		pArchElemWnd->Invalidate();
+		pArchElemWnd.value()->Invalidate();
 	}
 }
 
-BOOL IrqElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL IrqElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "IRQ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "IRQ", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS | WS_CLIPCHILDREN,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	UpdateTipText();
 
@@ -242,5 +243,5 @@ void IrqElement::SetPinState(DWORD NewState) {
 		theApp.pHostInterface->Interrupt(irqNumber);
 	}
 
-	pArchElemWnd->scheduleRedraw();
+	pArchElemWnd.value()->scheduleRedraw();
 }

@@ -29,7 +29,7 @@ CInputPort::CInputPort(BOOL ArchMode, int id)
 	Value = 0;
 
 	pArchElemWnd = new CInPortArchWnd(this);
-	pConstrElemWnd = NULL;
+	pConstrElemWnd = std::nullopt;
 
 	PointCount = 8;
 	for (int n = 0; n < 8; n++) {
@@ -78,17 +78,18 @@ BOOL CInputPort::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CInputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CInputPort::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS, ::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Порт ввода", WS_VISIBLE | WS_CHILD,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy),
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "Порт ввода", WS_VISIBLE | WS_CHILD,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy),
 		CWnd::FromHandle(hArchParentWnd), 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
 	UpdateTipText();
 
@@ -282,7 +283,7 @@ void CInputPort::UpdateTipText()
 void CInputPort::SetPinState(DWORD NewState)
 {
 	Value = NewState;
-	((CInPortArchWnd*)pArchElemWnd)->scheduleRedraw();
+	((CInPortArchWnd*)pArchElemWnd.value())->scheduleRedraw();
 }
 
 DWORD CInputPort::GetPortData(DWORD Addresses)

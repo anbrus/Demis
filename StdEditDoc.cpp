@@ -67,7 +67,15 @@ void CStdEditDoc::Serialize(CArchive& ar)
 
 		DWORD Length = ar.Read(Buf, lengthText);
 		Buf[Length] = '\0';
-		OemToChar(Buf, Buf);
+		if (theApp.pPrjDoc && theApp.pPrjDoc->encoding == Encoding::Utf8) {
+			std::vector<wchar_t> wBuf;
+			wBuf.resize(lengthText+1);
+			MultiByteToWideChar(CP_UTF8, 0, Buf, lengthText, wBuf.data(), lengthText + 1);
+			WideCharToMultiByte(1251, 0, wBuf.data(), lengthText, Buf, lengthText + 1, nullptr, nullptr);
+		}
+		else {
+			OemToChar(Buf, Buf);
+		}
 		EditCtrl.SetWindowText(Buf);
 		delete[] Buf;
 	}

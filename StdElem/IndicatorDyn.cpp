@@ -169,20 +169,21 @@ BOOL CIndicatorDyn::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CIndicatorDyn::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CIndicatorDyn::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
 	DWORD styleEx = IsWindows8OrGreater() ? WS_EX_LAYERED : 0;
-	pArchElemWnd->CreateEx(styleEx, ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
+	pArchElemWnd.value()->CreateEx(styleEx, ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
 
-	pArchElemWnd->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
+	pArchElemWnd.value()->SetLayeredWindowAttributes(RGB(255, 255, 255), 255, LWA_COLORKEY);
 
-	pConstrElemWnd->Create(ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
+	pConstrElemWnd.value()->Create(ClassName, "Дин. индикатор", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd.value()->Size.cx, pConstrElemWnd.value()->Size.cy), pConstrParentWnd, 0);
 
 	return TRUE;
 }
@@ -553,11 +554,11 @@ void CIndicatorDyn::SetPinState(DWORD NewState)
 		bitsOn >>= 1;
 	}
 
-	if (pArchElemWnd->IsWindowEnabled()) {
-		pArchElemWnd->scheduleRedraw();
+	if (pArchElemWnd.value()->IsWindowEnabled()) {
+		pArchElemWnd.value()->scheduleRedraw();
 	}
-	if (pConstrElemWnd->IsWindowEnabled()) {
-		pConstrElemWnd->scheduleRedraw();
+	if (pConstrElemWnd.value()->IsWindowEnabled()) {
+		pConstrElemWnd.value()->scheduleRedraw();
 	}
 }
 

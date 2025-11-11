@@ -20,6 +20,7 @@ IMPLEMENT_DYNCREATE(CArchDoc, CDocument)
 
 CArchDoc::CArchDoc()
 {
+	pView = nullptr;
 }
 
 BOOL CArchDoc::OnNewDocument()
@@ -131,21 +132,21 @@ void CArchDoc::ArchOpen(CArchive& ar)
 		pElement->put_nConstrAngle(ConstrAngle);
 		pElement->Show(pView->m_hWnd, pView->m_hWnd);
 
-		HWND hWnd = (HWND)pElement->get_hArchWnd();
-		if (hWnd) {
-			::GetWindowPlacement(hWnd, &Pls);
+		std::optional<HWND> optHWnd = pElement->get_hArchWnd();
+		if (optHWnd) {
+			::GetWindowPlacement(optHWnd.value(), &Pls);
 			CRect Rect1(Pls.rcNormalPosition);
 			Rect1.OffsetRect(ArchPos);
-			::MoveWindow((HWND)pElement->get_hArchWnd(), Rect1.left, Rect1.top,
+			::MoveWindow(optHWnd.value(), Rect1.left, Rect1.top,
 				Rect1.Width(), Rect1.Height(), TRUE);
 		}
 
-		hWnd = (HWND)pElement->get_hConstrWnd();
-		if (hWnd) {
-			::GetWindowPlacement(hWnd, &Pls);
+		optHWnd = pElement->get_hConstrWnd();
+		if (optHWnd) {
+			::GetWindowPlacement(optHWnd.value(), &Pls);
 			CRect Rect2(Pls.rcNormalPosition);
 			Rect2.OffsetRect(ConstrPos);
-			::MoveWindow((HWND)pElement->get_hConstrWnd(), Rect2.left, Rect2.top,
+			::MoveWindow(optHWnd.value(), Rect2.left, Rect2.top,
 				Rect2.Width(), Rect2.Height(), TRUE);
 		}
 	}
@@ -168,16 +169,28 @@ void CArchDoc::ArchSave(CArchive& ar)
 		CString ElemClsId = pElement->get_sClsId();
 		ar << ElemName;
 		ar << ElemClsId;
-		WINDOWPLACEMENT Pls;
-		Pls.length = sizeof(Pls);
-		::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls);
-		Pls.rcNormalPosition.left += pView->GetScrollPos(SB_HORZ);
-		Pls.rcNormalPosition.top += pView->GetScrollPos(SB_VERT);
-		ar << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
-		::GetWindowPlacement((HWND)pElement->get_hConstrWnd(), &Pls);
-		Pls.rcNormalPosition.left += pView->GetScrollPos(SB_HORZ);
-		Pls.rcNormalPosition.top += pView->GetScrollPos(SB_VERT);
-		ar << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
+		{
+			WINDOWPLACEMENT Pls = { 0 };
+			Pls.length = sizeof(Pls);
+			std::optional<HWND> optHWnd = pElement->get_hArchWnd();
+			if (optHWnd) {
+				::GetWindowPlacement(optHWnd.value(), &Pls);
+				Pls.rcNormalPosition.left += pView->GetScrollPos(SB_HORZ);
+				Pls.rcNormalPosition.top += pView->GetScrollPos(SB_VERT);
+			}
+			ar << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
+		}
+		{
+			WINDOWPLACEMENT Pls = { 0 };
+			Pls.length = sizeof(Pls);
+			std::optional<HWND> optHWnd = pElement->get_hConstrWnd();
+			if (optHWnd) {
+				::GetWindowPlacement(optHWnd.value(), &Pls);
+				Pls.rcNormalPosition.left += pView->GetScrollPos(SB_HORZ);
+				Pls.rcNormalPosition.top += pView->GetScrollPos(SB_VERT);
+			}
+			ar << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
+		}
 		ar << pElement->get_nArchAngle();
 		ar << pElement->get_nConstrAngle();
 		ar.Flush();
@@ -191,8 +204,10 @@ BOOL CArchDoc::DeleteElement(int ElementIndex)
 	if (iter == Elements.cend()) return FALSE;
 
 	std::shared_ptr<CElement> pElement = iter->second;
-	::ShowWindow(pElement->get_hArchWnd(),SW_HIDE);
-	::ShowWindow(pElement->get_hConstrWnd(),SW_HIDE);
+	std::optional<HWND> optHWnd = pElement->get_hArchWnd();
+	if(optHWnd) ::ShowWindow(optHWnd.value(), SW_HIDE);
+	optHWnd = pElement->get_hConstrWnd();
+	if(optHWnd) ::ShowWindow(optHWnd.value(), SW_HIDE);
 	pElement->OnDelete();
 	Elements.erase(ElementIndex);
 	SetModifiedFlag();
@@ -297,8 +312,10 @@ void CArchDoc::ChangeMode(BOOL ConfigMode)
 
 			pElement->Reset(ConfigMode, &theApp.pEmData->Ticks,
 				theApp.pPrjDoc->TaktFreq, theApp.pPrjDoc->FreePinLevel);
-			if (pElement->get_hArchWnd()) InvalidateRect((HWND)pElement->get_hArchWnd(), NULL, TRUE);
-			if (pElement->get_hConstrWnd()) InvalidateRect((HWND)pElement->get_hConstrWnd(), NULL, TRUE);
+			std::optional<HWND> optHWnd = pElement->get_hArchWnd();
+			if (optHWnd) InvalidateRect(optHWnd.value(), NULL, TRUE);
+			optHWnd = pElement->get_hConstrWnd();
+			if (optHWnd) InvalidateRect(optHWnd.value(), NULL, TRUE);
 		}
 	}
 	else {
@@ -342,8 +359,10 @@ void CArchDoc::ChangeMode(BOOL ConfigMode)
 			pElement->put_bConstrSelected(FALSE);
 			pElement->Reset(ConfigMode, &theApp.pEmData->Ticks,
 				theApp.pPrjDoc->TaktFreq, theApp.pPrjDoc->FreePinLevel);
-			if (pElement->get_hArchWnd()) InvalidateRect((HWND)pElement->get_hArchWnd(), NULL, TRUE);
-			if (pElement->get_hConstrWnd()) InvalidateRect((HWND)pElement->get_hConstrWnd(), NULL, TRUE);
+			std::optional<HWND> optHWnd = pElement->get_hArchWnd();
+			if (optHWnd) InvalidateRect(optHWnd.value(), NULL, TRUE);
+			optHWnd = pElement->get_hConstrWnd();
+			if (optHWnd) InvalidateRect(optHWnd.value(), NULL, TRUE);
 		}
 	}
 	pView->ChangeMode(ConfigMode);
@@ -351,11 +370,11 @@ void CArchDoc::ChangeMode(BOOL ConfigMode)
 
 void CArchDoc::CopySelected()
 {
-	char TempPath[MAX_PATH + 1];
-	char TempName[MAX_PATH + 1];
-	GetTempPath(MAX_PATH, TempPath);
-	GetTempFileName(TempPath, "DMS", 0, TempName);
-	HANDLE hTempFile = ::CreateFile(TempName, GENERIC_READ | GENERIC_WRITE, 0, NULL,
+	std::unique_ptr<char[]> TempPath(new char[MAX_PATH + 1]);
+	std::unique_ptr<char[]> TempName(new char[MAX_PATH + 1]);
+	GetTempPath(MAX_PATH, TempPath.get());
+	GetTempFileName(TempPath.get(), "DMS", 0, TempName.get());
+	HANDLE hTempFile = ::CreateFile(TempName.get(), GENERIC_READ | GENERIC_WRITE, 0, NULL,
 		CREATE_ALWAYS, FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, NULL);
 
 	CFile TempFile(hTempFile);
@@ -381,11 +400,19 @@ void CArchDoc::CopySelected()
 		CString ElemClsId = pElement->get_sClsId();
 		SaveAr << ElemName;
 		SaveAr << ElemClsId;
-		WINDOWPLACEMENT Pls;
+		WINDOWPLACEMENT Pls = { 0 };
 		Pls.length = sizeof(Pls);
-		::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls);
+		std::optional<HWND> optHWnd = pElement->get_hArchWnd();
+		if (optHWnd) {
+			::GetWindowPlacement(optHWnd.value(), &Pls);
+		}
 		SaveAr << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
-		::GetWindowPlacement((HWND)pElement->get_hConstrWnd(), &Pls);
+		Pls = { 0 };
+		Pls.length = sizeof(Pls);
+		optHWnd = pElement->get_hConstrWnd();
+		if (optHWnd) {
+			::GetWindowPlacement(optHWnd.value(), &Pls);
+		}
 		SaveAr << Pls.rcNormalPosition.left << Pls.rcNormalPosition.top;
 		SaveAr << pElement->get_nArchAngle();
 		SaveAr << pElement->get_nConstrAngle();
@@ -399,8 +426,6 @@ void CArchDoc::CopySelected()
 
 	CString ClsId, Name;
 	CPoint ArchPos, ConstrPos;
-	WINDOWPLACEMENT Pls;
-	Pls.length = sizeof(Pls);
 
 	for (int n = 0; n < ElementsCount; n++) {
 		int idNew = getNewElementId(Elements);
@@ -420,27 +445,35 @@ void CArchDoc::CopySelected()
 		pElement->Load(LoadAr.GetFile()->m_hFile);
 		pElement->Show(pView->m_hWnd, pView->m_hWnd);
 
-		::GetWindowPlacement((HWND)pElement->get_hArchWnd(), &Pls);
-		CRect Rect1(Pls.rcNormalPosition);
-		if (pView->ArchMode) Rect1.OffsetRect(ArchPos);
-		::MoveWindow((HWND)pElement->get_hArchWnd(), Rect1.left, Rect1.top,
-			Rect1.Width(), Rect1.Height(), TRUE);
+		std::optional<HWND> optHArchWnd = pElement->get_hArchWnd();
+		std::optional<HWND> optHConstrWnd = pElement->get_hConstrWnd();
+		if (optHArchWnd) {
+			WINDOWPLACEMENT Pls;
+			Pls.length = sizeof(Pls);
+			::GetWindowPlacement(optHArchWnd.value(), &Pls);
+			CRect Rect1(Pls.rcNormalPosition);
+			if (pView->ArchMode) Rect1.OffsetRect(ArchPos);
+			::MoveWindow(optHArchWnd.value(), Rect1.left, Rect1.top,
+				Rect1.Width(), Rect1.Height(), TRUE);
+		}
 
-		::GetWindowPlacement((HWND)pElement->get_hConstrWnd(), &Pls);
-		CRect Rect2(Pls.rcNormalPosition);
-		if (!pView->ArchMode) Rect2.OffsetRect(ConstrPos);
-		::MoveWindow((HWND)pElement->get_hConstrWnd(), Rect2.left, Rect2.top,
-			Rect2.Width(), Rect2.Height(), TRUE);
+		if (optHConstrWnd) {
+			WINDOWPLACEMENT Pls;
+			Pls.length = sizeof(Pls);
+			::GetWindowPlacement(optHConstrWnd.value(), &Pls);
+			CRect Rect2(Pls.rcNormalPosition);
+			if (!pView->ArchMode) Rect2.OffsetRect(ConstrPos);
+			::MoveWindow(optHConstrWnd.value(), Rect2.left, Rect2.top,
+				Rect2.Width(), Rect2.Height(), TRUE);
+		}
 
-		HWND hArchWnd = (HWND)pElement->get_hArchWnd();
-		HWND hConstrWnd = (HWND)pElement->get_hConstrWnd();
 		if (pView->ArchMode) {
-			if (hArchWnd) ::ShowWindow(hArchWnd, SW_SHOW);
-			if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_HIDE);
+			if (optHArchWnd) ::ShowWindow(optHArchWnd.value(), SW_SHOW);
+			if (optHConstrWnd) ::ShowWindow(optHConstrWnd.value(), SW_HIDE);
 		}
 		else {
-			if (hArchWnd) ::ShowWindow(hArchWnd, SW_HIDE);
-			if (hConstrWnd) ::ShowWindow(hConstrWnd, SW_SHOW);
+			if (optHArchWnd) ::ShowWindow(optHArchWnd.value(), SW_HIDE);
+			if (optHConstrWnd) ::ShowWindow(optHConstrWnd.value(), SW_SHOW);
 		}
 	}
 
@@ -616,8 +649,12 @@ void CArchDoc::ConvertVersion0200To0202(CArchive& ar, DWORD OldVersion)
 CPoint CArchDoc::GetNearestConPoint(const CPoint& point, int typePin) {
 	for (const auto& entry : Elements) {
 		CElementPtr pElement = entry.second;
+		std::optional<HWND> optHWnd = pElement->get_hArchWnd();
+		if (!optHWnd) continue;
+
 		WINDOWPLACEMENT pls;
-		CWnd::FromHandle(pElement->get_hArchWnd())->GetWindowPlacement(&pls);
+		pls.length = sizeof(pls);
+		CWnd::FromHandle(optHWnd.value())->GetWindowPlacement(&pls);
 
 		for (size_t n = 0; n < pElement->get_nPointCount(); n++) {
 			if ((pElement->GetPinType(n) & typePin) == 0) continue;

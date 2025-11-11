@@ -28,7 +28,7 @@ protected:
 
 	// Attributes
 public:
-	std::unordered_map<int, std::shared_ptr<CElement>> Elements;
+	std::unordered_map<int, CElementPtr> Elements;
 
 	virtual void Serialize(CArchive& ar);   // overridden for document i/o
 	virtual BOOL OnOpenDocument(LPCTSTR lpszPathName);

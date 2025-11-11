@@ -3,6 +3,7 @@
 #include <string>
 #include <memory>
 #include <vector>
+#include <optional>
 
 class CElement
 {
@@ -16,8 +17,8 @@ public:
 	virtual DWORD get_nType() = 0;
 	virtual CString get_sName() = 0;
 	virtual CString get_sClsId() = 0;
-	virtual HWND get_hArchWnd() = 0;
-	virtual HWND get_hConstrWnd() = 0;
+	virtual std::optional<HWND> get_hArchWnd() = 0;
+	virtual std::optional<HWND> get_hConstrWnd() = 0;
 	virtual std::vector<DWORD> GetAddresses() = 0;
 	virtual BOOL get_bModifiedFlag() = 0;
 	virtual CString get_sTipText() = 0;

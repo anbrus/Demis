@@ -101,17 +101,18 @@ BOOL CButtonElement::Save(HANDLE hFile)
 	return CElementBase::Save(hFile);
 }
 
-BOOL CButtonElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd)
-{
+BOOL CButtonElement::Show(HWND hArchParentWnd, HWND hConstrParentWnd) {
+	AFX_MANAGE_STATE(AfxGetStaticModuleState());
+
 	if (!CElementBase::Show(hArchParentWnd, hConstrParentWnd)) return FALSE;
 
 	CString ClassName = AfxRegisterWndClass(CS_DBLCLKS,
 		::LoadCursor(NULL, IDC_ARROW));
-	pArchElemWnd->Create(ClassName, "Êíîïêà", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pArchElemWnd->Size.cx, pArchElemWnd->Size.cy), pArchParentWnd, 0);
-	pConstrElemWnd->Create(ClassName, "Êíîïêà", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
-		CRect(0, 0, pConstrElemWnd->Size.cx, pConstrElemWnd->Size.cy), pConstrParentWnd, 0);
-	((CBtnConstrWnd*)pConstrElemWnd)->UpdateSize();
+	pArchElemWnd.value()->Create(ClassName, "Êíîïêà", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pArchElemWnd.value()->Size.cx, pArchElemWnd.value()->Size.cy), pArchParentWnd, 0);
+	pConstrElemWnd.value()->Create(ClassName, "Êíîïêà", WS_VISIBLE | WS_OVERLAPPED | WS_CHILD | WS_CLIPSIBLINGS,
+		CRect(0, 0, pConstrElemWnd.value()->Size.cx, pConstrElemWnd.value()->Size.cy), pConstrParentWnd, 0);
+	((CBtnConstrWnd*)pConstrElemWnd.value())->UpdateSize();
 
 	UpdateTipText();
 	ChangePinState();
@@ -240,7 +241,7 @@ void CButtonElement::OnLabelText(CElementWnd* pParentWnd)
 	Dlg.SetText((char*)(LPCTSTR)Text);
 	if (Dlg.DoModal() == IDOK) {
 		Text = Dlg.GetText();
-		((CBtnConstrWnd*)pConstrElemWnd)->UpdateSize();
+		((CBtnConstrWnd*)pConstrElemWnd.value())->UpdateSize();
 		UpdateTipText();
 		ModifiedFlag = TRUE;
 	}
@@ -278,8 +279,8 @@ void CButtonElement::OnNormalOpened()
 	NormalOpened = TRUE;
 	PopupMenu.CheckMenuItem(ID_NORMAL_OPENED, MF_BYCOMMAND | MF_CHECKED);
 	PopupMenu.CheckMenuItem(ID_NORMAL_CLOSED, MF_BYCOMMAND | MF_UNCHECKED);
-	pArchElemWnd->RedrawWindow();
-	pConstrElemWnd->RedrawWindow();
+	pArchElemWnd.value()->RedrawWindow();
+	pConstrElemWnd.value()->RedrawWindow();
 	ModifiedFlag = TRUE;
 }
 
@@ -288,8 +289,8 @@ void CButtonElement::OnNormalClosed()
 	NormalOpened = FALSE;
 	PopupMenu.CheckMenuItem(ID_NORMAL_OPENED, MF_BYCOMMAND | MF_UNCHECKED);
 	PopupMenu.CheckMenuItem(ID_NORMAL_CLOSED, MF_BYCOMMAND | MF_CHECKED);
-	pArchElemWnd->RedrawWindow();
-	pConstrElemWnd->RedrawWindow();
+	pArchElemWnd.value()->RedrawWindow();
+	pConstrElemWnd.value()->RedrawWindow();
 	ModifiedFlag = TRUE;
 }
 
@@ -299,7 +300,7 @@ void CBtnArchWnd::OnLButtonDown(UINT nFlags, CPoint point)
 		SetCapture();
 		((CButtonElement*)pElement)->OnLButtonDown();
 		RedrawWindow();
-		((CButtonElement*)pElement)->pConstrElemWnd->RedrawWindow();
+		((CButtonElement*)pElement)->pConstrElemWnd.value()->RedrawWindow();
 	}
 	else	CElementWnd::OnLButtonDown(nFlags, point);
 }
@@ -310,7 +311,7 @@ void CBtnArchWnd::OnLButtonUp(UINT nFlags, CPoint point)
 		ReleaseCapture();
 		((CButtonElement*)pElement)->OnLButtonUp();
 		RedrawWindow();
-		((CButtonElement*)pElement)->pConstrElemWnd->RedrawWindow();
+		((CButtonElement*)pElement)->pConstrElemWnd.value()->RedrawWindow();
 	}
 	else	CElementWnd::OnLButtonUp(nFlags, point);
 }
@@ -321,7 +322,7 @@ void CBtnConstrWnd::OnLButtonDown(UINT nFlags, CPoint point)
 		SetCapture();
 		((CButtonElement*)pElement)->OnLButtonDown();
 		RedrawWindow();
-		((CButtonElement*)pElement)->pArchElemWnd->RedrawWindow();
+		((CButtonElement*)pElement)->pArchElemWnd.value()->RedrawWindow();
 	}
 	else	CElementWnd::OnLButtonDown(nFlags, point);
 }
@@ -332,7 +333,7 @@ void CBtnConstrWnd::OnLButtonUp(UINT nFlags, CPoint point)
 		ReleaseCapture();
 		((CButtonElement*)pElement)->OnLButtonUp();
 		RedrawWindow();
-		((CButtonElement*)pElement)->pArchElemWnd->RedrawWindow();
+		((CButtonElement*)pElement)->pArchElemWnd.value()->RedrawWindow();
 	}
 	else	CElementWnd::OnLButtonUp(nFlags, point);
 }
@@ -353,8 +354,8 @@ void CButtonElement::OnFixable()
 	PopupMenu.CheckMenuItem(ID_FIXABLE, MF_BYCOMMAND |
 		(Fixable ? MF_CHECKED : MF_UNCHECKED));
 	Pressed = FALSE;
-	pArchElemWnd->RedrawWindow();
-	pConstrElemWnd->RedrawWindow();
+	pArchElemWnd.value()->RedrawWindow();
+	pConstrElemWnd.value()->RedrawWindow();
 	ModifiedFlag = TRUE;
 }
 
@@ -374,8 +375,8 @@ void CButtonElement::OnDrebezg()
 	PopupMenu.CheckMenuItem(ID_DREBEZG, MF_BYCOMMAND |
 		(Drebezg ? MF_CHECKED : MF_UNCHECKED));
 	Pressed = FALSE;
-	pArchElemWnd->RedrawWindow();
-	pConstrElemWnd->RedrawWindow();
+	pArchElemWnd.value()->RedrawWindow();
+	pConstrElemWnd.value()->RedrawWindow();
 	ModifiedFlag = TRUE;
 }
 
