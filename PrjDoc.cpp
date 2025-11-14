@@ -276,7 +276,9 @@ BOOL CPrjDoc::SaveDoc(CArchive &ar)
 	ar.WriteString(Line);
 	Line.Format("[FREEPINLEVEL]=%d\r\n", FreePinLevel);
 	ar.WriteString(Line);
-	Line.Format("[ENCODING]=Utf8\r\n");
+	if (theApp.pPrjDoc->encoding == Encoding::Utf8) {
+		Line.Format("[ENCODING]=Utf8\r\n");
+	}
 	ar.WriteString(Line);
 	//Сохраняем положения окон
 	CMainFrame* pMainFrame = (CMainFrame*)theApp.m_pMainWnd;
